@@ -2,95 +2,113 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* Pet Tracking App Design System - Inspired by the original React Native app */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Main background - warm cream */
+    --background: 33 100% 97%;
+    --foreground: 220 15% 13%;
 
+    /* Cards */
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 220 15% 13%;
 
+    /* Popover */
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 220 15% 13%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Primary - Deep Blue */
+    --primary: 211 72% 31%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Secondary - Light blue/gray */
+    --secondary: 220 25% 96%;
+    --secondary-foreground: 220 40% 35%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Muted */
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Accent */
+    --accent: 211 100% 95%;
+    --accent-foreground: 211 72% 31%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    /* Destructive - Red */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    /* Border & Input */
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 211 72% 31%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
+    /* Status colors */
+    --status-green: 122 39% 40%;
+    --status-orange: 36 100% 50%;
+    --status-red: 0 65% 48%;
+
+    /* Gender-based backgrounds */
+    --female-bg: 330 100% 95%;
+    --female-accent: 330 100% 66%;
+    --male-bg: 215 100% 95%;
+    --male-accent: 217 100% 58%;
+
+    /* Sidebar (for potential future use) */
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
+    --sidebar-primary: 211 72% 31%;
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-ring: 211 72% 31%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
+    --background: 220 15% 8%;
     --foreground: 210 40% 98%;
 
-    --card: 222.2 84% 4.9%;
+    --card: 220 15% 10%;
     --card-foreground: 210 40% 98%;
 
-    --popover: 222.2 84% 4.9%;
+    --popover: 220 15% 10%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 211 72% 50%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 217.2 32.6% 17.5%;
+    --secondary: 217 32% 17%;
     --secondary-foreground: 210 40% 98%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 217 32% 17%;
+    --muted-foreground: 215 20% 65%;
 
-    --accent: 217.2 32.6% 17.5%;
+    --accent: 217 32% 17%;
     --accent-foreground: 210 40% 98%;
 
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 0 62% 45%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --border: 217 32% 17%;
+    --input: 217 32% 17%;
+    --ring: 211 72% 50%;
+
+    --female-bg: 330 30% 15%;
+    --female-accent: 330 70% 55%;
+    --male-bg: 215 30% 15%;
+    --male-accent: 217 70% 55%;
+
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary: 211 72% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 240 3.7% 15.9%;
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-ring: 211 72% 50%;
   }
 }
 
@@ -100,6 +118,60 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+}
+
+@layer components {
+  /* Status badges */
+  .status-badge {
+    @apply w-3 h-3 rounded-full;
+  }
+  .status-badge-green {
+    @apply bg-[hsl(var(--status-green))];
+  }
+  .status-badge-orange {
+    @apply bg-[hsl(var(--status-orange))];
+  }
+  .status-badge-red {
+    @apply bg-[hsl(var(--status-red))];
+  }
+
+  /* Gender backgrounds */
+  .bg-female {
+    @apply bg-[hsl(var(--female-bg))];
+  }
+  .bg-male {
+    @apply bg-[hsl(var(--male-bg))];
+  }
+  .text-female {
+    @apply text-[hsl(var(--female-accent))];
+  }
+  .text-male {
+    @apply text-[hsl(var(--male-accent))];
+  }
+
+  /* Date rectangle button */
+  .date-rect {
+    @apply py-2.5 px-3 bg-secondary rounded-lg border border-border font-bold text-secondary-foreground;
+  }
+
+  /* Radio pill */
+  .radio-pill {
+    @apply py-2 px-3.5 rounded-full border border-border bg-card font-semibold text-foreground transition-colors;
+  }
+  .radio-pill-active {
+    @apply border-primary bg-accent text-primary;
+  }
+
+  /* FAB button */
+  .fab {
+    @apply fixed right-4 bottom-4 w-14 h-14 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg hover:shadow-xl transition-shadow;
+  }
+
+  /* Care card */
+  .care-card {
+    @apply bg-muted/50 rounded-xl border border-border p-3;
   }
 }
