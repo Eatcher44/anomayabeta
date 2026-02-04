@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, SlidersHorizontal, Calendar, X } from 'lucide-react';
+import { Plus, SlidersHorizontal, Calendar, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -20,10 +20,12 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 import { useAnimals } from '@/context/AnimalsContext';
+import { useAuth } from '@/context/AuthContext';
 import AnimalRow from '@/components/AnimalRow';
 import DateField from '@/components/DateField';
 import { NomModal, TypeModal, CustomTypeModal, SexeModal, RaceModal } from '@/components/AnimalModals';
 import { maskHHMM, isValidHHMM } from '@/utils/date';
+import { toast } from '@/hooks/use-toast';
 import type { Animal, RendezVous } from '@/types/animal';
 
 function lastPoidsKg(a: Animal): number | null {
@@ -34,13 +36,14 @@ function lastPoidsKg(a: Animal): number | null {
 
 export default function HomePage() {
   const navigate = useNavigate();
+  const { signOut } = useAuth();
   const {
     animaux,
-    setAnimaux,
+    addAnimal,
     updateAnimal,
-    deleteAnimal,
     rendezvous,
     addRendezVous,
+    loading,
   } = useAnimals();
 
   // Tri
@@ -63,6 +66,7 @@ export default function HomePage() {
   const [raceTemp, setRaceTemp] = useState('');
   const [customType, setCustomType] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
 
   // Modale RDV
   const [rdvOpen, setRdvOpen] = useState(false);
@@ -108,30 +112,36 @@ export default function HomePage() {
     setModalRaceVisible(true);
   };
 
-  const saveAnimal = () => {
+  const saveAnimal = async () => {
     if (!animalTemp || !typeTemp || !sexeTemp) return;
+    
+    setSaving(true);
+    try {
+      const animalData = {
+        nom: animalTemp.trim(),
+        type: typeTemp.trim(),
+        sexe: sexeTemp,
+        race: raceTemp.trim() || undefined,
+        photo: null,
+        naissance: new Date().toISOString(),
+        poids: [],
+        soins: [],
+        consultations: [],
+      };
 
-    const data: Animal = {
-      id: editingId || `a_${Date.now()}`,
-      nom: animalTemp.trim(),
-      type: typeTemp.trim(),
-      sexe: sexeTemp,
-      race: raceTemp.trim() || undefined,
-      photo: null,
-      naissance: new Date().toISOString(),
-      poids: [],
-      soins: [],
-      consultations: [],
-      createdAt: new Date().toISOString(),
-    };
+      if (editingId) {
+        await updateAnimal(editingId, animalData);
+      } else {
+        await addAnimal(animalData);
+      }
 
-    if (editingId) {
-      updateAnimal(editingId, data);
-    } else {
-      setAnimaux([...animaux, data]);
+      setModalRaceVisible(false);
+      toast({ title: 'Succès', description: editingId ? 'Animal modifié' : 'Animal ajouté' });
+    } catch (error) {
+      toast({ title: 'Erreur', description: "Impossible d'enregistrer l'animal", variant: 'destructive' });
+    } finally {
+      setSaving(false);
     }
-
-    setModalRaceVisible(false);
   };
 
   const filtered = useMemo(() => {
@@ -149,7 +159,7 @@ export default function HomePage() {
     if (triSelected === 'alpha') {
       list.sort((a, b) => (a.nom || '').localeCompare(b.nom || ''));
     } else if (triSelected === 'age') {
-      list.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+      list.sort((a, b) => new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime());
     } else if (triSelected === 'poids') {
       list.sort((a, b) => (lastPoidsKg(b) || 0) - (lastPoidsKg(a) || 0));
     }
@@ -161,12 +171,16 @@ export default function HomePage() {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
-    input.onchange = (e) => {
+    input.onchange = async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (file) {
         const reader = new FileReader();
-        reader.onload = () => {
-          updateAnimal(id, { photo: reader.result as string });
+        reader.onload = async () => {
+          try {
+            await updateAnimal(id, { photo: reader.result as string });
+          } catch (error) {
+            toast({ title: 'Erreur', description: "Impossible de mettre à jour la photo", variant: 'destructive' });
+          }
         };
         reader.readAsDataURL(file);
       }
@@ -180,7 +194,7 @@ export default function HomePage() {
     );
   };
 
-  const submitRdv = () => {
+  const submitRdv = async () => {
     if (!rdvDate || !rdvDateValid) return;
     if (!rdvHeure || !isValidHHMM(rdvHeure)) {
       setRdvHeureValid(false);
@@ -189,23 +203,24 @@ export default function HomePage() {
     setRdvHeureValid(true);
     if (!rdvObjet.trim()) return;
 
-    const entry: RendezVous = {
-      id: `rdv_${Date.now()}`,
-      date: rdvDate.toISOString(),
-      heure: rdvHeure,
-      heureHHMM: rdvHeure,
-      objet: rdvObjet.trim(),
-      notes: rdvNotes.trim(),
-      animalIds: rdvAnimauxSelectionnes,
-      createdAt: new Date().toISOString(),
-    };
+    try {
+      await addRendezVous({
+        date: rdvDate.toISOString(),
+        heure: rdvHeure,
+        objet: rdvObjet.trim(),
+        notes: rdvNotes.trim(),
+        animalIds: rdvAnimauxSelectionnes,
+      });
 
-    addRendezVous(entry);
-    setRdvOpen(false);
-    setRdvObjet('');
-    setRdvNotes('');
-    setRdvHeure('');
-    setRdvAnimauxSelectionnes([]);
+      setRdvOpen(false);
+      setRdvObjet('');
+      setRdvNotes('');
+      setRdvHeure('');
+      setRdvAnimauxSelectionnes([]);
+      toast({ title: 'Rendez-vous ajouté' });
+    } catch (error) {
+      toast({ title: 'Erreur', description: "Impossible d'ajouter le rendez-vous", variant: 'destructive' });
+    }
   };
 
   const sortedAnimaux = useMemo(
@@ -213,13 +228,31 @@ export default function HomePage() {
     [animaux]
   );
 
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/auth');
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="px-4 pt-6 pb-4">
-        <div className="text-center mb-6">
-          <div className="text-3xl mb-2">🐾🐾</div>
-          <h1 className="text-2xl font-extrabold text-primary">Ma famille</h1>
+        <div className="flex justify-between items-start mb-4">
+          <div className="text-center flex-1">
+            <div className="text-3xl mb-2">🐾🐾</div>
+            <h1 className="text-2xl font-extrabold text-primary">Ma famille</h1>
+          </div>
+          <Button variant="ghost" size="icon" onClick={handleSignOut} title="Déconnexion">
+            <LogOut className="w-5 h-5" />
+          </Button>
         </div>
 
         {/* Actions */}
@@ -348,6 +381,7 @@ export default function HomePage() {
         value={raceTemp}
         onChange={setRaceTemp}
         onSave={saveAnimal}
+        saving={saving}
       />
 
       {/* Modale RDV */}
@@ -430,7 +464,7 @@ export default function HomePage() {
                     {rendezvous.map((r) => (
                       <div key={r.id} className="py-2 border-b border-border text-sm">
                         <p className="font-semibold">
-                          {new Date(r.date).toLocaleDateString('fr-FR')} à {r.heure || r.heureHHMM} – {r.objet}
+                          {new Date(r.date).toLocaleDateString('fr-FR')} à {r.heure} – {r.objet}
                         </p>
                         {r.animalIds?.length > 0 && (
                           <p className="text-muted-foreground text-xs">

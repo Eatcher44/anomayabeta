@@ -14,7 +14,93 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      animals: {
+        Row: {
+          consultations: Json | null
+          created_at: string
+          id: string
+          naissance: string | null
+          nom: string
+          photo: string | null
+          poids: Json | null
+          puce: string | null
+          race: string | null
+          sexe: string
+          soins: Json | null
+          sterilise: boolean | null
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          consultations?: Json | null
+          created_at?: string
+          id?: string
+          naissance?: string | null
+          nom: string
+          photo?: string | null
+          poids?: Json | null
+          puce?: string | null
+          race?: string | null
+          sexe: string
+          soins?: Json | null
+          sterilise?: boolean | null
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          consultations?: Json | null
+          created_at?: string
+          id?: string
+          naissance?: string | null
+          nom?: string
+          photo?: string | null
+          poids?: Json | null
+          puce?: string | null
+          race?: string | null
+          sexe?: string
+          soins?: Json | null
+          sterilise?: boolean | null
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      rendezvous: {
+        Row: {
+          animal_ids: string[] | null
+          created_at: string
+          date: string
+          heure: string | null
+          id: string
+          notes: string | null
+          objet: string
+          user_id: string
+        }
+        Insert: {
+          animal_ids?: string[] | null
+          created_at?: string
+          date: string
+          heure?: string | null
+          id?: string
+          notes?: string | null
+          objet: string
+          user_id: string
+        }
+        Update: {
+          animal_ids?: string[] | null
+          created_at?: string
+          date?: string
+          heure?: string | null
+          id?: string
+          notes?: string | null
+          objet?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
