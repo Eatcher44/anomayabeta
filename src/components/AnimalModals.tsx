@@ -197,9 +197,10 @@ interface RaceModalProps {
   value: string;
   onChange: (v: string) => void;
   onSave: () => void;
+  saving?: boolean;
 }
 
-export function RaceModal({ open, onClose, type, value, onChange, onSave }: RaceModalProps) {
+export function RaceModal({ open, onClose, type, value, onChange, onSave, saving }: RaceModalProps) {
   const [search, setSearch] = React.useState('');
   const isCat = type.toLowerCase().includes('chat');
   const isDog = type.toLowerCase().includes('chien');
@@ -262,8 +263,10 @@ export function RaceModal({ open, onClose, type, value, onChange, onSave }: Race
             </div>
           )}
           <div className="flex justify-end gap-3 mt-4">
-            <Button variant="outline" onClick={onClose}>Annuler</Button>
-            <Button onClick={onSave}>Enregistrer</Button>
+            <Button variant="outline" onClick={onClose} disabled={saving}>Annuler</Button>
+            <Button onClick={onSave} disabled={saving}>
+              {saving ? 'Enregistrement...' : 'Enregistrer'}
+            </Button>
           </div>
         </div>
       </DialogContent>
