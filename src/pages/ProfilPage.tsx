@@ -12,9 +12,12 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { useAnimals } from '@/context/AnimalsContext';
+import { useAuth } from '@/context/AuthContext';
 import DateField from '@/components/DateField';
 import { displayBreed } from '@/utils/breeds';
 import { getAgeText } from '@/utils/date';
+import { pickPhotoFile, uploadAnimalPhoto } from '@/utils/photo';
+import { toast } from '@/hooks/use-toast';
 
 const fmt = (d: string | Date) => new Date(d).toLocaleDateString('fr-FR');
 const isFemale = (a: { sexe?: string }) => (a.sexe || '').toLowerCase().startsWith('f');
@@ -22,15 +25,18 @@ const isFemale = (a: { sexe?: string }) => (a.sexe || '').toLowerCase().startsWi
 export default function ProfilPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { animaux, updateAnimal, rendezvous } = useAnimals();
 
   const [editOpen, setEditOpen] = useState(false);
   const [puceInlineEdit, setPuceInlineEdit] = useState(false);
   const [puceDraft, setPuceDraft] = useState('');
 
-  // État local pour l'édition
+  // Edit state
+  const [nameDraft, setNameDraft] = useState('');
+  const [typeDraft, setTypeDraft] = useState('');
   const [sexDraft, setSexDraft] = useState<'Mâle' | 'Femelle'>('Mâle');
-  const [raceDraft, setRaceDraft] = useState('—');
+  const [raceDraft, setRaceDraft] = useState('');
   const [birthDraft, setBirthDraft] = useState(new Date());
   const [birthValid, setBirthValid] = useState(true);
   const [sterilDraft, setSterilDraft] = useState(false);
@@ -73,8 +79,10 @@ export default function ProfilPage() {
   }
 
   const openEditModal = () => {
+    setNameDraft(animal.nom);
+    setTypeDraft(animal.type);
     setSexDraft((animal.sexe as 'Mâle' | 'Femelle') || 'Mâle');
-    setRaceDraft(animal.race || '—');
+    setRaceDraft(animal.race || '');
     setBirthDraft(animal.naissance ? new Date(animal.naissance) : new Date());
     setBirthValid(true);
     setSterilDraft(!!animal.sterilise);
@@ -82,23 +90,41 @@ export default function ProfilPage() {
     setEditOpen(true);
   };
 
-  const saveEdit = () => {
+  const saveEdit = async () => {
     if (!birthValid) return;
-    updateAnimal(animal.id, (a) => ({
-      ...a,
-      sexe: sexDraft,
-      race: raceDraft || '—',
-      naissance: birthDraft.toISOString(),
-      sterilise: sterilDraft,
-      puce: puceEditDraft.trim(),
-    }));
-    setEditOpen(false);
+    try {
+      await updateAnimal(animal.id, (a) => ({
+        ...a,
+        nom: nameDraft.trim() || a.nom,
+        type: typeDraft.trim() || a.type,
+        sexe: sexDraft,
+        race: raceDraft.trim() || undefined,
+        naissance: birthDraft.toISOString(),
+        sterilise: sterilDraft,
+        puce: puceEditDraft.trim() || undefined,
+      }));
+      setEditOpen(false);
+    } catch {
+      toast({ title: 'Erreur', description: "Impossible de sauvegarder", variant: 'destructive' });
+    }
+  };
+
+  const handleChangePhoto = async () => {
+    if (!user) return;
+    const file = await pickPhotoFile('image/*');
+    if (!file) return;
+    try {
+      const url = await uploadAnimalPhoto(user.id, animal.id, file);
+      await updateAnimal(animal.id, { photo: url });
+    } catch {
+      toast({ title: 'Erreur', description: 'Impossible de mettre à jour la photo', variant: 'destructive' });
+    }
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header avec retour */}
-      <div className="sticky top-0 z-10 bg-background border-b border-border px-4 py-3 flex items-center gap-3">
+    <div className="min-h-screen bg-gradient-to-b from-[hsl(33,60%,95%)] to-[hsl(30,40%,92%)]">
+      {/* Header */}
+      <div className="sticky top-0 z-10 bg-card/90 backdrop-blur border-b border-border px-4 py-3 flex items-center gap-3">
         <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
           <ArrowLeft className="w-5 h-5" />
         </Button>
@@ -108,23 +134,19 @@ export default function ProfilPage() {
       <ScrollArea className="flex-1">
         <div className="p-4 space-y-4">
           {/* Header Profil */}
-          <div className={`${bgClass} rounded-2xl p-4 border border-border relative`}>
-            <button
-              onClick={openEditModal}
-              className="absolute right-3 top-3 w-11 h-11 rounded-full bg-card border border-border flex items-center justify-center shadow-sm hover:shadow-md transition-shadow"
-            >
-              <Edit className="w-5 h-5 text-muted-foreground" />
-            </button>
-
+          <div className={`${bgClass} rounded-2xl p-4 border border-border relative shadow-sm`}>
             <div className="flex items-center">
-              <div className="w-[72px] h-[72px] rounded-full bg-muted flex items-center justify-center overflow-hidden mr-3">
+              <button
+                onClick={handleChangePhoto}
+                className="w-[72px] h-[72px] rounded-full bg-muted flex items-center justify-center overflow-hidden mr-3 hover:opacity-80 transition-opacity"
+              >
                 {animal.photo ? (
                   <img src={animal.photo} alt={animal.nom} className="w-full h-full object-cover" />
                 ) : (
-                  <span className="text-xs text-muted-foreground text-center px-1">Pas de photo</span>
+                  <span className="text-xs text-muted-foreground text-center px-1">Ajouter photo</span>
                 )}
-              </div>
-              <div className="flex-1 pr-14">
+              </button>
+              <div className="flex-1">
                 <p className="text-xl font-extrabold">
                   {animal.nom} {animal.sexe === 'Femelle' ? '♀' : '♂'}
                   {animal.race && animal.race !== '—' && (
@@ -133,25 +155,31 @@ export default function ProfilPage() {
                     </span>
                   )}
                 </p>
-                {animal.naissance && (
-                  <p className="text-muted-foreground mt-1">{getAgeText(animal.naissance)}</p>
-                )}
+                <p className="text-muted-foreground mt-1">
+                  {animal.naissance ? getAgeText(animal.naissance) : 'Âge inconnu'}
+                </p>
               </div>
             </div>
           </div>
 
           {/* Fiche */}
-          <div className="bg-card rounded-xl p-4 border border-border">
-            <h2 className="font-extrabold mb-3">Fiche</h2>
+          <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="font-extrabold">Fiche</h2>
+              <Button variant="outline" size="sm" onClick={openEditModal}>
+                <Edit className="w-4 h-4 mr-1.5" />
+                Modifier
+              </Button>
+            </div>
             
             <div className="space-y-3">
               <div className="flex justify-between py-1.5">
                 <span className="text-muted-foreground">Date de naissance</span>
-                <span className="font-bold">{animal.naissance ? fmt(animal.naissance) : '—'}</span>
+                <span className="font-bold">{animal.naissance ? fmt(animal.naissance) : 'Non définie'}</span>
               </div>
               <div className="flex justify-between py-1.5">
                 <span className="text-muted-foreground">Race</span>
-                <span className="font-bold">{animal.race ? displayBreed(animal.race) : '—'}</span>
+                <span className="font-bold">{animal.race && animal.race !== '—' ? displayBreed(animal.race) : 'Non définie'}</span>
               </div>
               <div className="flex justify-between py-1.5">
                 <span className="text-muted-foreground">Sexe</span>
@@ -208,44 +236,30 @@ export default function ProfilPage() {
           </div>
 
           {/* Soins */}
-          <div className="bg-card rounded-xl p-4 border border-border">
+          <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
             <h2 className="font-extrabold mb-3">Soins</h2>
-
             <div className="flex gap-2 mb-3">
-              <Button
-                variant="secondary"
-                className="flex-1"
-                onClick={() => navigate(`/vaccins/${animal.id}`)}
-              >
+              <Button variant="secondary" className="flex-1" onClick={() => navigate(`/vaccins/${animal.id}`)}>
                 <Syringe className="w-4 h-4 mr-2" />
                 Vaccins
               </Button>
-              <Button
-                variant="secondary"
-                className="flex-1"
-                onClick={() => navigate(`/vermifuge/${animal.id}`)}
-              >
+              <Button variant="secondary" className="flex-1" onClick={() => navigate(`/vermifuge/${animal.id}`)}>
                 <Bug className="w-4 h-4 mr-2" />
                 Anti-puce & Vermifuge
               </Button>
             </div>
-
-            <Button
-              onClick={() => navigate(`/autres-soins/${animal.id}`)}
-              className="w-full"
-            >
+            <Button onClick={() => navigate(`/autres-soins/${animal.id}`)} className="w-full">
               <Pill className="w-4 h-4 mr-2" />
               Autres soins / traitements
             </Button>
-
             <p className="text-sm text-muted-foreground mt-3">
               {actifsAutresSoins.length} soin(s) ou traitement(s) en cours
             </p>
           </div>
 
-          {/* Reproduction (si non stérilisé) */}
+          {/* Reproduction */}
           {!animal.sterilise && (
-            <div className="bg-card rounded-xl p-4 border border-border">
+            <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
               <h2 className="font-extrabold mb-3">
                 {isFemale(animal) ? 'Gestation' : 'Reproduction'}
               </h2>
@@ -256,8 +270,8 @@ export default function ProfilPage() {
             </div>
           )}
 
-          {/* Rendez-vous */}
-          <div className="bg-card rounded-xl p-4 border border-border">
+          {/* RDV */}
+          <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
             <h2 className="font-extrabold mb-3">Rendez-vous</h2>
             <p className="text-muted-foreground mb-3">
               {rdvsFuturs.length} rendez-vous à venir
@@ -269,7 +283,7 @@ export default function ProfilPage() {
           </div>
 
           {/* Poids */}
-          <div className="bg-card rounded-xl p-4 border border-border">
+          <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
             <h2 className="font-extrabold mb-3">Suivi du poids</h2>
             <Button variant="secondary" onClick={() => navigate(`/poids/${animal.id}`)}>
               Gérer le poids
@@ -278,7 +292,7 @@ export default function ProfilPage() {
         </div>
       </ScrollArea>
 
-      {/* Modal édition */}
+      {/* Edit modal */}
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent className="sm:max-w-md max-h-[90vh] overflow-auto">
           <DialogHeader>
@@ -286,26 +300,22 @@ export default function ProfilPage() {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div>
+              <Label>Nom</Label>
+              <Input value={nameDraft} onChange={(e) => setNameDraft(e.target.value)} placeholder="Nom" className="mt-1.5" />
+            </div>
+
+            <div>
+              <Label>Type</Label>
+              <Input value={typeDraft} onChange={(e) => setTypeDraft(e.target.value)} placeholder="Chat, Chien..." className="mt-1.5" />
+            </div>
+
+            <div>
               <Label>Sexe</Label>
               <div className="flex gap-3 mt-2">
-                <button
-                  onClick={() => setSexDraft('Mâle')}
-                  className={`px-4 py-2 rounded-full border-2 font-semibold transition-colors ${
-                    sexDraft === 'Mâle'
-                      ? 'border-primary bg-accent text-primary'
-                      : 'border-border hover:border-primary'
-                  }`}
-                >
+                <button onClick={() => setSexDraft('Mâle')} className={`px-4 py-2 rounded-full border-2 font-semibold transition-colors ${sexDraft === 'Mâle' ? 'border-primary bg-accent text-primary' : 'border-border hover:border-primary'}`}>
                   ♂ Mâle
                 </button>
-                <button
-                  onClick={() => setSexDraft('Femelle')}
-                  className={`px-4 py-2 rounded-full border-2 font-semibold transition-colors ${
-                    sexDraft === 'Femelle'
-                      ? 'border-primary bg-accent text-primary'
-                      : 'border-border hover:border-primary'
-                  }`}
-                >
+                <button onClick={() => setSexDraft('Femelle')} className={`px-4 py-2 rounded-full border-2 font-semibold transition-colors ${sexDraft === 'Femelle' ? 'border-primary bg-accent text-primary' : 'border-border hover:border-primary'}`}>
                   ♀ Femelle
                 </button>
               </div>
@@ -313,47 +323,23 @@ export default function ProfilPage() {
 
             <div>
               <Label>Race</Label>
-              <Input
-                value={raceDraft}
-                onChange={(e) => setRaceDraft(e.target.value)}
-                placeholder="Race (ex: Maine Coon)"
-                className="mt-1.5"
-              />
+              <Input value={raceDraft} onChange={(e) => setRaceDraft(e.target.value)} placeholder="Race (ex: Maine Coon)" className="mt-1.5" />
             </div>
 
             <div>
               <Label>Date de naissance</Label>
               <div className="mt-1.5">
-                <DateField
-                  value={birthDraft}
-                  onChange={setBirthDraft}
-                  maximumDate={new Date()}
-                  onValidityChange={setBirthValid}
-                />
+                <DateField value={birthDraft} onChange={setBirthDraft} maximumDate={new Date()} onValidityChange={setBirthValid} />
               </div>
             </div>
 
             <div>
               <Label>{sexDraft === 'Femelle' ? 'Stérilisée ?' : 'Castré ?'}</Label>
               <div className="flex gap-3 mt-2">
-                <button
-                  onClick={() => setSterilDraft(true)}
-                  className={`px-4 py-2 rounded-full border-2 font-semibold transition-colors ${
-                    sterilDraft
-                      ? 'border-primary bg-accent text-primary'
-                      : 'border-border hover:border-primary'
-                  }`}
-                >
+                <button onClick={() => setSterilDraft(true)} className={`px-4 py-2 rounded-full border-2 font-semibold transition-colors ${sterilDraft ? 'border-primary bg-accent text-primary' : 'border-border hover:border-primary'}`}>
                   Oui
                 </button>
-                <button
-                  onClick={() => setSterilDraft(false)}
-                  className={`px-4 py-2 rounded-full border-2 font-semibold transition-colors ${
-                    !sterilDraft
-                      ? 'border-primary bg-accent text-primary'
-                      : 'border-border hover:border-primary'
-                  }`}
-                >
+                <button onClick={() => setSterilDraft(false)} className={`px-4 py-2 rounded-full border-2 font-semibold transition-colors ${!sterilDraft ? 'border-primary bg-accent text-primary' : 'border-border hover:border-primary'}`}>
                   Non
                 </button>
               </div>
@@ -361,22 +347,12 @@ export default function ProfilPage() {
 
             <div>
               <Label>Numéro de puce</Label>
-              <Input
-                value={puceEditDraft}
-                onChange={(e) => setPuceEditDraft(e.target.value.replace(/\D/g, '').slice(0, 15))}
-                maxLength={15}
-                placeholder="15 chiffres"
-                className="mt-1.5"
-              />
+              <Input value={puceEditDraft} onChange={(e) => setPuceEditDraft(e.target.value.replace(/\D/g, '').slice(0, 15))} maxLength={15} placeholder="15 chiffres" className="mt-1.5" />
             </div>
 
             <div className="flex justify-end gap-3 pt-4">
-              <Button variant="outline" onClick={() => setEditOpen(false)}>
-                Annuler
-              </Button>
-              <Button onClick={saveEdit} disabled={!birthValid}>
-                Enregistrer
-              </Button>
+              <Button variant="outline" onClick={() => setEditOpen(false)}>Annuler</Button>
+              <Button onClick={saveEdit} disabled={!birthValid}>Enregistrer</Button>
             </div>
           </div>
         </DialogContent>

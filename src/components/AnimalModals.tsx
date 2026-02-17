@@ -9,19 +9,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Cat, Dog, HelpCircle } from 'lucide-react';
+import { Cat, Dog, Camera, Image } from 'lucide-react';
 import { catBreeds, dogBreeds } from '@/utils/breeds';
 import DateField from '@/components/DateField';
-
-// Types
-interface AnimalFormData {
-  nom: string;
-  type: string;
-  sexe: 'Mâle' | 'Femelle';
-  race: string;
-  naissance: Date;
-  photo?: string | null;
-}
 
 // Step 1: Nom
 interface NomModalProps {
@@ -189,18 +179,64 @@ export function SexeModal({ open, onClose, value, onChange, onNext }: SexeModalP
   );
 }
 
-// Step 4: Race
+// Step 4: Sterilisation
+interface SterilModalProps {
+  open: boolean;
+  onClose: () => void;
+  sexe: 'Mâle' | 'Femelle';
+  value: boolean;
+  onChange: (v: boolean) => void;
+  onNext: () => void;
+}
+
+export function SterilModal({ open, onClose, sexe, value, onChange, onNext }: SterilModalProps) {
+  const label = sexe === 'Femelle' ? 'Stérilisée ?' : 'Castré ?';
+  return (
+    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>{label}</DialogTitle>
+        </DialogHeader>
+        <div className="py-4">
+          <div className="flex gap-3 justify-center">
+            <button
+              onClick={() => onChange(true)}
+              className={`px-6 py-3 rounded-full border-2 font-semibold transition-colors ${
+                value ? 'border-primary bg-accent text-primary' : 'border-border hover:border-primary'
+              }`}
+            >
+              Oui
+            </button>
+            <button
+              onClick={() => onChange(false)}
+              className={`px-6 py-3 rounded-full border-2 font-semibold transition-colors ${
+                !value ? 'border-primary bg-accent text-primary' : 'border-border hover:border-primary'
+              }`}
+            >
+              Non
+            </button>
+          </div>
+          <div className="flex justify-end gap-3 mt-6">
+            <Button variant="outline" onClick={onClose}>Annuler</Button>
+            <Button onClick={onNext}>Continuer</Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// Step 5: Race
 interface RaceModalProps {
   open: boolean;
   onClose: () => void;
   type: string;
   value: string;
   onChange: (v: string) => void;
-  onSave: () => void;
-  saving?: boolean;
+  onNext: () => void;
 }
 
-export function RaceModal({ open, onClose, type, value, onChange, onSave, saving }: RaceModalProps) {
+export function RaceModal({ open, onClose, type, value, onChange, onNext }: RaceModalProps) {
   const [search, setSearch] = React.useState('');
   const isCat = type.toLowerCase().includes('chat');
   const isDog = type.toLowerCase().includes('chien');
@@ -231,7 +267,6 @@ export function RaceModal({ open, onClose, type, value, onChange, onSave, saving
                     key={breed}
                     onClick={() => {
                       onChange(breed);
-                      onSave();
                     }}
                     className={`w-full text-left py-2 px-3 rounded hover:bg-accent transition-colors ${
                       value === breed ? 'bg-accent font-semibold' : ''
@@ -263,10 +298,8 @@ export function RaceModal({ open, onClose, type, value, onChange, onSave, saving
             </div>
           )}
           <div className="flex justify-end gap-3 mt-4">
-            <Button variant="outline" onClick={onClose} disabled={saving}>Annuler</Button>
-            <Button onClick={onSave} disabled={saving}>
-              {saving ? 'Enregistrement...' : 'Enregistrer'}
-            </Button>
+            <Button variant="outline" onClick={onClose}>Annuler</Button>
+            <Button onClick={onNext}>Continuer</Button>
           </div>
         </div>
       </DialogContent>
@@ -274,16 +307,17 @@ export function RaceModal({ open, onClose, type, value, onChange, onSave, saving
   );
 }
 
-// Step 5: Naissance (optionnel, peut être combiné)
+// Step 6: Naissance (with skip option)
 interface NaissanceModalProps {
   open: boolean;
   onClose: () => void;
   value: Date;
   onChange: (d: Date) => void;
   onSave: () => void;
+  onSkip: () => void;
 }
 
-export function NaissanceModal({ open, onClose, value, onChange, onSave }: NaissanceModalProps) {
+export function NaissanceModal({ open, onClose, value, onChange, onSave, onSkip }: NaissanceModalProps) {
   const [valid, setValid] = React.useState(true);
   
   return (
@@ -300,9 +334,93 @@ export function NaissanceModal({ open, onClose, value, onChange, onSave }: Naiss
             title="Date de naissance"
             onValidityChange={setValid}
           />
+          <div className="flex justify-between">
+            <Button variant="ghost" onClick={onSkip} className="text-muted-foreground">
+              Définir plus tard
+            </Button>
+            <div className="flex gap-3">
+              <Button variant="outline" onClick={onClose}>Annuler</Button>
+              <Button onClick={onSave} disabled={!valid}>Continuer</Button>
+            </div>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// Step 7: Photo (with skip option)
+interface PhotoModalProps {
+  open: boolean;
+  onClose: () => void;
+  onPickGallery: () => void;
+  onTakePhoto: () => void;
+  onSkip: () => void;
+  saving?: boolean;
+}
+
+export function PhotoModal({ open, onClose, onPickGallery, onTakePhoto, onSkip, saving }: PhotoModalProps) {
+  return (
+    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Photo de l'animal</DialogTitle>
+        </DialogHeader>
+        <div className="py-4 space-y-3">
+          <button
+            onClick={onPickGallery}
+            disabled={saving}
+            className="w-full flex items-center gap-3 p-4 rounded-xl border-2 border-border hover:border-primary hover:bg-accent transition-colors"
+          >
+            <Image className="w-8 h-8 text-primary" />
+            <span className="font-semibold">Choisir depuis la galerie</span>
+          </button>
+          <button
+            onClick={onTakePhoto}
+            disabled={saving}
+            className="w-full flex items-center gap-3 p-4 rounded-xl border-2 border-border hover:border-primary hover:bg-accent transition-colors"
+          >
+            <Camera className="w-8 h-8 text-primary" />
+            <span className="font-semibold">Prendre une photo</span>
+          </button>
+          <div className="flex justify-between pt-2">
+            <Button variant="ghost" onClick={onSkip} disabled={saving} className="text-muted-foreground">
+              Le faire plus tard
+            </Button>
+            <Button variant="outline" onClick={onClose} disabled={saving}>Annuler</Button>
+          </div>
+          {saving && <p className="text-sm text-center text-muted-foreground">Enregistrement...</p>}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// Delete confirmation modal
+interface DeleteConfirmModalProps {
+  open: boolean;
+  onClose: () => void;
+  animalName: string;
+  onConfirm: () => void;
+  isSecondConfirm?: boolean;
+}
+
+export function DeleteConfirmModal({ open, onClose, animalName, onConfirm, isSecondConfirm }: DeleteConfirmModalProps) {
+  return (
+    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Supprimer {animalName}</DialogTitle>
+        </DialogHeader>
+        <div className="py-4 space-y-4">
+          <p className="text-foreground">
+            {isSecondConfirm
+              ? `Vous perdrez toutes les données de ${animalName}. Supprimer son profil ?`
+              : `Êtes-vous vraiment sûr de vouloir supprimer le profil de ${animalName} ?`}
+          </p>
           <div className="flex justify-end gap-3">
-            <Button variant="outline" onClick={onClose}>Annuler</Button>
-            <Button onClick={onSave} disabled={!valid}>Enregistrer</Button>
+            <Button variant="outline" onClick={onClose}>Non</Button>
+            <Button variant="destructive" onClick={onConfirm}>Oui</Button>
           </div>
         </div>
       </DialogContent>
