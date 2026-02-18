@@ -16,6 +16,25 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  const handleForgotPassword = async () => {
+    if (!email) {
+      toast({ title: 'Erreur', description: 'Veuillez entrer votre email', variant: 'destructive' });
+      return;
+    }
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
+      toast({ title: 'Email envoyé', description: 'Vérifiez votre boîte mail pour réinitialiser votre mot de passe.' });
+    } catch (error: any) {
+      toast({ title: 'Erreur', description: error.message, variant: 'destructive' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -136,6 +155,18 @@ export default function AuthPage() {
                     disabled={loading}
                   />
                 </div>
+              </div>
+            )}
+            {isLogin && (
+              <div className="text-right">
+                <button
+                  type="button"
+                  onClick={handleForgotPassword}
+                  className="text-sm text-primary hover:underline"
+                  disabled={loading}
+                >
+                  Mot de passe oublié ?
+                </button>
               </div>
             )}
             <Button type="submit" className="w-full" disabled={loading}>

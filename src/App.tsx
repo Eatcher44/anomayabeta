@@ -14,6 +14,7 @@ import VermifugePage from "./pages/VermifugePage";
 import AutresSoinsPage from "./pages/AutresSoinsPage";
 import ConsultationPage from "./pages/ConsultationPage";
 import NotFound from "./pages/NotFound";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 
 const queryClient = new QueryClient();
 
@@ -120,6 +121,7 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

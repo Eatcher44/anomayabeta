@@ -1,6 +1,6 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, SlidersHorizontal, Calendar, LogOut } from 'lucide-react';
+import { Plus, Calendar, LogOut, GripVertical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -17,7 +17,6 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
 } from '@/components/ui/sheet';
 import { useAnimals } from '@/context/AnimalsContext';
 import { useAuth } from '@/context/AuthContext';
@@ -32,10 +31,73 @@ import { pickPhotoFile, uploadAnimalPhoto } from '@/utils/photo';
 import { toast } from '@/hooks/use-toast';
 import type { Animal, RendezVous } from '@/types/animal';
 
+type SortKey = 'alpha' | 'alpha-desc' | 'age-asc' | 'age-desc' | 'poids-asc' | 'poids-desc';
+
+const SORT_OPTIONS: { k: SortKey; t: string }[] = [
+  { k: 'alpha', t: 'Nom (A → Z)' },
+  { k: 'alpha-desc', t: 'Nom (Z → A)' },
+  { k: 'age-desc', t: 'Âge (Plus vieux → plus jeune)' },
+  { k: 'age-asc', t: 'Âge (Plus jeune → plus vieux)' },
+  { k: 'poids-asc', t: 'Poids (croissant)' },
+  { k: 'poids-desc', t: 'Poids (décroissant)' },
+];
+
 function lastPoidsKg(a: Animal): number | null {
   if (!a?.poids || a.poids.length === 0) return null;
   const last = [...a.poids].sort((x, y) => new Date(y.date).getTime() - new Date(x.date).getTime())[0];
   return typeof last?.poids === 'number' ? last.poids : null;
+}
+
+function sortAnimals(list: Animal[], key: SortKey): Animal[] {
+  const sorted = [...list];
+  switch (key) {
+    case 'alpha':
+      return sorted.sort((a, b) => (a.nom || '').localeCompare(b.nom || ''));
+    case 'alpha-desc':
+      return sorted.sort((a, b) => (b.nom || '').localeCompare(a.nom || ''));
+    case 'age-desc':
+      return sorted.sort((a, b) => {
+        if (!a.naissance && !b.naissance) return 0;
+        if (!a.naissance) return 1;
+        if (!b.naissance) return -1;
+        return new Date(a.naissance).getTime() - new Date(b.naissance).getTime();
+      });
+    case 'age-asc':
+      return sorted.sort((a, b) => {
+        if (!a.naissance && !b.naissance) return 0;
+        if (!a.naissance) return 1;
+        if (!b.naissance) return -1;
+        return new Date(b.naissance).getTime() - new Date(a.naissance).getTime();
+      });
+    case 'poids-asc':
+      return sorted.sort((a, b) => (lastPoidsKg(a) ?? -1) - (lastPoidsKg(b) ?? -1));
+    case 'poids-desc':
+      return sorted.sort((a, b) => (lastPoidsKg(b) ?? -1) - (lastPoidsKg(a) ?? -1));
+    default:
+      return sorted;
+  }
+}
+
+function getCategoryLabel(type: string): string {
+  const t = type.toLowerCase();
+  if (t === 'chat') return 'Chats';
+  if (t === 'chien') return 'Chiens';
+  return type;
+}
+
+const CATEGORY_ORDER_KEY = 'pet-category-order';
+
+function loadCategoryOrder(): string[] | null {
+  try {
+    const raw = localStorage.getItem(CATEGORY_ORDER_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveCategoryOrder(order: string[]) {
+  localStorage.setItem(CATEGORY_ORDER_KEY, JSON.stringify(order));
 }
 
 export default function HomePage() {
@@ -52,9 +114,13 @@ export default function HomePage() {
   } = useAnimals();
 
   // Sort
-  const [triSelected, setTriSelected] = useState<'alpha' | 'age' | 'poids'>('alpha');
+  const [triSelected, setTriSelected] = useState<SortKey>('alpha');
   const [triOpen, setTriOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Category reorder
+  const [reorderMode, setReorderMode] = useState(false);
+  const [categoryOrder, setCategoryOrder] = useState<string[]>([]);
 
   // Add animal flow steps
   const [modalNomVisible, setModalNomVisible] = useState(false);
@@ -93,6 +159,88 @@ export default function HomePage() {
   const [rdvDateValid, setRdvDateValid] = useState(true);
 
   const deleteTargetAnimal = animaux.find((a) => a.id === deleteTargetId);
+
+  // Build categories from animals
+  const allCategories = useMemo(() => {
+    const types = new Set(animaux.map((a) => a.type));
+    return Array.from(types);
+  }, [animaux]);
+
+  // Sync category order when types change
+  useEffect(() => {
+    const saved = loadCategoryOrder();
+    if (saved) {
+      // Keep saved order, add any new categories at end
+      const merged = [...saved.filter((c) => allCategories.includes(c)), ...allCategories.filter((c) => !saved.includes(c))];
+      setCategoryOrder(merged);
+    } else {
+      // Default: Chien, Chat, then others
+      const ordered = [...allCategories].sort((a, b) => {
+        if (a.toLowerCase() === 'chien') return -1;
+        if (b.toLowerCase() === 'chien') return 1;
+        if (a.toLowerCase() === 'chat') return -1;
+        if (b.toLowerCase() === 'chat') return 1;
+        return a.localeCompare(b);
+      });
+      setCategoryOrder(ordered);
+    }
+  }, [allCategories]);
+
+  const moveCategoryUp = (idx: number) => {
+    if (idx <= 0) return;
+    const newOrder = [...categoryOrder];
+    [newOrder[idx - 1], newOrder[idx]] = [newOrder[idx], newOrder[idx - 1]];
+    setCategoryOrder(newOrder);
+    saveCategoryOrder(newOrder);
+  };
+
+  const moveCategoryDown = (idx: number) => {
+    if (idx >= categoryOrder.length - 1) return;
+    const newOrder = [...categoryOrder];
+    [newOrder[idx], newOrder[idx + 1]] = [newOrder[idx + 1], newOrder[idx]];
+    setCategoryOrder(newOrder);
+    saveCategoryOrder(newOrder);
+  };
+
+  // Grouped + sorted animals
+  const groupedAnimals = useMemo(() => {
+    let list = [...animaux];
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase();
+      list = list.filter((a) =>
+        a.nom?.toLowerCase().includes(q) ||
+        a.type?.toLowerCase().includes(q) ||
+        a.race?.toLowerCase().includes(q)
+      );
+    }
+
+    const groups: { category: string; label: string; animals: Animal[] }[] = [];
+    for (const cat of categoryOrder) {
+      const catAnimals = list.filter((a) => a.type === cat);
+      if (catAnimals.length > 0) {
+        groups.push({
+          category: cat,
+          label: getCategoryLabel(cat),
+          animals: sortAnimals(catAnimals, triSelected),
+        });
+      }
+    }
+    // Any remaining categories not in order
+    const handled = new Set(categoryOrder);
+    const remaining = list.filter((a) => !handled.has(a.type));
+    if (remaining.length > 0) {
+      const otherTypes = new Set(remaining.map((a) => a.type));
+      for (const t of otherTypes) {
+        groups.push({
+          category: t,
+          label: getCategoryLabel(t),
+          animals: sortAnimals(remaining.filter((a) => a.type === t), triSelected),
+        });
+      }
+    }
+
+    return groups;
+  }, [animaux, searchQuery, triSelected, categoryOrder]);
 
   const startAdd = () => {
     setEditingId(null);
@@ -234,26 +382,6 @@ export default function HomePage() {
     setDeleteTargetId(null);
   };
 
-  const filtered = useMemo(() => {
-    let list = [...animaux];
-    if (searchQuery.trim()) {
-      const q = searchQuery.trim().toLowerCase();
-      list = list.filter((a) =>
-        a.nom?.toLowerCase().includes(q) ||
-        a.type?.toLowerCase().includes(q) ||
-        a.race?.toLowerCase().includes(q)
-      );
-    }
-    if (triSelected === 'alpha') {
-      list.sort((a, b) => (a.nom || '').localeCompare(b.nom || ''));
-    } else if (triSelected === 'age') {
-      list.sort((a, b) => new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime());
-    } else if (triSelected === 'poids') {
-      list.sort((a, b) => (lastPoidsKg(b) || 0) - (lastPoidsKg(a) || 0));
-    }
-    return list;
-  }, [animaux, searchQuery, triSelected]);
-
   const handlePickPhoto = useCallback(async (id: string) => {
     if (!user) return;
     const file = await pickPhotoFile('image/*');
@@ -337,23 +465,22 @@ export default function HomePage() {
             <Plus className="w-4 h-4 mr-2" />
             Ajouter un animal
           </Button>
-          
+
+          <Button
+            variant="ghost"
+            className="text-primary font-semibold"
+            onClick={() => setTriOpen(true)}
+          >
+            Trier
+          </Button>
+
           <Sheet open={triOpen} onOpenChange={setTriOpen}>
-            <SheetTrigger asChild>
-              <Button variant="outline" size="icon">
-                <SlidersHorizontal className="w-4 h-4" />
-              </Button>
-            </SheetTrigger>
             <SheetContent side="bottom" className="rounded-t-2xl">
               <SheetHeader>
                 <SheetTitle>Trier par</SheetTitle>
               </SheetHeader>
               <div className="py-4 space-y-2">
-                {[
-                  { k: 'alpha' as const, t: 'Nom (A→Z)' },
-                  { k: 'age' as const, t: 'Âge (plus jeune → plus âgé)' },
-                  { k: 'poids' as const, t: 'Poids (décroissant)' },
-                ].map((opt) => (
+                {SORT_OPTIONS.map((opt) => (
                   <button
                     key={opt.k}
                     onClick={() => {
@@ -382,22 +509,64 @@ export default function HomePage() {
         />
       </div>
 
-      {/* List */}
+      {/* Reorder toggle */}
+      {categoryOrder.length > 1 && (
+        <div className="px-4 mb-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-primary font-semibold"
+            onClick={() => setReorderMode(!reorderMode)}
+          >
+            <GripVertical className="w-4 h-4 mr-1" />
+            {reorderMode ? 'Terminer' : 'Réorganiser'}
+          </Button>
+        </div>
+      )}
+
+      {/* Grouped list */}
       <div className="px-4 pb-32">
-        {filtered.length === 0 ? (
+        {groupedAnimals.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">
             <p>Aucun animal pour le moment.</p>
             <p className="text-sm mt-2">Cliquez sur "Ajouter un animal" pour commencer !</p>
           </div>
         ) : (
-          filtered.map((item) => (
-            <AnimalRow
-              key={item.id}
-              item={item}
-              onPickPhoto={handlePickPhoto}
-              onOpenProfile={(id) => navigate(`/profil/${id}`)}
-              onDelete={handleDeleteRequest}
-            />
+          groupedAnimals.map((group, groupIdx) => (
+            <div key={group.category} className="mb-4">
+              <div className="flex items-center gap-2 mb-2">
+                {reorderMode && (
+                  <div className="flex flex-col gap-0.5">
+                    <button
+                      onClick={() => moveCategoryUp(groupIdx)}
+                      disabled={groupIdx === 0}
+                      className="text-xs text-primary disabled:opacity-30 px-1"
+                    >
+                      ▲
+                    </button>
+                    <button
+                      onClick={() => moveCategoryDown(groupIdx)}
+                      disabled={groupIdx === groupedAnimals.length - 1}
+                      className="text-xs text-primary disabled:opacity-30 px-1"
+                    >
+                      ▼
+                    </button>
+                  </div>
+                )}
+                <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-wide">
+                  {group.label} ({group.animals.length})
+                </h2>
+              </div>
+              {group.animals.map((item) => (
+                <AnimalRow
+                  key={item.id}
+                  item={item}
+                  onPickPhoto={handlePickPhoto}
+                  onOpenProfile={(id) => navigate(`/profil/${id}`)}
+                  onDelete={handleDeleteRequest}
+                />
+              ))}
+            </div>
           ))
         )}
       </div>

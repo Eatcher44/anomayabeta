@@ -1,8 +1,20 @@
 import React, { useRef, useState } from 'react';
-import { ChevronRight, Camera, X } from 'lucide-react';
+import { ChevronRight, Camera, MoreVertical, Trash2 } from 'lucide-react';
 import type { Animal } from '@/types/animal';
 import { displayBreed } from '@/utils/breeds';
 import { getAgeText } from '@/utils/date';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+
+export function formatWeight(kg: number | null): string {
+  if (kg == null) return 'Poids inconnu';
+  if (kg < 1) return `${Math.round(kg * 1000)} g`;
+  return `${kg} kg`;
+}
 
 function lastPoidsKg(animal: Animal): number | null {
   if (!Array.isArray(animal?.poids) || animal.poids.length === 0) return null;
@@ -24,22 +36,27 @@ export default function AnimalRow({ item, onPickPhoto, onOpenProfile, onDelete }
   const bgClass = isFemale ? 'bg-female' : 'bg-male';
   const textClass = isFemale ? 'text-female' : 'text-male';
 
-  // Swipe state
+  // Swipe state using pointer events (works on touch AND mouse)
   const [swiped, setSwiped] = useState(false);
-  const touchStartX = useRef(0);
-  const touchCurrentX = useRef(0);
+  const pointerStartX = useRef(0);
+  const pointerCurrentX = useRef(0);
+  const isPointerDown = useRef(false);
 
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
-    touchCurrentX.current = e.touches[0].clientX;
+  const handlePointerDown = (e: React.PointerEvent) => {
+    pointerStartX.current = e.clientX;
+    pointerCurrentX.current = e.clientX;
+    isPointerDown.current = true;
   };
 
-  const handleTouchMove = (e: React.TouchEvent) => {
-    touchCurrentX.current = e.touches[0].clientX;
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!isPointerDown.current) return;
+    pointerCurrentX.current = e.clientX;
   };
 
-  const handleTouchEnd = () => {
-    const diff = touchStartX.current - touchCurrentX.current;
+  const handlePointerUp = () => {
+    if (!isPointerDown.current) return;
+    isPointerDown.current = false;
+    const diff = pointerStartX.current - pointerCurrentX.current;
     if (diff > 60) {
       setSwiped(true);
     } else if (diff < -40) {
@@ -59,19 +76,21 @@ export default function AnimalRow({ item, onPickPhoto, onOpenProfile, onDelete }
           onClick={() => onDelete?.(item.id)}
           className="w-12 h-12 rounded-full bg-destructive-foreground/20 flex items-center justify-center"
         >
-          <X className="w-6 h-6 text-destructive-foreground" />
+          <Trash2 className="w-6 h-6 text-destructive-foreground" />
         </button>
       </div>
 
       {/* Card */}
       <div
-        className={`flex items-center rounded-xl p-3 border border-border ${bgClass} shadow-sm transition-transform duration-200 ${
+        className={`flex items-center rounded-xl p-3 border border-border ${bgClass} shadow-sm transition-transform duration-200 touch-pan-y ${
           swiped ? '-translate-x-16' : 'translate-x-0'
         }`}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
         onClick={() => swiped && setSwiped(false)}
+        style={{ touchAction: 'pan-y' }}
       >
         {/* Photo */}
         <button
@@ -107,9 +126,30 @@ export default function AnimalRow({ item, onPickPhoto, onOpenProfile, onDelete }
               {item.naissance ? getAgeText(item.naissance) : 'Âge inconnu'}
             </p>
             <p className="text-sm font-semibold text-muted-foreground mt-0.5">
-              {poids == null ? 'Poids inconnu' : `${poids} kg`}
+              {formatWeight(poids)}
             </p>
           </div>
+
+          {/* Desktop delete menu fallback */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                onClick={(e) => e.stopPropagation()}
+                className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:bg-muted transition-colors mr-1"
+              >
+                <MoreVertical className="w-4 h-4" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                onClick={() => onDelete?.(item.id)}
+                className="text-destructive focus:text-destructive"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Supprimer
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           {/* Arrow */}
           <button

@@ -239,14 +239,20 @@ export default function ProfilPage() {
           <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
             <h2 className="font-extrabold mb-3">Soins</h2>
             <div className="flex gap-2 mb-3">
-              <Button variant="secondary" className="flex-1" onClick={() => navigate(`/vaccins/${animal.id}`)}>
-                <Syringe className="w-4 h-4 mr-2" />
+              <button
+                onClick={() => navigate(`/vaccins/${animal.id}`)}
+                className="flex-1 flex items-center justify-center gap-2 py-3 px-3 rounded-xl font-semibold bg-[hsl(211,100%,95%)] text-[hsl(211,72%,31%)] border border-[hsl(211,72%,31%,0.2)] hover:bg-[hsl(211,100%,90%)] transition-colors"
+              >
+                <Syringe className="w-4 h-4" />
                 Vaccins
-              </Button>
-              <Button variant="secondary" className="flex-1" onClick={() => navigate(`/vermifuge/${animal.id}`)}>
-                <Bug className="w-4 h-4 mr-2" />
+              </button>
+              <button
+                onClick={() => navigate(`/vermifuge/${animal.id}`)}
+                className="flex-1 flex items-center justify-center gap-2 py-3 px-3 rounded-xl font-semibold bg-[hsl(145,50%,93%)] text-[hsl(145,50%,30%)] border border-[hsl(145,50%,30%,0.2)] hover:bg-[hsl(145,50%,88%)] transition-colors"
+              >
+                <Bug className="w-4 h-4" />
                 Anti-puce & Vermifuge
-              </Button>
+              </button>
             </div>
             <Button onClick={() => navigate(`/autres-soins/${animal.id}`)} className="w-full">
               <Pill className="w-4 h-4 mr-2" />
