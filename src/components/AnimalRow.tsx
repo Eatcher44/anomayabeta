@@ -64,6 +64,8 @@ export default function AnimalRow({ item, onPickPhoto, onOpenProfile, onDelete }
     }
   };
 
+  const accentStyle = item.couleur ? { borderColor: item.couleur, borderWidth: '2px' } : {};
+
   return (
     <div className="relative mb-3 overflow-hidden rounded-xl">
       {/* Delete button behind */}
@@ -85,12 +87,12 @@ export default function AnimalRow({ item, onPickPhoto, onOpenProfile, onDelete }
         className={`flex items-center rounded-xl p-3 border border-border ${bgClass} shadow-sm transition-transform duration-200 touch-pan-y ${
           swiped ? '-translate-x-16' : 'translate-x-0'
         }`}
+        style={{ ...accentStyle, touchAction: 'pan-y' }}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
         onClick={() => swiped && setSwiped(false)}
-        style={{ touchAction: 'pan-y' }}
       >
         {/* Photo */}
         <button

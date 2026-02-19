@@ -22,11 +22,14 @@ import { useAnimals } from '@/context/AnimalsContext';
 import { useAuth } from '@/context/AuthContext';
 import AnimalRow from '@/components/AnimalRow';
 import DateField from '@/components/DateField';
+import HealthDashboard from '@/components/HealthDashboard';
+import DarkModeToggle, { useDarkMode } from '@/components/DarkModeToggle';
 import {
   NomModal, TypeModal, CustomTypeModal, SexeModal, SterilModal,
   RaceModal, NaissanceModal, PhotoModal, DeleteConfirmModal,
 } from '@/components/AnimalModals';
 import { maskHHMM, isValidHHMM } from '@/utils/date';
+import { normalizeType } from '@/utils/normalize';
 import { pickPhotoFile, uploadAnimalPhoto } from '@/utils/photo';
 import { toast } from '@/hooks/use-toast';
 import type { Animal, RendezVous } from '@/types/animal';
@@ -79,10 +82,10 @@ function sortAnimals(list: Animal[], key: SortKey): Animal[] {
 }
 
 function getCategoryLabel(type: string): string {
-  const t = type.toLowerCase();
+  const t = normalizeType(type).toLowerCase();
   if (t === 'chat') return 'Chats';
   if (t === 'chien') return 'Chiens';
-  return type;
+  return normalizeType(type);
 }
 
 const CATEGORY_ORDER_KEY = 'pet-category-order';
@@ -112,6 +115,8 @@ export default function HomePage() {
     addRendezVous,
     loading,
   } = useAnimals();
+
+  const { dark, toggle: toggleDark } = useDarkMode();
 
   // Sort
   const [triSelected, setTriSelected] = useState<SortKey>('alpha');
@@ -160,9 +165,9 @@ export default function HomePage() {
 
   const deleteTargetAnimal = animaux.find((a) => a.id === deleteTargetId);
 
-  // Build categories from animals
+  // Build categories from animals (normalized)
   const allCategories = useMemo(() => {
-    const types = new Set(animaux.map((a) => a.type));
+    const types = new Set(animaux.map((a) => normalizeType(a.type)));
     return Array.from(types);
   }, [animaux]);
 
@@ -170,11 +175,10 @@ export default function HomePage() {
   useEffect(() => {
     const saved = loadCategoryOrder();
     if (saved) {
-      // Keep saved order, add any new categories at end
-      const merged = [...saved.filter((c) => allCategories.includes(c)), ...allCategories.filter((c) => !saved.includes(c))];
+      const normalizedSaved = saved.map(normalizeType);
+      const merged = [...normalizedSaved.filter((c) => allCategories.includes(c)), ...allCategories.filter((c) => !normalizedSaved.includes(c))];
       setCategoryOrder(merged);
     } else {
-      // Default: Chien, Chat, then others
       const ordered = [...allCategories].sort((a, b) => {
         if (a.toLowerCase() === 'chien') return -1;
         if (b.toLowerCase() === 'chien') return 1;
@@ -216,7 +220,7 @@ export default function HomePage() {
 
     const groups: { category: string; label: string; animals: Animal[] }[] = [];
     for (const cat of categoryOrder) {
-      const catAnimals = list.filter((a) => a.type === cat);
+      const catAnimals = list.filter((a) => normalizeType(a.type) === cat);
       if (catAnimals.length > 0) {
         groups.push({
           category: cat,
@@ -225,16 +229,15 @@ export default function HomePage() {
         });
       }
     }
-    // Any remaining categories not in order
     const handled = new Set(categoryOrder);
-    const remaining = list.filter((a) => !handled.has(a.type));
+    const remaining = list.filter((a) => !handled.has(normalizeType(a.type)));
     if (remaining.length > 0) {
-      const otherTypes = new Set(remaining.map((a) => a.type));
+      const otherTypes = new Set(remaining.map((a) => normalizeType(a.type)));
       for (const t of otherTypes) {
         groups.push({
           category: t,
           label: getCategoryLabel(t),
-          animals: sortAnimals(remaining.filter((a) => a.type === t), triSelected),
+          animals: sortAnimals(remaining.filter((a) => normalizeType(a.type) === t), triSelected),
         });
       }
     }
@@ -269,7 +272,7 @@ export default function HomePage() {
 
   const pickCustomType = () => {
     if (!customType.trim()) return;
-    setTypeTemp(customType.trim());
+    setTypeTemp(normalizeType(customType.trim()));
     setModalCustomTypeVisible(false);
     setModalSexeVisible(true);
   };
@@ -307,7 +310,7 @@ export default function HomePage() {
     try {
       const animalData = {
         nom: animalTemp.trim(),
-        type: typeTemp.trim(),
+        type: normalizeType(typeTemp.trim()),
         sexe: sexeTemp,
         race: raceTemp.trim() || undefined,
         photo: photoUrl || null,
@@ -447,10 +450,11 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[hsl(33,60%,95%)] to-[hsl(30,40%,92%)]">
+    <div className="min-h-screen bg-gradient-to-b from-[hsl(33,60%,95%)] to-[hsl(30,40%,92%)] dark:from-background dark:to-background">
       {/* Header */}
       <div className="px-4 pt-6 pb-4">
         <div className="flex justify-between items-start mb-4">
+          <DarkModeToggle dark={dark} onToggle={toggleDark} />
           <div className="text-center flex-1">
             <div className="text-3xl mb-2">🐾🐾</div>
             <h1 className="text-2xl font-extrabold text-primary">Ma famille</h1>
@@ -459,6 +463,13 @@ export default function HomePage() {
             <LogOut className="w-5 h-5" />
           </Button>
         </div>
+
+        {/* Health Dashboard */}
+        {animaux.length > 0 && (
+          <div className="mb-4">
+            <HealthDashboard animals={animaux} rendezvous={rendezvous} />
+          </div>
+        )}
 
         <div className="flex gap-3 mb-4">
           <Button onClick={startAdd} className="flex-1">

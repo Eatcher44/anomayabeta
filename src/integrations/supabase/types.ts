@@ -17,6 +17,7 @@ export type Database = {
       animals: {
         Row: {
           consultations: Json | null
+          couleur: string | null
           created_at: string
           id: string
           naissance: string | null
@@ -34,6 +35,7 @@ export type Database = {
         }
         Insert: {
           consultations?: Json | null
+          couleur?: string | null
           created_at?: string
           id?: string
           naissance?: string | null
@@ -51,6 +53,7 @@ export type Database = {
         }
         Update: {
           consultations?: Json | null
+          couleur?: string | null
           created_at?: string
           id?: string
           naissance?: string | null
