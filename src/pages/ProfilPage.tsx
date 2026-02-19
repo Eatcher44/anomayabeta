@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Edit, Syringe, Bug, Pill, Calendar, Baby } from 'lucide-react';
+import { ArrowLeft, Edit, Syringe, Bug, Pill, Calendar, Baby, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,9 +14,12 @@ import {
 import { useAnimals } from '@/context/AnimalsContext';
 import { useAuth } from '@/context/AuthContext';
 import DateField from '@/components/DateField';
+import HealthTimeline from '@/components/HealthTimeline';
+import ColorPicker from '@/components/ColorPicker';
 import { displayBreed } from '@/utils/breeds';
 import { getAgeText } from '@/utils/date';
 import { pickPhotoFile, uploadAnimalPhoto } from '@/utils/photo';
+import { getAllAlerts } from '@/utils/insights';
 import { toast } from '@/hooks/use-toast';
 
 const fmt = (d: string | Date) => new Date(d).toLocaleDateString('fr-FR');
@@ -31,6 +34,7 @@ export default function ProfilPage() {
   const [editOpen, setEditOpen] = useState(false);
   const [puceInlineEdit, setPuceInlineEdit] = useState(false);
   const [puceDraft, setPuceDraft] = useState('');
+  const [timelineOpen, setTimelineOpen] = useState(false);
 
   // Edit state
   const [nameDraft, setNameDraft] = useState('');
@@ -41,6 +45,7 @@ export default function ProfilPage() {
   const [birthValid, setBirthValid] = useState(true);
   const [sterilDraft, setSterilDraft] = useState(false);
   const [puceEditDraft, setPuceEditDraft] = useState('');
+  const [colorDraft, setColorDraft] = useState<string | null>(null);
 
   const animal = animaux.find((a) => a.id === id);
 
@@ -67,6 +72,12 @@ export default function ProfilPage() {
       .filter((r) => new Date(r.date).getTime() >= Date.now());
   }, [rendezvous, animal?.id]);
 
+  // Smart insights for this animal
+  const animalAlerts = useMemo(() => {
+    if (!animal) return [];
+    return getAllAlerts([animal], rendezvous.filter((r) => r.animalIds?.includes(animal.id)));
+  }, [animal, rendezvous]);
+
   if (!animal) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -87,6 +98,7 @@ export default function ProfilPage() {
     setBirthValid(true);
     setSterilDraft(!!animal.sterilise);
     setPuceEditDraft(animal.puce || '');
+    setColorDraft(animal.couleur || null);
     setEditOpen(true);
   };
 
@@ -102,6 +114,7 @@ export default function ProfilPage() {
         naissance: birthDraft.toISOString(),
         sterilise: sterilDraft,
         puce: puceEditDraft.trim() || undefined,
+        couleur: colorDraft,
       }));
       setEditOpen(false);
     } catch {
@@ -121,8 +134,12 @@ export default function ProfilPage() {
     }
   };
 
+  const headerStyle = animal.couleur
+    ? { borderColor: animal.couleur, borderWidth: '2px' }
+    : {};
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[hsl(33,60%,95%)] to-[hsl(30,40%,92%)]">
+    <div className="min-h-screen bg-gradient-to-b from-[hsl(33,60%,95%)] to-[hsl(30,40%,92%)] dark:from-background dark:to-background">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-card/90 backdrop-blur border-b border-border px-4 py-3 flex items-center gap-3">
         <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
@@ -134,7 +151,10 @@ export default function ProfilPage() {
       <ScrollArea className="flex-1">
         <div className="p-4 space-y-4">
           {/* Header Profil */}
-          <div className={`${bgClass} rounded-2xl p-4 border border-border relative shadow-sm`}>
+          <div
+            className={`${bgClass} rounded-2xl p-4 border border-border relative shadow-sm`}
+            style={headerStyle}
+          >
             <div className="flex items-center">
               <button
                 onClick={handleChangePhoto}
@@ -161,6 +181,31 @@ export default function ProfilPage() {
               </div>
             </div>
           </div>
+
+          {/* Smart Insights for this animal */}
+          {animalAlerts.length > 0 && (
+            <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
+              <h2 className="font-extrabold mb-3">🧠 Analyse santé</h2>
+              <div className="space-y-2">
+                {animalAlerts.slice(0, 4).map((alert) => (
+                  <div
+                    key={alert.id}
+                    className={`rounded-lg p-2.5 border text-sm ${
+                      alert.severity === 'urgent'
+                        ? 'border-destructive/30 bg-destructive/5'
+                        : alert.severity === 'warning'
+                        ? 'border-[hsl(var(--status-orange))]/30 bg-[hsl(var(--status-orange))]/5'
+                        : 'border-primary/20 bg-accent/30'
+                    }`}
+                  >
+                    <span className="mr-1.5">{alert.icon}</span>
+                    <span className="font-semibold">{alert.title}</span>
+                    <p className="text-xs text-muted-foreground mt-0.5">{alert.description}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Fiche */}
           <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
@@ -191,46 +236,48 @@ export default function ProfilPage() {
                 </span>
                 <span className="font-bold">{animal.sterilise ? 'Oui' : 'Non'}</span>
               </div>
-              <div className="py-1.5">
+              <div className="flex items-center justify-between py-1.5">
                 <span className="text-muted-foreground">Numéro de puce</span>
-                {!animal.puce ? (
-                  puceInlineEdit ? (
-                    <Input
-                      value={puceDraft}
-                      onChange={(e) => setPuceDraft(e.target.value.replace(/\D/g, '').slice(0, 15))}
-                      maxLength={15}
-                      placeholder="15 chiffres"
-                      className="mt-1.5"
-                      autoFocus
-                      onBlur={() => {
-                        if (puceDraft.trim()) {
-                          updateAnimal(animal.id, { puce: puceDraft.trim() });
-                        }
-                        setPuceInlineEdit(false);
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
+                <div className="flex-shrink-0">
+                  {!animal.puce ? (
+                    puceInlineEdit ? (
+                      <Input
+                        value={puceDraft}
+                        onChange={(e) => setPuceDraft(e.target.value.replace(/\D/g, '').slice(0, 15))}
+                        maxLength={15}
+                        placeholder="15 chiffres"
+                        className="w-40"
+                        autoFocus
+                        onBlur={() => {
                           if (puceDraft.trim()) {
                             updateAnimal(animal.id, { puce: puceDraft.trim() });
                           }
                           setPuceInlineEdit(false);
-                        }
-                      }}
-                    />
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            if (puceDraft.trim()) {
+                              updateAnimal(animal.id, { puce: puceDraft.trim() });
+                            }
+                            setPuceInlineEdit(false);
+                          }
+                        }}
+                      />
+                    ) : (
+                      <button
+                        onClick={() => {
+                          setPuceDraft('');
+                          setPuceInlineEdit(true);
+                        }}
+                        className="font-bold text-primary hover:underline text-sm"
+                      >
+                        Ajouter le numéro
+                      </button>
+                    )
                   ) : (
-                    <button
-                      onClick={() => {
-                        setPuceDraft('');
-                        setPuceInlineEdit(true);
-                      }}
-                      className="mt-1.5 font-bold text-primary hover:underline"
-                    >
-                      Ajouter le numéro
-                    </button>
-                  )
-                ) : (
-                  <p className="mt-1.5 font-bold">{animal.puce}</p>
-                )}
+                    <span className="font-bold">{animal.puce}</span>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -241,14 +288,14 @@ export default function ProfilPage() {
             <div className="flex gap-2 mb-3">
               <button
                 onClick={() => navigate(`/vaccins/${animal.id}`)}
-                className="flex-1 flex items-center justify-center gap-2 py-3 px-3 rounded-xl font-semibold bg-[hsl(211,100%,95%)] text-[hsl(211,72%,31%)] border border-[hsl(211,72%,31%,0.2)] hover:bg-[hsl(211,100%,90%)] transition-colors"
+                className="flex-1 flex items-center justify-center gap-2 py-3 px-3 rounded-xl font-semibold bg-[hsl(211,100%,95%)] text-[hsl(211,72%,31%)] border border-[hsl(211,72%,31%,0.2)] hover:bg-[hsl(211,100%,90%)] transition-colors dark:bg-[hsl(211,40%,20%)] dark:text-[hsl(211,100%,75%)] dark:border-[hsl(211,40%,30%)]"
               >
                 <Syringe className="w-4 h-4" />
                 Vaccins
               </button>
               <button
                 onClick={() => navigate(`/vermifuge/${animal.id}`)}
-                className="flex-1 flex items-center justify-center gap-2 py-3 px-3 rounded-xl font-semibold bg-[hsl(145,50%,93%)] text-[hsl(145,50%,30%)] border border-[hsl(145,50%,30%,0.2)] hover:bg-[hsl(145,50%,88%)] transition-colors"
+                className="flex-1 flex items-center justify-center gap-2 py-3 px-3 rounded-xl font-semibold bg-[hsl(145,50%,93%)] text-[hsl(145,50%,30%)] border border-[hsl(145,50%,30%,0.2)] hover:bg-[hsl(145,50%,88%)] transition-colors dark:bg-[hsl(145,30%,15%)] dark:text-[hsl(145,60%,65%)] dark:border-[hsl(145,30%,25%)]"
               >
                 <Bug className="w-4 h-4" />
                 Anti-puce & Vermifuge
@@ -261,6 +308,18 @@ export default function ProfilPage() {
             <p className="text-sm text-muted-foreground mt-3">
               {actifsAutresSoins.length} soin(s) ou traitement(s) en cours
             </p>
+          </div>
+
+          {/* Timeline santé */}
+          <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="font-extrabold">Timeline santé</h2>
+              <Button variant="ghost" size="sm" onClick={() => setTimelineOpen(!timelineOpen)} className="text-primary font-semibold">
+                <Clock className="w-4 h-4 mr-1" />
+                {timelineOpen ? 'Fermer' : 'Voir'}
+              </Button>
+            </div>
+            {timelineOpen && <HealthTimeline animal={animal} />}
           </div>
 
           {/* Reproduction */}
@@ -354,6 +413,13 @@ export default function ProfilPage() {
             <div>
               <Label>Numéro de puce</Label>
               <Input value={puceEditDraft} onChange={(e) => setPuceEditDraft(e.target.value.replace(/\D/g, '').slice(0, 15))} maxLength={15} placeholder="15 chiffres" className="mt-1.5" />
+            </div>
+
+            <div>
+              <Label>Couleur d'accent</Label>
+              <div className="mt-2">
+                <ColorPicker value={colorDraft} onChange={setColorDraft} />
+              </div>
             </div>
 
             <div className="flex justify-end gap-3 pt-4">

@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './AuthContext';
 import type { Animal, RendezVous, AnimalsContextType, WeightEntry, SoinEntry, ConsultationEntry } from '@/types/animal';
 import type { Json } from '@/integrations/supabase/types';
+import { normalizeType } from '@/utils/normalize';
 
 const AnimalsContext = createContext<AnimalsContextType | null>(null);
 
@@ -44,13 +45,14 @@ export function AnimalsProvider({ children }: { children: React.ReactNode }) {
       const mapped: Animal[] = (data || []).map((a) => ({
         id: a.id,
         nom: a.nom,
-        type: a.type,
+        type: normalizeType(a.type),
         sexe: a.sexe,
         race: a.race || undefined,
         photo: a.photo || undefined,
         naissance: a.naissance ? new Date(a.naissance).toISOString() : undefined,
         sterilise: a.sterilise || false,
         puce: a.puce || undefined,
+        couleur: (a as any).couleur || null,
         poids: parseJsonArray<WeightEntry>(a.poids, []),
         soins: parseJsonArray<SoinEntry>(a.soins, []),
         consultations: parseJsonArray<ConsultationEntry>(a.consultations, []),
@@ -111,7 +113,7 @@ export function AnimalsProvider({ children }: { children: React.ReactNode }) {
         .insert({
           user_id: user.id,
           nom: animal.nom,
-          type: animal.type,
+          type: normalizeType(animal.type),
           sexe: animal.sexe,
           race: animal.race || null,
           photo: animal.photo || null,
@@ -121,7 +123,7 @@ export function AnimalsProvider({ children }: { children: React.ReactNode }) {
           poids: (animal.poids || []) as unknown as Json,
           soins: (animal.soins || []) as unknown as Json,
           consultations: (animal.consultations || []) as unknown as Json,
-        })
+        } as any)
         .select()
         .single();
 
@@ -131,13 +133,14 @@ export function AnimalsProvider({ children }: { children: React.ReactNode }) {
         const newAnimal: Animal = {
           id: data.id,
           nom: data.nom,
-          type: data.type,
+          type: normalizeType(data.type),
           sexe: data.sexe,
           race: data.race || undefined,
           photo: data.photo || undefined,
           naissance: data.naissance ? new Date(data.naissance).toISOString() : undefined,
           sterilise: data.sterilise || false,
           puce: data.puce || undefined,
+          couleur: (data as any).couleur || null,
           poids: parseJsonArray<WeightEntry>(data.poids, []),
           soins: parseJsonArray<SoinEntry>(data.soins, []),
           consultations: parseJsonArray<ConsultationEntry>(data.consultations, []),
@@ -163,7 +166,7 @@ export function AnimalsProvider({ children }: { children: React.ReactNode }) {
         .from('animals')
         .update({
           nom: patch.nom,
-          type: patch.type,
+          type: normalizeType(patch.type),
           sexe: patch.sexe,
           race: patch.race || null,
           photo: patch.photo || null,
@@ -173,7 +176,7 @@ export function AnimalsProvider({ children }: { children: React.ReactNode }) {
           poids: (patch.poids || []) as unknown as Json,
           soins: (patch.soins || []) as unknown as Json,
           consultations: (patch.consultations || []) as unknown as Json,
-        })
+        } as any)
         .eq('id', id);
 
       if (error) throw error;
