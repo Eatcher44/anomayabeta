@@ -11,8 +11,10 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { useAnimals } from '@/context/AnimalsContext';
+import { useAuth } from '@/context/AuthContext';
 import DateField from '@/components/DateField';
 import StatusBadge from '@/components/StatusBadge';
+import { ReminderPickerUI, useReminderPicker, createReminders } from '@/components/ReminderPicker';
 import { addMonths } from '@/utils/date';
 import type { SoinEntry } from '@/types/animal';
 
@@ -61,6 +63,7 @@ export default function VaccinsPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { animaux, updateAnimal } = useAnimals();
+  const { user } = useAuth();
 
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pickerDate, setPickerDate] = useState(new Date());
@@ -72,6 +75,8 @@ export default function VaccinsPage() {
   const [addName, setAddName] = useState('');
   const [addMandatory, setAddMandatory] = useState<'required' | 'optional'>('required');
   const [customMonths, setCustomMonths] = useState('12');
+
+  const reminderPicker = useReminderPicker();
 
   const animal = animaux.find((a) => a.id === id);
   const soins = animal?.soins || [];
@@ -97,7 +102,7 @@ export default function VaccinsPage() {
     setPickerOpen(true);
   }
 
-  function saveVaccin(date: Date) {
+  async function saveVaccin(date: Date) {
     if (!currentVaccin) return;
     const { name, months, mandatory } = currentVaccin;
 
@@ -137,8 +142,21 @@ export default function VaccinsPage() {
       }));
     }
 
+    // Create reminders
+    if (user && reminderPicker.selectedDays.length > 0) {
+      await createReminders({
+        userId: user.id,
+        animalId: animal.id,
+        type: `vaccine-${name}`,
+        title: `Vaccin ${name} — ${animal.nom}`,
+        eventDate: prochain,
+        selectedDays: reminderPicker.selectedDays,
+      });
+    }
+
     setPickerOpen(false);
     setCurrentVaccin(null);
+    reminderPicker.reset();
   }
 
   function VaccinRow({ v, isMandatory }: { v: { name: string; months: number }; isMandatory: boolean }) {
@@ -235,6 +253,7 @@ export default function VaccinsPage() {
                 className="mt-1.5"
               />
             </div>
+            <ReminderPickerUI {...reminderPicker} />
             <div className="flex justify-end gap-3">
               <Button variant="outline" onClick={() => setPickerOpen(false)}>Annuler</Button>
               <Button onClick={() => saveVaccin(pickerDate)} disabled={!pickerValid}>Valider</Button>

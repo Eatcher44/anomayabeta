@@ -71,6 +71,56 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          animal_id: string | null
+          created_at: string
+          days_before: number
+          description: string | null
+          due_date: string
+          id: string
+          read: boolean
+          soin_id: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          animal_id?: string | null
+          created_at?: string
+          days_before?: number
+          description?: string | null
+          due_date: string
+          id?: string
+          read?: boolean
+          soin_id?: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          animal_id?: string | null
+          created_at?: string
+          days_before?: number
+          description?: string | null
+          due_date?: string
+          id?: string
+          read?: boolean
+          soin_id?: string | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_animal_id_fkey"
+            columns: ["animal_id"]
+            isOneToOne: false
+            referencedRelation: "animals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rendezvous: {
         Row: {
           animal_ids: string[] | null

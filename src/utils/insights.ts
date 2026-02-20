@@ -131,27 +131,6 @@ function getWeightAlerts(animal: Animal): HealthAlert[] {
     });
   }
 
-  // Rapid weight change detection
-  if (sorted.length >= 2) {
-    const prev = sorted[sorted.length - 2];
-    const last = sorted[sorted.length - 1];
-    if (prev.poids > 0) {
-      const changePct = ((last.poids - prev.poids) / prev.poids) * 100;
-      if (Math.abs(changePct) > 15) {
-        alerts.push({
-          id: `wt-change-${animal.id}`,
-          animalId: animal.id,
-          animalName: animal.nom,
-          type: 'insight',
-          severity: 'warning',
-          title: changePct > 0 ? 'Prise de poids rapide' : 'Perte de poids rapide',
-          description: `${animal.nom} - ${changePct > 0 ? '+' : ''}${changePct.toFixed(0)}% entre les 2 dernières pesées`,
-          icon: changePct > 0 ? '📈' : '📉',
-        });
-      }
-    }
-  }
-
   return alerts;
 }
 
@@ -179,18 +158,8 @@ function getBirthdayAlerts(animal: Animal, today: Date): HealthAlert[] {
 
 function getCheckupAlerts(animal: Animal, today: Date): HealthAlert[] {
   const consults = animal.consultations || [];
-  if (consults.length === 0) {
-    return [{
-      id: `checkup-${animal.id}`,
-      animalId: animal.id,
-      animalName: animal.nom,
-      type: 'checkup',
-      severity: 'warning',
-      title: 'Bilan annuel manquant',
-      description: `${animal.nom} n'a aucune consultation enregistrée`,
-      icon: '🏥',
-    }];
-  }
+  // Only alert if there ARE consultations but the last one is >1 year old
+  if (consults.length === 0) return [];
   const sorted = [...consults].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   const lastDate = new Date(sorted[0].date);
   const daysSince = diffDays(today, lastDate);
