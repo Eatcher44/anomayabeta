@@ -42,6 +42,12 @@ export default function HealthDashboard({ animals, rendezvous }: HealthDashboard
 
   const alerts = useMemo(() => getAllAlerts(animals, rendezvous), [animals, rendezvous]);
 
+  // Only show urgent + warning alerts in the compact home dashboard (no weight change, no "no consultation")
+  const filteredAlerts = useMemo(() => 
+    alerts.filter((a) => a.severity === 'urgent' || a.severity === 'warning'),
+    [alerts]
+  );
+
   const handleAlertClick = (alert: HealthAlert) => {
     if (!alert.animalId) return;
     switch (alert.type) {
@@ -64,44 +70,34 @@ export default function HealthDashboard({ animals, rendezvous }: HealthDashboard
     }
   };
 
-  if (alerts.length === 0) {
+  if (filteredAlerts.length === 0) {
     return (
-      <div className="bg-card rounded-2xl p-5 border border-border shadow-sm text-center">
-        <p className="text-3xl mb-2">🐾</p>
-        <p className="font-bold text-foreground">Tous vos animaux sont à jour 🐾</p>
-        <p className="text-sm text-muted-foreground mt-1">Aucune alerte pour le moment</p>
+      <div className="bg-card rounded-2xl p-4 border border-border shadow-sm text-center">
+        <p className="text-2xl mb-1">🐾</p>
+        <p className="font-bold text-foreground text-sm">Tous vos animaux sont à jour 🐾</p>
       </div>
     );
   }
 
-  const urgent = alerts.filter((a) => a.severity === 'urgent');
-  const warnings = alerts.filter((a) => a.severity === 'warning');
-  const infos = alerts.filter((a) => a.severity === 'info');
+  const urgent = filteredAlerts.filter((a) => a.severity === 'urgent');
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <h2 className="font-extrabold text-foreground">Tableau de bord santé</h2>
+        <h2 className="font-extrabold text-sm text-foreground">Alertes santé</h2>
         {urgent.length > 0 && (
           <span className="text-xs font-bold text-destructive bg-destructive/10 px-2 py-0.5 rounded-full">
             {urgent.length} urgent{urgent.length > 1 ? 's' : ''}
           </span>
         )}
       </div>
-
-      <div className="space-y-2">
-        {urgent.map((a) => (
+      <div className="space-y-1.5">
+        {filteredAlerts.slice(0, 3).map((a) => (
           <AlertCard key={a.id} alert={a} onClick={() => handleAlertClick(a)} />
         ))}
-        {warnings.map((a) => (
-          <AlertCard key={a.id} alert={a} onClick={() => handleAlertClick(a)} />
-        ))}
-        {infos.slice(0, 5).map((a) => (
-          <AlertCard key={a.id} alert={a} onClick={() => handleAlertClick(a)} />
-        ))}
-        {infos.length > 5 && (
+        {filteredAlerts.length > 3 && (
           <p className="text-xs text-muted-foreground text-center py-1">
-            +{infos.length - 5} autre{infos.length - 5 > 1 ? 's' : ''} notification{infos.length - 5 > 1 ? 's' : ''}
+            +{filteredAlerts.length - 3} autre{filteredAlerts.length - 3 > 1 ? 's' : ''}
           </p>
         )}
       </div>

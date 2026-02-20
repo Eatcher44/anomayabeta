@@ -13,6 +13,8 @@ import VaccinsPage from "./pages/VaccinsPage";
 import VermifugePage from "./pages/VermifugePage";
 import AutresSoinsPage from "./pages/AutresSoinsPage";
 import ConsultationPage from "./pages/ConsultationPage";
+import HealthDashboardPage from "./pages/HealthDashboardPage";
+import NotificationsPage from "./pages/NotificationsPage";
 import NotFound from "./pages/NotFound";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 
@@ -118,6 +120,22 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <ConsultationPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard-sante"
+        element={
+          <ProtectedRoute>
+            <HealthDashboardPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/notifications"
+        element={
+          <ProtectedRoute>
+            <NotificationsPage />
           </ProtectedRoute>
         }
       />

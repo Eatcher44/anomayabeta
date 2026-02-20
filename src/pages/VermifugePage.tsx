@@ -11,8 +11,10 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { useAnimals } from '@/context/AnimalsContext';
+import { useAuth } from '@/context/AuthContext';
 import DateField from '@/components/DateField';
 import StatusBadge from '@/components/StatusBadge';
+import { ReminderPickerUI, useReminderPicker, createReminders } from '@/components/ReminderPicker';
 import { addMonths, addWeeks, diffDays } from '@/utils/date';
 import type { SoinEntry } from '@/types/animal';
 
@@ -20,6 +22,8 @@ export default function VermifugePage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { animaux, updateAnimal } = useAnimals();
+  const { user } = useAuth();
+  const reminderPicker = useReminderPicker();
 
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pickerMode, setPickerMode] = useState<'antipuce' | 'vermifuge' | null>(null);
@@ -107,7 +111,7 @@ export default function VermifugePage() {
     setPickerOpen(true);
   }
 
-  function savePickedDate(date: Date) {
+  async function savePickedDate(date: Date) {
     const entry: SoinEntry = {
       id: Date.now().toString(),
       type: pickerMode === 'antipuce' ? 'Antipuce' : 'Vermifuge',
@@ -119,8 +123,23 @@ export default function VermifugePage() {
       ...a,
       soins: [...(a.soins || []), entry],
     }));
+
+    // Create reminders for next due date
+    if (user && reminderPicker.selectedDays.length > 0) {
+      const nextDue = addMonths(date, 3);
+      await createReminders({
+        userId: user.id,
+        animalId: animal.id,
+        type: pickerMode === 'antipuce' ? 'antipuce' : 'vermifuge',
+        title: `${pickerMode === 'antipuce' ? 'Anti-puce' : 'Vermifuge'} — ${animal.nom}`,
+        eventDate: nextDue,
+        selectedDays: reminderPicker.selectedDays,
+      });
+    }
+
     setPickerOpen(false);
     setPickerMode(null);
+    reminderPicker.reset();
   }
 
   return (
@@ -204,6 +223,7 @@ export default function VermifugePage() {
                 className="mt-1.5"
               />
             </div>
+            <ReminderPickerUI {...reminderPicker} />
             <div className="flex justify-end gap-3">
               <Button variant="outline" onClick={() => setPickerOpen(false)}>Annuler</Button>
               <Button onClick={() => savePickedDate(pickerDate)} disabled={!pickerValid}>Valider</Button>

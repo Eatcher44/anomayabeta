@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Calendar, LogOut, GripVertical } from 'lucide-react';
+import { Plus, Calendar, LogOut, GripVertical, Bell, Activity } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -459,12 +459,17 @@ export default function HomePage() {
             <div className="text-3xl mb-2">🐾🐾</div>
             <h1 className="text-2xl font-extrabold text-primary">Ma famille</h1>
           </div>
-          <Button variant="ghost" size="icon" onClick={handleSignOut} title="Déconnexion">
-            <LogOut className="w-5 h-5" />
-          </Button>
+          <div className="flex items-center gap-1">
+            <Button variant="ghost" size="icon" onClick={() => navigate('/notifications')} title="Notifications">
+              <Bell className="w-5 h-5" />
+            </Button>
+            <Button variant="ghost" size="icon" onClick={handleSignOut} title="Déconnexion">
+              <LogOut className="w-5 h-5" />
+            </Button>
+          </div>
         </div>
 
-        {/* Health Dashboard */}
+        {/* Compact Health Alerts */}
         {animaux.length > 0 && (
           <div className="mb-4">
             <HealthDashboard animals={animaux} rendezvous={rendezvous} />
@@ -516,8 +521,20 @@ export default function HomePage() {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Rechercher un animal..."
-          className="mb-4 bg-card"
+          className="mb-3 bg-card"
         />
+
+        {/* Health Dashboard button */}
+        {animaux.length > 0 && (
+          <Button
+            variant="outline"
+            className="w-full mb-4 font-semibold"
+            onClick={() => navigate('/dashboard-sante')}
+          >
+            <Activity className="w-4 h-4 mr-2" />
+            Tableau de bord santé
+          </Button>
+        )}
       </div>
 
       {/* Reorder toggle */}

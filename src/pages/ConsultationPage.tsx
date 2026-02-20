@@ -1,15 +1,43 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, CalendarPlus } from 'lucide-react';
+import { ArrowLeft, CalendarPlus, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { useAnimals } from '@/context/AnimalsContext';
+import DateField from '@/components/DateField';
+import { maskHHMM, isValidHHMM } from '@/utils/date';
+import { toast } from '@/hooks/use-toast';
 
 export default function ConsultationPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { animaux, rendezvous } = useAnimals();
+  const { animaux, rendezvous, addRendezVous } = useAnimals();
 
   const animal = animaux.find((a) => a.id === id);
+
+  // RDV creation modal state
+  const [rdvOpen, setRdvOpen] = useState(false);
+  const [rdvDate, setRdvDate] = useState(new Date());
+  const [rdvDateValid, setRdvDateValid] = useState(true);
+  const [rdvHeure, setRdvHeure] = useState('');
+  const [rdvHeureValid, setRdvHeureValid] = useState(true);
+  const [rdvObjet, setRdvObjet] = useState('');
+  const [rdvNotes, setRdvNotes] = useState('');
+  const [rdvAnimauxSelectionnes, setRdvAnimauxSelectionnes] = useState<string[]>([]);
+
+  const sortedAnimaux = useMemo(
+    () => [...animaux].sort((a, b) => (a.nom || '').localeCompare(b.nom || '')),
+    [animaux]
+  );
 
   const { futurs, passes } = useMemo(() => {
     if (!animal) return { futurs: [], passes: [] };
@@ -34,6 +62,48 @@ export default function ConsultationPage() {
     return { futurs: futursList, passes: passesList };
   }, [rendezvous, animal?.id]);
 
+  const openNewRdv = () => {
+    setRdvDate(new Date());
+    setRdvDateValid(true);
+    setRdvHeure('');
+    setRdvHeureValid(true);
+    setRdvObjet('');
+    setRdvNotes('');
+    // Pre-select current animal
+    setRdvAnimauxSelectionnes(animal ? [animal.id] : []);
+    setRdvOpen(true);
+  };
+
+  const toggleRdvAnimal = (animalId: string) => {
+    setRdvAnimauxSelectionnes((curr) =>
+      curr.includes(animalId) ? curr.filter((x) => x !== animalId) : [...curr, animalId]
+    );
+  };
+
+  const submitRdv = async () => {
+    if (!rdvDate || !rdvDateValid) return;
+    if (!rdvHeure || !isValidHHMM(rdvHeure)) {
+      setRdvHeureValid(false);
+      return;
+    }
+    setRdvHeureValid(true);
+    if (!rdvObjet.trim()) return;
+
+    try {
+      await addRendezVous({
+        date: rdvDate.toISOString(),
+        heure: rdvHeure,
+        objet: rdvObjet.trim(),
+        notes: rdvNotes.trim(),
+        animalIds: rdvAnimauxSelectionnes,
+      });
+      setRdvOpen(false);
+      toast({ title: 'Rendez-vous ajouté' });
+    } catch {
+      toast({ title: 'Erreur', description: "Impossible d'ajouter le rendez-vous", variant: 'destructive' });
+    }
+  };
+
   if (!animal) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -54,7 +124,7 @@ export default function ConsultationPage() {
           <p className="font-bold">
             {r._dt.toLocaleDateString('fr-FR')} {r.heureHHMM ? `• ${r.heureHHMM}` : ''}
           </p>
-          <div className={`w-2.5 h-2.5 rounded-full ${isPast ? 'bg-status-red' : 'bg-status-green'}`} />
+          <div className={`w-2.5 h-2.5 rounded-full ${isPast ? 'bg-[hsl(var(--status-red))]' : 'bg-[hsl(var(--status-green))]'}`} />
         </div>
         {r.objet && (
           <p className="text-sm text-muted-foreground mt-1">{r.objet}</p>
@@ -82,13 +152,15 @@ export default function ConsultationPage() {
       </div>
 
       <div className="p-4 space-y-4">
+        {/* Always show "Prendre un rendez-vous" button */}
+        <Button onClick={openNewRdv} className="w-full">
+          <CalendarPlus className="w-4 h-4 mr-2" />
+          Prendre un rendez-vous
+        </Button>
+
         {isEmpty ? (
           <div className="text-center py-8">
-            <p className="text-muted-foreground mb-4">Aucun rendez-vous pour cet animal.</p>
-            <Button onClick={() => navigate('/')}>
-              <CalendarPlus className="w-4 h-4 mr-2" />
-              Prendre un rendez-vous
-            </Button>
+            <p className="text-muted-foreground">Aucun rendez-vous pour cet animal.</p>
           </div>
         ) : (
           <>
@@ -114,6 +186,53 @@ export default function ConsultationPage() {
           </>
         )}
       </div>
+
+      {/* RDV Modal */}
+      <Dialog open={rdvOpen} onOpenChange={setRdvOpen}>
+        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle>Nouveau rendez-vous</DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="flex-1 pr-4">
+            <div className="space-y-4 py-2">
+              <div>
+                <Label>Date</Label>
+                <DateField value={rdvDate} onChange={setRdvDate} maximumDate={new Date(2099, 11, 31)} onValidityChange={setRdvDateValid} />
+              </div>
+              <div>
+                <Label>Heure (HH:MM)</Label>
+                <Input value={rdvHeure} onChange={(e) => setRdvHeure(maskHHMM(e.target.value))} placeholder="ex: 14:30" maxLength={5} className={!rdvHeureValid ? 'border-destructive' : ''} />
+                {!rdvHeureValid && <p className="text-xs text-destructive mt-1">Format attendu : HH:MM</p>}
+              </div>
+              <div>
+                <Label>Objet</Label>
+                <Input value={rdvObjet} onChange={(e) => setRdvObjet(e.target.value)} placeholder="ex: Vaccin annuel, contrôle..." />
+              </div>
+              <div>
+                <Label>Notes</Label>
+                <Textarea value={rdvNotes} onChange={(e) => setRdvNotes(e.target.value)} placeholder="Informations complémentaires…" rows={3} />
+              </div>
+              <div>
+                <Label>Animaux concernés</Label>
+                <div className="mt-2 space-y-2 max-h-32 overflow-auto">
+                  {sortedAnimaux.map((a) => {
+                    const selected = rdvAnimauxSelectionnes.includes(a.id);
+                    return (
+                      <button key={a.id} onClick={() => toggleRdvAnimal(a.id)} className={`w-full text-left py-2 px-3 rounded-lg border transition-colors ${selected ? 'border-primary bg-accent' : 'border-border hover:bg-muted'}`}>
+                        {selected ? '✓ ' : ''}{a.nom}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </ScrollArea>
+          <div className="flex justify-end gap-3 pt-4 border-t border-border mt-4">
+            <Button variant="outline" onClick={() => setRdvOpen(false)}>Annuler</Button>
+            <Button onClick={submitRdv} disabled={!rdvObjet.trim() || !rdvDateValid}>Enregistrer</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { formatWeight } from '@/components/AnimalRow';
 import { ArrowLeft, Edit, Syringe, Bug, Pill, Calendar, Baby, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -51,6 +52,13 @@ export default function ProfilPage() {
 
   const soins = animal?.soins || [];
   const bgClass = animal && isFemale(animal) ? 'bg-female' : 'bg-male';
+
+  // Last recorded weight
+  const lastWeight = useMemo(() => {
+    if (!animal?.poids || animal.poids.length === 0) return null;
+    const sorted = [...animal.poids].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    return typeof sorted[0]?.poids === 'number' ? sorted[0].poids : null;
+  }, [animal?.poids]);
 
   const actifsAutresSoins = useMemo(() => {
     if (!animal) return [];
@@ -177,6 +185,8 @@ export default function ProfilPage() {
                 </p>
                 <p className="text-muted-foreground mt-1">
                   {animal.naissance ? getAgeText(animal.naissance) : 'Âge inconnu'}
+                  {' • '}
+                  <span className="font-semibold">{formatWeight(lastWeight)}</span>
                 </p>
               </div>
             </div>
