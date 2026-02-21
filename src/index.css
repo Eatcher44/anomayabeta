@@ -167,7 +167,12 @@
 
   /* FAB button */
   .fab {
-    @apply fixed right-4 bottom-4 w-14 h-14 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg hover:shadow-xl transition-shadow;
+    @apply fixed right-4 bottom-16 w-14 h-14 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg hover:shadow-xl transition-shadow;
+  }
+
+  /* Safe area for bottom nav */
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 
   /* Care card */
