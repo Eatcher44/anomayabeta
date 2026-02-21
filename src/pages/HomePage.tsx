@@ -472,15 +472,17 @@ export default function HomePage() {
       {/* Header */}
       <div className="px-4 pt-6 pb-4">
         <div className="flex justify-between items-start mb-4">
-          <DarkModeToggle dark={dark} onToggle={toggleDark} />
+          <div className="flex items-center gap-1">
+            <DarkModeToggle dark={dark} onToggle={toggleDark} />
+            <Button variant="ghost" size="icon" onClick={() => navigate('/abonnement')} title="Anomaya+">
+              <Crown className="w-5 h-5 text-amber-500" />
+            </Button>
+          </div>
           <div className="text-center flex-1">
             <div className="text-3xl mb-2">🐾🐾</div>
             <h1 className="text-2xl font-extrabold text-primary">Ma famille</h1>
           </div>
           <div className="flex items-center gap-1">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/abonnement')} title="Anomaya+">
-              <Crown className="w-5 h-5 text-amber-500" />
-            </Button>
             <Button variant="ghost" size="icon" onClick={() => navigate('/notifications')} title="Notifications">
               <Bell className="w-5 h-5" />
             </Button>

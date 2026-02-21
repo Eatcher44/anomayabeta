@@ -1,11 +1,12 @@
 import React, { useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { formatWeight } from '@/components/AnimalRow';
-import { ArrowLeft, Edit, Syringe, Bug, Pill, Calendar, Baby } from 'lucide-react';
+import { ArrowLeft, Edit, Syringe, Bug, Pill, Calendar, Baby, Bird } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Badge } from '@/components/ui/badge';
 import {
   Dialog,
   DialogContent,
@@ -144,14 +145,22 @@ export default function ProfilPage() {
     ? { borderColor: animal.couleur, borderWidth: '2px' }
     : {};
 
-  return (
+    const isParadis = !!animal.paradis;
+
+    return (
     <div className="min-h-screen bg-gradient-to-b from-[hsl(33,60%,95%)] to-[hsl(30,40%,92%)] dark:from-background dark:to-background">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-card/90 backdrop-blur border-b border-border px-4 py-3 flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
+        <Button variant="ghost" size="icon" onClick={() => navigate(isParadis ? '/paradis' : '/')}>
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <h1 className="font-bold text-lg">Profil</h1>
+        {isParadis && (
+          <Badge variant="secondary" className="ml-auto gap-1.5 text-muted-foreground">
+            <Bird className="w-3.5 h-3.5" />
+            Au paradis 🕊️
+          </Badge>
+        )}
       </div>
 
       <ScrollArea className="flex-1">
@@ -162,16 +171,16 @@ export default function ProfilPage() {
             style={headerStyle}
           >
             <div className="flex items-center">
-              <button
-                onClick={handleChangePhoto}
-                className="w-[72px] h-[72px] rounded-full bg-muted flex items-center justify-center overflow-hidden mr-3 hover:opacity-80 transition-opacity"
+              <div
+                onClick={isParadis ? undefined : handleChangePhoto}
+                className={`w-[72px] h-[72px] rounded-full bg-muted flex items-center justify-center overflow-hidden mr-3 transition-opacity ${isParadis ? 'cursor-default' : 'hover:opacity-80 cursor-pointer'}`}
               >
                 {animal.photo ? (
                   <img src={animal.photo} alt={animal.nom} className="w-full h-full object-cover" />
                 ) : (
-                  <span className="text-xs text-muted-foreground text-center px-1">Ajouter photo</span>
+                  <span className="text-xs text-muted-foreground text-center px-1">{isParadis ? '' : 'Ajouter photo'}</span>
                 )}
-              </button>
+              </div>
               <div className="flex-1">
                 <p className="text-xl font-extrabold">
                   {animal.nom} {animal.sexe === 'Femelle' ? '♀' : '♂'}
@@ -219,10 +228,12 @@ export default function ProfilPage() {
           <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
             <div className="flex items-center justify-between mb-3">
               <h2 className="font-extrabold">Fiche</h2>
-              <Button variant="outline" size="sm" onClick={openEditModal}>
-                <Edit className="w-4 h-4 mr-1.5" />
-                Modifier
-              </Button>
+              {!isParadis && (
+                <Button variant="outline" size="sm" onClick={openEditModal}>
+                  <Edit className="w-4 h-4 mr-1.5" />
+                  Modifier
+                </Button>
+              )}
             </div>
             
             <div className="space-y-3">
@@ -248,7 +259,7 @@ export default function ProfilPage() {
                 <span className="text-muted-foreground">Numéro de puce</span>
                 <div className="flex-shrink-0">
                   {!animal.puce ? (
-                    puceInlineEdit ? (
+                    !isParadis && puceInlineEdit ? (
                       <Input
                         value={puceDraft}
                         onChange={(e) => setPuceDraft(e.target.value.replace(/\D/g, '').slice(0, 15))}
@@ -271,7 +282,7 @@ export default function ProfilPage() {
                           }
                         }}
                       />
-                    ) : (
+                    ) : !isParadis ? (
                       <button
                         onClick={() => {
                           setPuceDraft('');
@@ -281,6 +292,8 @@ export default function ProfilPage() {
                       >
                         Ajouter le numéro
                       </button>
+                    ) : (
+                      <span className="font-bold text-muted-foreground">—</span>
                     )
                   ) : (
                     <span className="font-bold">{animal.puce}</span>
@@ -320,7 +333,7 @@ export default function ProfilPage() {
 
 
           {/* Reproduction */}
-          {!animal.sterilise && (
+          {!isParadis && !animal.sterilise && (
             <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
               <h2 className="font-extrabold mb-3">
                 {isFemale(animal) ? 'Gestation' : 'Reproduction'}
@@ -355,9 +368,11 @@ export default function ProfilPage() {
                 return `${formatWeight(last.poids)} le ${new Date(last.date).toLocaleDateString('fr-FR')}`;
               })()}
             </p>
-            <Button variant="secondary" onClick={() => navigate(`/poids/${animal.id}`)}>
-              Gérer le poids
-            </Button>
+            {!isParadis && (
+              <Button variant="secondary" onClick={() => navigate(`/poids/${animal.id}`)}>
+                Gérer le poids
+              </Button>
+            )}
           </div>
         </div>
       </ScrollArea>

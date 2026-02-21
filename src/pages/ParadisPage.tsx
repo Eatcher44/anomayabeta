@@ -17,7 +17,7 @@ export default function ParadisPage() {
   const navigate = useNavigate();
   const { animaux } = useAnimals();
 
-  const paradisAnimaux = animaux.filter((a) => (a as any).paradis === true);
+  const paradisAnimaux = animaux.filter((a) => a.paradis === true);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[hsl(220,30%,96%)] to-[hsl(260,20%,94%)] dark:from-background dark:to-background">
@@ -41,9 +41,10 @@ export default function ParadisPage() {
             {paradisAnimaux.map((animal) => {
               const poids = lastPoidsKg(animal);
               return (
-                <div
+                <button
                   key={animal.id}
-                  className="bg-card rounded-2xl border border-border p-4 shadow-sm"
+                  onClick={() => navigate(`/profil/${animal.id}`)}
+                  className="w-full text-left bg-card rounded-2xl border border-border p-4 shadow-sm hover:shadow-md transition-shadow"
                 >
                   <div className="flex items-center gap-4">
                     {/* Photo */}
@@ -72,7 +73,7 @@ export default function ParadisPage() {
                     {/* Memorial indicator */}
                     <div className="flex-shrink-0 text-2xl opacity-50">🕊️</div>
                   </div>
-                </div>
+                </button>
               );
             })}
           </div>
