@@ -16,7 +16,9 @@ export function BreederProvider({ children }: { children: React.ReactNode }) {
 
   const setBreeder = useCallback((val: boolean) => {
     setIsBreeder(val);
-    if (val) setIsNoAds(true); // Breeder includes no-ads
+    if (val) {
+      setIsNoAds(true); // Breeder includes no-ads
+    }
   }, []);
 
   const setNoAds = useCallback((val: boolean) => {

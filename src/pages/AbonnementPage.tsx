@@ -2,11 +2,15 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useBreeder } from '@/context/BreederContext';
 import { toast } from '@/hooks/use-toast';
-import { ArrowLeft, Crown, Check, X, Shield, CreditCard, RefreshCw, Sparkles } from 'lucide-react';
+import { ArrowLeft, Crown, Check, X, Shield, CreditCard, RefreshCw, Sparkles, FlaskConical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
+
+const isDev = import.meta.env.DEV;
 
 type PlanId = 'nopub' | 'breeder';
 type Duration = 'monthly' | 'quarterly' | 'yearly';
@@ -42,7 +46,7 @@ const COMPARISON_ROWS = [
 
 export default function AbonnementPage() {
   const navigate = useNavigate();
-  const { setBreeder, setNoAds } = useBreeder();
+  const { isBreeder, setBreeder, setNoAds } = useBreeder();
   const [selectedPlan, setSelectedPlan] = useState<PlanId>('nopub');
   const [selectedDuration, setSelectedDuration] = useState<Duration>('yearly');
 
@@ -213,6 +217,34 @@ export default function AbonnementPage() {
         >
           Restaurer mon abonnement
         </button>
+
+        {/* Dev-only toggle */}
+        {isDev && (
+          <Card className="p-4 border-dashed border-2 border-yellow-500/50 bg-yellow-500/5 space-y-2">
+            <div className="flex items-center gap-2 text-xs font-bold text-yellow-600 dark:text-yellow-400 uppercase tracking-wider">
+              <FlaskConical className="h-3.5 w-3.5" />
+              Mode développement
+            </div>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="dev-breeder" className="text-sm font-medium">Mode test – Pack Éleveur</Label>
+              <Switch
+                id="dev-breeder"
+                checked={isBreeder}
+                onCheckedChange={(checked) => {
+                  if (checked) {
+                    setBreeder(true);
+                    toast({ title: '🧪 Pack Éleveur activé (test)' });
+                  } else {
+                    setBreeder(false);
+                    setNoAds(false);
+                    toast({ title: 'Mode gratuit restauré' });
+                  }
+                }}
+              />
+            </div>
+            <p className="text-[10px] text-muted-foreground">Ce toggle n'apparaît qu'en développement.</p>
+          </Card>
+        )}
       </div>
     </div>
   );
