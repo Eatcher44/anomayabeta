@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useBreeder } from '@/context/BreederContext';
+import { toast } from '@/hooks/use-toast';
 import { ArrowLeft, Crown, Check, X, Shield, CreditCard, RefreshCw, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -40,6 +42,7 @@ const COMPARISON_ROWS = [
 
 export default function AbonnementPage() {
   const navigate = useNavigate();
+  const { setBreeder, setNoAds } = useBreeder();
   const [selectedPlan, setSelectedPlan] = useState<PlanId>('nopub');
   const [selectedDuration, setSelectedDuration] = useState<Duration>('yearly');
 
@@ -48,14 +51,14 @@ export default function AbonnementPage() {
 
   const handleContinue = () => {
     // Future: integrate with StoreKit / Play Billing
-    const subscription = {
-      plan: selectedPlan,
-      duration: selectedDuration,
-      isNoAds: true,
-      isBreeder: selectedPlan === 'breeder',
-    };
-    console.log('Subscription selected:', subscription);
-    // TODO: trigger payment flow
+    // For now, activate the plan locally
+    if (selectedPlan === 'breeder') {
+      setBreeder(true); // Also sets noAds
+    } else {
+      setNoAds(true);
+    }
+    toast({ title: 'Abonnement activé !', description: selectedPlan === 'breeder' ? 'Pack Éleveur activé' : 'Sans publicités activé' });
+    navigate('/');
   };
 
   const handleRestore = () => {

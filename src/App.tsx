@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { AnimalsProvider } from "@/context/AnimalsContext";
+import { BreederProvider } from "@/context/BreederContext";
 import HomePage from "./pages/HomePage";
 import AuthPage from "./pages/AuthPage";
 import ProfilPage from "./pages/ProfilPage";
@@ -19,6 +20,9 @@ import NotFound from "./pages/NotFound";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import AbonnementPage from "./pages/AbonnementPage";
 import ParadisPage from "./pages/ParadisPage";
+import ReproductionPage from "./pages/ReproductionPage";
+import PorteesPage from "./pages/PorteesPage";
+import TransferPage from "./pages/TransferPage";
 
 const queryClient = new QueryClient();
 
@@ -157,6 +161,38 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/reproduction/:id"
+        element={
+          <ProtectedRoute>
+            <ReproductionPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/portees"
+        element={
+          <ProtectedRoute>
+            <PorteesPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/transfer/:id"
+        element={
+          <ProtectedRoute>
+            <TransferPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/claim"
+        element={
+          <ProtectedRoute>
+            <TransferPage />
+          </ProtectedRoute>
+        }
+      />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
@@ -167,13 +203,15 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <AnimalsProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <AppRoutes />
-          </BrowserRouter>
-        </TooltipProvider>
+        <BreederProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <AppRoutes />
+            </BrowserRouter>
+          </TooltipProvider>
+        </BreederProvider>
       </AnimalsProvider>
     </AuthProvider>
   </QueryClientProvider>

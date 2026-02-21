@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Calendar, LogOut, GripVertical, Bell, Activity, Crown, Bird } from 'lucide-react';
+import { Plus, Calendar, LogOut, GripVertical, Bell, Activity, Crown, Bird, Baby } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -34,6 +34,7 @@ import { normalizeType } from '@/utils/normalize';
 import { pickPhotoFile, uploadAnimalPhoto } from '@/utils/photo';
 import { toast } from '@/hooks/use-toast';
 import type { Animal, RendezVous } from '@/types/animal';
+import { useBreeder } from '@/context/BreederContext';
 
 type SortKey = 'alpha' | 'alpha-desc' | 'age-asc' | 'age-desc' | 'poids-asc' | 'poids-desc';
 
@@ -118,6 +119,7 @@ export default function HomePage() {
   } = useAnimals();
 
   const { dark, toggle: toggleDark } = useDarkMode();
+  const { isBreeder } = useBreeder();
 
   // Sort
   const [triSelected, setTriSelected] = useState<SortKey>('alpha');
@@ -627,11 +629,22 @@ export default function HomePage() {
       {/* Paradis button */}
       <button
         onClick={() => navigate('/paradis')}
-        className="fixed bottom-6 left-6 z-30 w-14 h-14 rounded-full bg-muted border border-border shadow-lg flex items-center justify-center hover:bg-accent transition-colors"
+        className="fixed bottom-6 left-6 z-30 w-12 h-12 rounded-full bg-muted border border-border shadow-lg flex items-center justify-center hover:bg-accent transition-colors"
         title="Paradis"
       >
-        <Bird className="w-6 h-6 text-muted-foreground" />
+        <Bird className="w-5 h-5 text-muted-foreground" />
       </button>
+
+      {/* Portées button (breeder only) */}
+      {isBreeder && (
+        <button
+          onClick={() => navigate('/portees')}
+          className="fixed bottom-6 left-20 z-30 w-12 h-12 rounded-full bg-primary border border-primary shadow-lg flex items-center justify-center hover:bg-primary/90 transition-colors"
+          title="Portées"
+        >
+          <Baby className="w-5 h-5 text-primary-foreground" />
+        </button>
+      )}
 
       {/* FAB RDV */}
       <button onClick={() => setRdvOpen(true)} className="fab" title="Nouveau rendez-vous">
