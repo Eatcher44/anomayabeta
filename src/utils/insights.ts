@@ -12,6 +12,16 @@ export interface HealthAlert {
   icon: string;
 }
 
+/** Check mandatory vaccines for the animal type */
+function getMandatoryVaccineNames(animalType: string): string[] {
+  const t = (animalType || '').toLowerCase();
+  if (t === 'chat') {
+    return ['Rage', 'Typhus félin (Panleucopénie)', 'Coryza félin'];
+  }
+  // Default: dog vaccines
+  return ['Carré (C)', 'Hépatite de Rubarth (H)', 'Parvovirose (P)', 'Parainfluenza (Pi)', 'Leptospirose (L)'];
+}
+
 function getVaccineAlerts(animal: Animal, today: Date): HealthAlert[] {
   const alerts: HealthAlert[] = [];
   const soins = animal.soins || [];
@@ -48,6 +58,83 @@ function getVaccineAlerts(animal: Animal, today: Date): HealthAlert[] {
   return alerts;
 }
 
+/** Check if mandatory vaccines are missing entirely (never done) */
+function getMissingMandatoryVaccineAlerts(animal: Animal): HealthAlert[] {
+  const alerts: HealthAlert[] = [];
+  const soins = animal.soins || [];
+  const doneVaccineNames = soins.filter((s) => s.type === 'Vaccin' && s.date).map((s) => s.nom);
+  const mandatory = getMandatoryVaccineNames(animal.type);
+
+  for (const name of mandatory) {
+    if (!doneVaccineNames.includes(name)) {
+      alerts.push({
+        id: `vac-missing-${animal.id}-${name}`,
+        animalId: animal.id,
+        animalName: animal.nom,
+        type: 'vaccine',
+        severity: 'urgent',
+        title: `Vaccin obligatoire manquant`,
+        description: `${animal.nom} — ${name}`,
+        icon: '💉',
+      });
+    }
+  }
+  return alerts;
+}
+
+/** Check if anti-puce / vermifuge are missing or overdue */
+function getAntiparasiticAlerts(animal: Animal, today: Date): HealthAlert[] {
+  const alerts: HealthAlert[] = [];
+  const soins = animal.soins || [];
+
+  for (const type of ['Antipuce', 'Vermifuge'] as const) {
+    const entries = soins.filter((s) => s.type === type && s.date).sort((a, b) => new Date(b.date!).getTime() - new Date(a.date!).getTime());
+    if (entries.length === 0) {
+      // Never done
+      alerts.push({
+        id: `${type}-missing-${animal.id}`,
+        animalId: animal.id,
+        animalName: animal.nom,
+        type: 'treatment',
+        severity: 'warning',
+        title: `${type === 'Antipuce' ? 'Anti-puce' : 'Vermifuge'} à prévoir`,
+        description: `${animal.nom} — aucun enregistrement`,
+        icon: type === 'Antipuce' ? '🐛' : '💊',
+      });
+    } else {
+      const last = new Date(entries[0].date!);
+      const validMonths = entries[0].dureeValide || 3;
+      const next = addMonths(last, validMonths);
+      const days = diffDays(next, today);
+      if (days < 0) {
+        alerts.push({
+          id: `${type}-${animal.id}`,
+          animalId: animal.id,
+          animalName: animal.nom,
+          type: 'treatment',
+          severity: 'warning',
+          title: `${type === 'Antipuce' ? 'Anti-puce' : 'Vermifuge'} à renouveler`,
+          description: `${animal.nom} - dépassé depuis ${Math.abs(days)} jours`,
+          icon: type === 'Antipuce' ? '🐛' : '💊',
+        });
+      } else if (days <= 14) {
+        alerts.push({
+          id: `${type}-${animal.id}`,
+          animalId: animal.id,
+          animalName: animal.nom,
+          type: 'treatment',
+          severity: 'warning',
+          title: `${type === 'Antipuce' ? 'Anti-puce' : 'Vermifuge'} bientôt`,
+          description: `${animal.nom} - dans ${days} jours`,
+          icon: type === 'Antipuce' ? '🐛' : '💊',
+        });
+      }
+    }
+  }
+
+  return alerts;
+}
+
 function getTreatmentAlerts(animal: Animal, today: Date): HealthAlert[] {
   const alerts: HealthAlert[] = [];
   const soins = animal.soins || [];
@@ -69,39 +156,6 @@ function getTreatmentAlerts(animal: Animal, today: Date): HealthAlert[] {
         description: `${animal.nom} - ${daysLeft} jours restants`,
         icon: '💊',
       });
-    }
-  }
-
-  // Anti-puce & Vermifuge alerts
-  for (const type of ['Antipuce', 'Vermifuge'] as const) {
-    const entries = soins.filter((s) => s.type === type).sort((a, b) => new Date(b.date!).getTime() - new Date(a.date!).getTime());
-    if (entries.length > 0) {
-      const last = new Date(entries[0].date!);
-      const next = addMonths(last, 3);
-      const days = diffDays(next, today);
-      if (days < 0) {
-        alerts.push({
-          id: `${type}-${animal.id}`,
-          animalId: animal.id,
-          animalName: animal.nom,
-          type: 'treatment',
-          severity: 'urgent',
-          title: `${type === 'Antipuce' ? 'Anti-puce' : 'Vermifuge'} en retard`,
-          description: `${animal.nom} - dépassé depuis ${Math.abs(days)} jours`,
-          icon: type === 'Antipuce' ? '🐛' : '💊',
-        });
-      } else if (days <= 14) {
-        alerts.push({
-          id: `${type}-${animal.id}`,
-          animalId: animal.id,
-          animalName: animal.nom,
-          type: 'treatment',
-          severity: 'warning',
-          title: `${type === 'Antipuce' ? 'Anti-puce' : 'Vermifuge'} bientôt`,
-          description: `${animal.nom} - dans ${days} jours`,
-          icon: type === 'Antipuce' ? '🐛' : '💊',
-        });
-      }
     }
   }
 
@@ -158,7 +212,6 @@ function getBirthdayAlerts(animal: Animal, today: Date): HealthAlert[] {
 
 function getCheckupAlerts(animal: Animal, today: Date): HealthAlert[] {
   const consults = animal.consultations || [];
-  // Only alert if there ARE consultations but the last one is >1 year old
   if (consults.length === 0) return [];
   const sorted = [...consults].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   const lastDate = new Date(sorted[0].date);
@@ -207,6 +260,8 @@ export function getAllAlerts(animals: Animal[], rendezvous: { date: string; heur
 
   for (const animal of animals) {
     alerts.push(...getVaccineAlerts(animal, today));
+    alerts.push(...getMissingMandatoryVaccineAlerts(animal));
+    alerts.push(...getAntiparasiticAlerts(animal, today));
     alerts.push(...getTreatmentAlerts(animal, today));
     alerts.push(...getWeightAlerts(animal));
     alerts.push(...getBirthdayAlerts(animal, today));
@@ -215,9 +270,28 @@ export function getAllAlerts(animals: Animal[], rendezvous: { date: string; heur
 
   alerts.push(...getAppointmentAlerts(animals, rendezvous));
 
-  // Sort: urgent first, then warning, then info
   const severityOrder = { urgent: 0, warning: 1, info: 2 };
   alerts.sort((a, b) => severityOrder[a.severity] - severityOrder[b.severity]);
 
   return alerts;
+}
+
+/** Get health status for an animal: red if missing mandatory vaccines, orange if anti-puce/vermifuge issues, green otherwise */
+export function getAnimalHealthStatus(animal: Animal, rendezvous: { date: string; heure?: string; objet: string; animalIds: string[] }[]): 'green' | 'orange' | 'red' {
+  const today = new Date();
+  
+  // Red: missing mandatory vaccines or overdue vaccines
+  const missingMandatory = getMissingMandatoryVaccineAlerts(animal);
+  const vaccineAlerts = getVaccineAlerts(animal, today).filter(a => a.severity === 'urgent');
+  if (missingMandatory.length > 0 || vaccineAlerts.length > 0) return 'red';
+
+  // Orange: anti-puce/vermifuge missing or overdue
+  const antiparasiticAlerts = getAntiparasiticAlerts(animal, today);
+  if (antiparasiticAlerts.length > 0) return 'orange';
+
+  // Also orange for other warnings
+  const allAlerts = getAllAlerts([animal], rendezvous.filter(r => r.animalIds?.includes(animal.id)));
+  if (allAlerts.some(a => a.severity === 'warning' || a.severity === 'urgent')) return 'orange';
+
+  return 'green';
 }

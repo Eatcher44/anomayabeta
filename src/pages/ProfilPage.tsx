@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { formatWeight } from '@/components/AnimalRow';
-import { ArrowLeft, Edit, Syringe, Bug, Pill, Calendar, Baby, Clock } from 'lucide-react';
+import { ArrowLeft, Edit, Syringe, Bug, Pill, Calendar, Baby } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,7 +15,6 @@ import {
 import { useAnimals } from '@/context/AnimalsContext';
 import { useAuth } from '@/context/AuthContext';
 import DateField from '@/components/DateField';
-import HealthTimeline from '@/components/HealthTimeline';
 import ColorPicker from '@/components/ColorPicker';
 import { displayBreed } from '@/utils/breeds';
 import { getAgeText } from '@/utils/date';
@@ -35,7 +34,6 @@ export default function ProfilPage() {
   const [editOpen, setEditOpen] = useState(false);
   const [puceInlineEdit, setPuceInlineEdit] = useState(false);
   const [puceDraft, setPuceDraft] = useState('');
-  const [timelineOpen, setTimelineOpen] = useState(false);
 
   // Edit state
   const [nameDraft, setNameDraft] = useState('');
@@ -320,17 +318,6 @@ export default function ProfilPage() {
             </p>
           </div>
 
-          {/* Timeline santé */}
-          <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="font-extrabold">Timeline santé</h2>
-              <Button variant="ghost" size="sm" onClick={() => setTimelineOpen(!timelineOpen)} className="text-primary font-semibold">
-                <Clock className="w-4 h-4 mr-1" />
-                {timelineOpen ? 'Fermer' : 'Voir'}
-              </Button>
-            </div>
-            {timelineOpen && <HealthTimeline animal={animal} />}
-          </div>
 
           {/* Reproduction */}
           {!animal.sterilise && (
@@ -360,6 +347,14 @@ export default function ProfilPage() {
           {/* Poids */}
           <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
             <h2 className="font-extrabold mb-3">Suivi du poids</h2>
+            <p className="text-sm text-muted-foreground mb-3">
+              {(() => {
+                if (!animal.poids || animal.poids.length === 0) return 'Poids non renseigné';
+                const sorted = [...animal.poids].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+                const last = sorted[0];
+                return `${formatWeight(last.poids)} le ${new Date(last.date).toLocaleDateString('fr-FR')}`;
+              })()}
+            </p>
             <Button variant="secondary" onClick={() => navigate(`/poids/${animal.id}`)}>
               Gérer le poids
             </Button>
