@@ -163,7 +163,7 @@ export default function PorteesPage() {
           .from('animals')
           .insert({
             user_id: user.id,
-            nom: `${mother.nom} - Bébé ${i + 1}`,
+            nom: `Petit ${i + 1}`,
             type: mother.type,
             sexe: 'Femelle',
             race: mother.race || null,

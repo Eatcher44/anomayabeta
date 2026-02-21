@@ -107,11 +107,44 @@ export default function TransferPage() {
         return;
       }
 
-      // Transfer ownership
+      const animalId = (tc as any).animal_id;
+      const fromUserId = (tc as any).from_user_id;
+
+      // Fetch the animal data for snapshot before transfer
+      const { data: animalData } = await supabase
+        .from('animals')
+        .select('*')
+        .eq('id', animalId)
+        .single();
+
+      // Create archive entry for the original owner
+      if (animalData) {
+        await supabase
+          .from('transfer_archive')
+          .insert({
+            original_owner_id: fromUserId,
+            animal_id: animalId,
+            animal_name: (animalData as any).nom,
+            animal_photo: (animalData as any).photo,
+            animal_data: {
+              type: (animalData as any).type,
+              sexe: (animalData as any).sexe,
+              race: (animalData as any).race,
+              naissance: (animalData as any).naissance,
+              puce: (animalData as any).puce,
+              poids: (animalData as any).poids,
+              soins: (animalData as any).soins,
+              consultations: (animalData as any).consultations,
+            },
+            transfer_code_id: (tc as any).id,
+          } as any);
+      }
+
+      // Transfer ownership - set breeder_visible to true for buyer
       const { error: transferError } = await supabase
         .from('animals')
-        .update({ user_id: user.id, litter_id: null, mother_id: null })
-        .eq('id', (tc as any).animal_id);
+        .update({ user_id: user.id, litter_id: null, mother_id: null, breeder_visible: true })
+        .eq('id', animalId);
 
       if (transferError) throw transferError;
 
@@ -125,7 +158,7 @@ export default function TransferPage() {
       await supabase
         .from('notifications')
         .delete()
-        .eq('animal_id', (tc as any).animal_id);
+        .eq('animal_id', animalId);
 
       toast({ title: 'Profil transféré !', description: "L'animal a été ajouté à votre famille." });
       setClaimCode('');

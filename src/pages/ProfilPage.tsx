@@ -34,7 +34,7 @@ export default function ProfilPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { animaux, updateAnimal, rendezvous } = useAnimals();
+  const { animaux, updateAnimal, rendezvous, setAnimaux } = useAnimals();
   const { isBreeder } = useBreeder();
   const [editOpen, setEditOpen] = useState(false);
   const [puceInlineEdit, setPuceInlineEdit] = useState(false);
@@ -213,12 +213,32 @@ export default function ProfilPage() {
     : {};
 
     const isParadis = !!animal.paradis;
+    const isNewborn = !!(animal.litter_id && (animal as any).breeder_visible === false);
+
+    const handlePromoteToFamily = async () => {
+      try {
+        await supabase.from('animals').update({ breeder_visible: true, litter_id: null }).eq('id', animal.id);
+        setAnimaux((prev) =>
+          prev.map((a) => (a.id === animal.id ? { ...a, breeder_visible: true, litter_id: undefined } : a))
+        );
+        toast({ title: 'Ajouté à Ma famille', description: `${animal.nom} est maintenant dans Ma famille.` });
+        navigate('/');
+      } catch {
+        toast({ title: 'Erreur', variant: 'destructive' });
+      }
+    };
+
+    const handleBackNav = () => {
+      if (isParadis) return navigate('/paradis');
+      if (isNewborn && animal.litter_id) return navigate(`/portee/${animal.litter_id}`);
+      return navigate('/');
+    };
 
     return (
     <div className="min-h-screen bg-gradient-to-b from-[hsl(33,60%,95%)] to-[hsl(30,40%,92%)] dark:from-background dark:to-background">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-card/90 backdrop-blur border-b border-border px-4 py-3 flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => navigate(isParadis ? '/paradis' : '/')}>
+        <Button variant="ghost" size="icon" onClick={handleBackNav}>
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <h1 className="font-bold text-lg">Profil</h1>
@@ -414,8 +434,8 @@ export default function ProfilPage() {
           </div>
 
 
-          {/* Chaleurs (breeder, female cats/dogs only) */}
-          {!isParadis && isFemale(animal) && !animal.sterilise && isBreederEligible(animal.type) && (
+          {/* Chaleurs (breeder, female cats/dogs only) - hidden for newborns */}
+          {!isParadis && !isNewborn && isFemale(animal) && !animal.sterilise && isBreederEligible(animal.type) && (
             <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
               <h2 className="font-extrabold mb-3">Chaleurs</h2>
               {isBreeder ? (
@@ -432,8 +452,8 @@ export default function ProfilPage() {
             </div>
           )}
 
-          {/* Reproduction (breeder, female cats/dogs only) */}
-          {!isParadis && isFemale(animal) && !animal.sterilise && isBreederEligible(animal.type) && (
+          {/* Reproduction (breeder, female cats/dogs only) - hidden for newborns */}
+          {!isParadis && !isNewborn && isFemale(animal) && !animal.sterilise && isBreederEligible(animal.type) && (
             <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
               <h2 className="font-extrabold mb-3">Reproduction</h2>
               {isBreeder ? (
@@ -450,8 +470,8 @@ export default function ProfilPage() {
             </div>
           )}
 
-          {/* Reproduction (breeder, male cats/dogs) */}
-          {!isParadis && isMale(animal) && isBreederEligible(animal.type) && isBreeder && (
+          {/* Reproduction (breeder, male cats/dogs) - hidden for newborns */}
+          {!isParadis && !isNewborn && isMale(animal) && isBreederEligible(animal.type) && isBreeder && (
             <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
               <h2 className="font-extrabold mb-3">Reproduction</h2>
               {maleMatings.length === 0 ? (
@@ -486,13 +506,26 @@ export default function ProfilPage() {
             </div>
           )}
 
-          {!isParadis && isBreeder && isBreederEligible(animal.type) && (
+          {!isParadis && !isNewborn && isBreeder && isBreederEligible(animal.type) && (
             <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
               <h2 className="font-extrabold mb-3">Transfert de profil</h2>
               <Button variant="outline" onClick={() => navigate(`/transfer/${animal.id}`)}>
                 <QrCode className="w-4 h-4 mr-2" />
                 Transférer ce profil
               </Button>
+            </div>
+          )}
+
+          {/* Ajouter à Ma famille (newborns only) */}
+          {!isParadis && isNewborn && isBreeder && (
+            <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
+              <h2 className="font-extrabold mb-3">Gestion du profil</h2>
+              <Button onClick={handlePromoteToFamily} className="w-full">
+                Ajouter à Ma famille
+              </Button>
+              <p className="text-xs text-muted-foreground mt-2">
+                Le nouveau-né sera visible dans « Ma famille » et aura accès aux modules adultes.
+              </p>
             </div>
           )}
 

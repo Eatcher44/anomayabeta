@@ -185,6 +185,18 @@ export function AnimalsProvider({ children }: { children: React.ReactNode }) {
       if ('paradis' in patch) {
         updatePayload.paradis = (patch as any).paradis;
       }
+      if ('breeder_visible' in patch) {
+        updatePayload.breeder_visible = (patch as any).breeder_visible;
+      }
+      if ('couleur' in patch) {
+        updatePayload.couleur = (patch as any).couleur;
+      }
+      if ('litter_id' in patch) {
+        updatePayload.litter_id = (patch as any).litter_id;
+      }
+      if ('mother_id' in patch) {
+        updatePayload.mother_id = (patch as any).mother_id;
+      }
       const { error } = await supabase
         .from('animals')
         .update(updatePayload)

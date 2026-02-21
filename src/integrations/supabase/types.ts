@@ -331,6 +331,47 @@ export type Database = {
           },
         ]
       }
+      transfer_archive: {
+        Row: {
+          animal_data: Json
+          animal_id: string
+          animal_name: string
+          animal_photo: string | null
+          id: string
+          original_owner_id: string
+          transfer_code_id: string | null
+          transferred_at: string
+        }
+        Insert: {
+          animal_data?: Json
+          animal_id: string
+          animal_name: string
+          animal_photo?: string | null
+          id?: string
+          original_owner_id: string
+          transfer_code_id?: string | null
+          transferred_at?: string
+        }
+        Update: {
+          animal_data?: Json
+          animal_id?: string
+          animal_name?: string
+          animal_photo?: string | null
+          id?: string
+          original_owner_id?: string
+          transfer_code_id?: string | null
+          transferred_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transfer_archive_transfer_code_id_fkey"
+            columns: ["transfer_code_id"]
+            isOneToOne: false
+            referencedRelation: "transfer_codes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       transfer_codes: {
         Row: {
           animal_id: string
