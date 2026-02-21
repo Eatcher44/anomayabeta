@@ -53,6 +53,7 @@ export function AnimalsProvider({ children }: { children: React.ReactNode }) {
         sterilise: a.sterilise || false,
         puce: a.puce || undefined,
         couleur: (a as any).couleur || null,
+        paradis: (a as any).paradis || false,
         poids: parseJsonArray<WeightEntry>(a.poids, []),
         soins: parseJsonArray<SoinEntry>(a.soins, []),
         consultations: parseJsonArray<ConsultationEntry>(a.consultations, []),
@@ -162,21 +163,25 @@ export function AnimalsProvider({ children }: { children: React.ReactNode }) {
     const patch = typeof patchOrFn === 'function' ? patchOrFn(currentAnimal) : { ...currentAnimal, ...patchOrFn };
 
     try {
+      const updatePayload: any = {
+        nom: patch.nom,
+        type: normalizeType(patch.type),
+        sexe: patch.sexe,
+        race: patch.race || null,
+        photo: patch.photo || null,
+        naissance: patch.naissance ? new Date(patch.naissance).toISOString().split('T')[0] : null,
+        sterilise: patch.sterilise || false,
+        puce: patch.puce || null,
+        poids: (patch.poids || []) as unknown as Json,
+        soins: (patch.soins || []) as unknown as Json,
+        consultations: (patch.consultations || []) as unknown as Json,
+      };
+      if ('paradis' in patch) {
+        updatePayload.paradis = (patch as any).paradis;
+      }
       const { error } = await supabase
         .from('animals')
-        .update({
-          nom: patch.nom,
-          type: normalizeType(patch.type),
-          sexe: patch.sexe,
-          race: patch.race || null,
-          photo: patch.photo || null,
-          naissance: patch.naissance ? new Date(patch.naissance).toISOString().split('T')[0] : null,
-          sterilise: patch.sterilise || false,
-          puce: patch.puce || null,
-          poids: (patch.poids || []) as unknown as Json,
-          soins: (patch.soins || []) as unknown as Json,
-          consultations: (patch.consultations || []) as unknown as Json,
-        } as any)
+        .update(updatePayload)
         .eq('id', id);
 
       if (error) throw error;

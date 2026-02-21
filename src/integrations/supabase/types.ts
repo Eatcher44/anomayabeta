@@ -22,6 +22,7 @@ export type Database = {
           id: string
           naissance: string | null
           nom: string
+          paradis: boolean
           photo: string | null
           poids: Json | null
           puce: string | null
@@ -40,6 +41,7 @@ export type Database = {
           id?: string
           naissance?: string | null
           nom: string
+          paradis?: boolean
           photo?: string | null
           poids?: Json | null
           puce?: string | null
@@ -58,6 +60,7 @@ export type Database = {
           id?: string
           naissance?: string | null
           nom?: string
+          paradis?: boolean
           photo?: string | null
           poids?: Json | null
           puce?: string | null

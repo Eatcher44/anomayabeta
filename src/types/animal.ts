@@ -47,6 +47,7 @@ export interface Animal {
   sterilise?: boolean;
   puce?: string;
   couleur?: string | null;
+  paradis?: boolean;
   poids: WeightEntry[];
   soins: SoinEntry[];
   consultations: ConsultationEntry[];

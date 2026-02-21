@@ -18,6 +18,7 @@ import NotificationsPage from "./pages/NotificationsPage";
 import NotFound from "./pages/NotFound";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import AbonnementPage from "./pages/AbonnementPage";
+import ParadisPage from "./pages/ParadisPage";
 
 const queryClient = new QueryClient();
 
@@ -145,6 +146,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <AbonnementPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/paradis"
+        element={
+          <ProtectedRoute>
+            <ParadisPage />
           </ProtectedRoute>
         }
       />

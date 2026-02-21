@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Calendar, LogOut, GripVertical, Bell, Activity } from 'lucide-react';
+import { Plus, Calendar, LogOut, GripVertical, Bell, Activity, Crown, Bird } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -28,7 +28,8 @@ import {
   NomModal, TypeModal, CustomTypeModal, SexeModal, SterilModal,
   RaceModal, NaissanceModal, PhotoModal, DeleteConfirmModal,
 } from '@/components/AnimalModals';
-import { maskHHMM, isValidHHMM } from '@/utils/date';
+import { isValidHHMM } from '@/utils/date';
+import { supabase } from '@/integrations/supabase/client';
 import { normalizeType } from '@/utils/normalize';
 import { pickPhotoFile, uploadAnimalPhoto } from '@/utils/photo';
 import { toast } from '@/hooks/use-toast';
@@ -208,7 +209,7 @@ export default function HomePage() {
 
   // Grouped + sorted animals
   const groupedAnimals = useMemo(() => {
-    let list = [...animaux];
+    let list = animaux.filter(a => !(a as any).paradis);
     if (searchQuery.trim()) {
       const q = searchQuery.trim().toLowerCase();
       list = list.filter((a) =>
@@ -370,6 +371,21 @@ export default function HomePage() {
     setDeleteConfirm1(true);
   };
 
+  const handleParadis = async (id: string) => {
+    try {
+      await updateAnimal(id, { paradis: true } as any);
+      // Delete all notifications for this animal
+      const { error } = await supabase
+        .from('notifications')
+        .delete()
+        .eq('animal_id', id);
+      if (error) console.error('Error deleting notifications:', error);
+      toast({ title: `${animaux.find(a => a.id === id)?.nom || 'Animal'} s'est envolé au paradis 🕊️` });
+    } catch {
+      toast({ title: 'Erreur', variant: 'destructive' });
+    }
+  };
+
   const handleDeleteConfirm1 = () => {
     setDeleteConfirm1(false);
     setDeleteConfirm2(true);
@@ -462,6 +478,9 @@ export default function HomePage() {
             <h1 className="text-2xl font-extrabold text-primary">Ma famille</h1>
           </div>
           <div className="flex items-center gap-1">
+            <Button variant="ghost" size="icon" onClick={() => navigate('/abonnement')} title="Anomaya+">
+              <Crown className="w-5 h-5 text-amber-500" />
+            </Button>
             <Button variant="ghost" size="icon" onClick={() => navigate('/notifications')} title="Notifications">
               <Bell className="w-5 h-5" />
             </Button>
@@ -470,6 +489,18 @@ export default function HomePage() {
             </Button>
           </div>
         </div>
+
+        {/* Health Dashboard button */}
+        {animaux.length > 0 && (
+          <Button
+            variant="outline"
+            className="w-full mb-4 font-semibold bg-[hsl(350,60%,95%)] dark:bg-[hsl(350,30%,18%)] border-[hsl(350,40%,85%)] dark:border-[hsl(350,20%,30%)] hover:bg-[hsl(350,60%,90%)] dark:hover:bg-[hsl(350,30%,22%)] rounded-2xl py-3"
+            onClick={() => navigate('/dashboard-sante')}
+          >
+            <Activity className="w-4 h-4 mr-2 text-[hsl(350,60%,55%)]" />
+            Tableau de bord santé
+          </Button>
+        )}
 
         {/* Compact Health Alerts */}
         {animaux.length > 0 && (
@@ -526,17 +557,6 @@ export default function HomePage() {
           className="mb-3 bg-card"
         />
 
-        {/* Health Dashboard button */}
-        {animaux.length > 0 && (
-          <Button
-            variant="outline"
-            className="w-full mb-4 font-semibold"
-            onClick={() => navigate('/dashboard-sante')}
-          >
-            <Activity className="w-4 h-4 mr-2" />
-            Tableau de bord santé
-          </Button>
-        )}
       </div>
 
       {/* Reorder toggle */}
@@ -588,18 +608,28 @@ export default function HomePage() {
                 </h2>
               </div>
               {group.animals.map((item) => (
-                <AnimalRow
+              <AnimalRow
                   key={item.id}
                   item={item}
                   onPickPhoto={handlePickPhoto}
                   onOpenProfile={(id) => navigate(`/profil/${id}`)}
                   onDelete={handleDeleteRequest}
+                  onParadis={handleParadis}
                 />
               ))}
             </div>
           ))
         )}
       </div>
+
+      {/* Paradis button */}
+      <button
+        onClick={() => navigate('/paradis')}
+        className="fixed bottom-6 left-6 z-30 w-14 h-14 rounded-full bg-muted border border-border shadow-lg flex items-center justify-center hover:bg-accent transition-colors"
+        title="Paradis"
+      >
+        <Bird className="w-6 h-6 text-muted-foreground" />
+      </button>
 
       {/* FAB RDV */}
       <button onClick={() => setRdvOpen(true)} className="fab" title="Nouveau rendez-vous">
@@ -645,8 +675,8 @@ export default function HomePage() {
               </div>
               <div>
                 <Label>Heure (HH:MM)</Label>
-                <Input value={rdvHeure} onChange={(e) => setRdvHeure(maskHHMM(e.target.value))} placeholder="ex: 14:30" maxLength={5} className={!rdvHeureValid ? 'border-destructive' : ''} />
-                {!rdvHeureValid && <p className="text-xs text-destructive mt-1">Format attendu : HH:MM</p>}
+                <Input type="time" value={rdvHeure} onChange={(e) => setRdvHeure(e.target.value)} className={!rdvHeureValid ? 'border-destructive' : ''} />
+                {!rdvHeureValid && <p className="text-xs text-destructive mt-1">Veuillez sélectionner une heure</p>}
               </div>
               <div>
                 <Label>Objet</Label>
