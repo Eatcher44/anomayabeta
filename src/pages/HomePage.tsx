@@ -308,8 +308,10 @@ export default function HomePage() {
     if (!animalTemp || !typeTemp || !sexeTemp) return;
     setSaving(true);
     try {
+      // Auto-capitalize first letter of name
+      const capitalizedName = animalTemp.trim().charAt(0).toUpperCase() + animalTemp.trim().slice(1);
       const animalData = {
-        nom: animalTemp.trim(),
+        nom: capitalizedName,
         type: normalizeType(typeTemp.trim()),
         sexe: sexeTemp,
         race: raceTemp.trim() || undefined,

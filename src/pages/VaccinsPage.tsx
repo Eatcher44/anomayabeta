@@ -162,31 +162,53 @@ export default function VaccinsPage() {
   function VaccinRow({ v, isMandatory }: { v: { name: string; months: number }; isMandatory: boolean }) {
     const entry = findVaccinEntry(soins, v.name);
     const done = !!entry;
-    const labelDate = done ? new Date(entry.date!).toLocaleDateString('fr-FR') : 'Non fait';
     const nextDate = done
       ? (entry.prochain ? new Date(entry.prochain) : addMonths(new Date(entry.date!), v.months))
       : null;
 
     return (
       <div className="py-3 border-b border-border last:border-0">
-        <div className="flex items-center justify-between gap-2">
-          <span className="flex-1 text-sm">{v.name}</span>
-          <StatusBadge status={done ? 'green' : 'red'} />
+        <div className="flex items-center gap-3">
           <button
-            onClick={() => openPicker({ ...v, mandatory: isMandatory })}
-            className={`text-sm font-bold ${done ? 'text-status-green' : 'text-status-red'}`}
+            onClick={() => {
+              if (!done) {
+                openPicker({ ...v, mandatory: isMandatory });
+              }
+            }}
+            className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
+              done
+                ? 'bg-primary border-primary text-primary-foreground'
+                : 'border-muted-foreground hover:border-primary'
+            }`}
           >
-            {labelDate}
+            {done && <span className="text-xs">✓</span>}
           </button>
+          <div className="flex-1 min-w-0">
+            <span className="text-sm font-medium">{v.name}</span>
+            {done && (
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Fait le {new Date(entry.date!).toLocaleDateString('fr-FR')}
+                {entry.produit && ` • ${entry.produit}`}
+              </p>
+            )}
+            {done && nextDate && (
+              <p className="text-xs text-muted-foreground">
+                Prochain rappel : <span className="font-semibold">{nextDate.toLocaleDateString('fr-FR')}</span>
+              </p>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <StatusBadge status={done ? 'green' : 'red'} />
+            {done && (
+              <button
+                onClick={() => openPicker({ ...v, mandatory: isMandatory })}
+                className="text-xs text-primary font-semibold"
+              >
+                Modifier
+              </button>
+            )}
+          </div>
         </div>
-        {done && nextDate && (
-          <p className="text-xs text-muted-foreground mt-1">
-            Prochain rappel : <span className="font-semibold">{nextDate.toLocaleDateString('fr-FR')}</span>
-          </p>
-        )}
-        {done && entry.produit && (
-          <p className="text-xs text-muted-foreground">Produit : {entry.produit}</p>
-        )}
       </div>
     );
   }

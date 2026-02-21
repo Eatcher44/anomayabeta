@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAnimals } from '@/context/AnimalsContext';
-import { getAllAlerts, type HealthAlert } from '@/utils/insights';
+import { getAllAlerts, getAnimalHealthStatus, type HealthAlert } from '@/utils/insights';
 import { formatWeight } from '@/components/AnimalRow';
 import type { Animal } from '@/types/animal';
 
@@ -14,12 +14,6 @@ function lastPoidsKg(animal: Animal): number | null {
 }
 
 type AnimalHealthStatus = 'green' | 'orange' | 'red';
-
-function getAnimalStatus(alerts: HealthAlert[]): AnimalHealthStatus {
-  if (alerts.some((a) => a.severity === 'urgent')) return 'red';
-  if (alerts.some((a) => a.severity === 'warning')) return 'orange';
-  return 'green';
-}
 
 const statusColors: Record<AnimalHealthStatus, string> = {
   green: 'bg-[hsl(var(--status-green))]',
@@ -39,6 +33,18 @@ const statusBg: Record<AnimalHealthStatus, string> = {
   red: 'bg-destructive/5',
 };
 
+const statusLabel: Record<AnimalHealthStatus, string> = {
+  green: '✓ À jour',
+  orange: '⚠ À prévoir',
+  red: '✗ À faire',
+};
+
+const statusLabelColor: Record<AnimalHealthStatus, string> = {
+  green: 'text-[hsl(var(--status-green))]',
+  orange: 'text-[hsl(var(--status-orange))]',
+  red: 'text-destructive',
+};
+
 export default function HealthDashboardPage() {
   const navigate = useNavigate();
   const { animaux, rendezvous } = useAnimals();
@@ -47,6 +53,14 @@ export default function HealthDashboardPage() {
     () => [...animaux].sort((a, b) => (a.nom || '').localeCompare(b.nom || '')),
     [animaux]
   );
+
+  const statusByAnimal = useMemo(() => {
+    const map: Record<string, AnimalHealthStatus> = {};
+    for (const animal of animaux) {
+      map[animal.id] = getAnimalHealthStatus(animal, rendezvous);
+    }
+    return map;
+  }, [animaux, rendezvous]);
 
   const alertsByAnimal = useMemo(() => {
     const map: Record<string, HealthAlert[]> = {};
@@ -86,8 +100,8 @@ export default function HealthDashboardPage() {
           </div>
         ) : (
           sortedAnimals.map((animal) => {
+            const status = statusByAnimal[animal.id] || 'green';
             const alerts = alertsByAnimal[animal.id] || [];
-            const status = getAnimalStatus(alerts);
             const urgentAlerts = alerts.filter((a) => a.severity === 'urgent');
             const warningAlerts = alerts.filter((a) => a.severity === 'warning');
             const poids = lastPoidsKg(animal);
@@ -115,9 +129,14 @@ export default function HealthDashboardPage() {
                       {formatWeight(poids)}
                     </p>
                   </div>
-                  <Button variant="ghost" size="sm" onClick={() => navigate(`/profil/${animal.id}`)} className="text-primary">
-                    Voir
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-xs font-bold ${statusLabelColor[status]}`}>
+                      {statusLabel[status]}
+                    </span>
+                    <Button variant="ghost" size="sm" onClick={() => navigate(`/profil/${animal.id}`)} className="text-primary">
+                      Voir
+                    </Button>
+                  </div>
                 </div>
 
                 {/* Urgent alerts first */}

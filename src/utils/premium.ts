@@ -1,27 +1,20 @@
 /**
- * Premium & Breeder mode structure.
- * This module defines the feature gating architecture.
- * Currently all features are unlocked (no subscription yet).
+ * Subscription model: Free / No-Ads / Breeder
  */
 
-export type AppMode = 'free' | 'premium' | 'breeder';
+export type AppMode = 'free' | 'noads' | 'breeder';
 
 export interface FeatureAccess {
-  // Free features
+  // Core (all plans)
   basicTracking: boolean;
   reminders: boolean;
   weightHistory: boolean;
   vaccines: boolean;
+  healthDashboard: boolean;
 
-  // Premium features
-  smartDashboard: boolean;
-  medications: boolean;
-  timeline: boolean;
-  smartInsights: boolean;
-  exportPdf: boolean;
-  advancedReminders: boolean;
-  customColors: boolean;
-  noAds: boolean;
+  // Free limits
+  maxFreeAnimals: number;
+  adsEnabled: boolean;
 
   // Breeder features
   reproductionTracking: boolean;
@@ -31,6 +24,8 @@ export interface FeatureAccess {
   birthHistory: boolean;
   lineage: boolean;
   expectedBirthCalc: boolean;
+  heatCycleTracking: boolean;
+  qrTransfer: boolean;
 }
 
 const FEATURES: Record<AppMode, FeatureAccess> = {
@@ -39,14 +34,9 @@ const FEATURES: Record<AppMode, FeatureAccess> = {
     reminders: true,
     weightHistory: true,
     vaccines: true,
-    smartDashboard: false,
-    medications: false,
-    timeline: false,
-    smartInsights: false,
-    exportPdf: false,
-    advancedReminders: false,
-    customColors: false,
-    noAds: false,
+    healthDashboard: true,
+    maxFreeAnimals: 3,
+    adsEnabled: true,
     reproductionTracking: false,
     gestationTracking: false,
     litterManagement: false,
@@ -54,20 +44,17 @@ const FEATURES: Record<AppMode, FeatureAccess> = {
     birthHistory: false,
     lineage: false,
     expectedBirthCalc: false,
+    heatCycleTracking: false,
+    qrTransfer: false,
   },
-  premium: {
+  noads: {
     basicTracking: true,
     reminders: true,
     weightHistory: true,
     vaccines: true,
-    smartDashboard: true,
-    medications: true,
-    timeline: true,
-    smartInsights: true,
-    exportPdf: true,
-    advancedReminders: true,
-    customColors: true,
-    noAds: true,
+    healthDashboard: true,
+    maxFreeAnimals: Infinity,
+    adsEnabled: false,
     reproductionTracking: false,
     gestationTracking: false,
     litterManagement: false,
@@ -75,20 +62,17 @@ const FEATURES: Record<AppMode, FeatureAccess> = {
     birthHistory: false,
     lineage: false,
     expectedBirthCalc: false,
+    heatCycleTracking: false,
+    qrTransfer: false,
   },
   breeder: {
     basicTracking: true,
     reminders: true,
     weightHistory: true,
     vaccines: true,
-    smartDashboard: true,
-    medications: true,
-    timeline: true,
-    smartInsights: true,
-    exportPdf: true,
-    advancedReminders: true,
-    customColors: true,
-    noAds: true,
+    healthDashboard: true,
+    maxFreeAnimals: Infinity,
+    adsEnabled: false,
     reproductionTracking: true,
     gestationTracking: true,
     litterManagement: true,
@@ -96,11 +80,13 @@ const FEATURES: Record<AppMode, FeatureAccess> = {
     birthHistory: true,
     lineage: true,
     expectedBirthCalc: true,
+    heatCycleTracking: true,
+    qrTransfer: true,
   },
 };
 
-// For now, grant all features (premium) until subscription is implemented
-const CURRENT_MODE: AppMode = 'premium';
+// For now, grant free plan until subscription is implemented
+const CURRENT_MODE: AppMode = 'free';
 
 export function getFeatures(): FeatureAccess {
   return FEATURES[CURRENT_MODE];
@@ -111,13 +97,14 @@ export function getCurrentMode(): AppMode {
 }
 
 export function isFeatureEnabled(feature: keyof FeatureAccess): boolean {
-  return FEATURES[CURRENT_MODE][feature];
+  const val = FEATURES[CURRENT_MODE][feature];
+  return typeof val === 'boolean' ? val : true;
 }
 
 export function getPlanName(mode: AppMode): string {
   switch (mode) {
     case 'free': return 'Gratuit';
-    case 'premium': return 'Premium';
+    case 'noads': return 'Sans publicités';
     case 'breeder': return 'Pack Éleveur';
   }
 }
@@ -126,32 +113,29 @@ export function getPlanFeatures(mode: AppMode): string[] {
   switch (mode) {
     case 'free':
       return [
-        'Suivi basique des animaux',
-        'Rappels simples',
-        'Historique de poids',
-        'Suivi des vaccins',
+        'Toutes les fonctionnalités de base',
+        '3 premiers animaux gratuits',
+        'Publicités activées',
+        'Suivi de poids, vaccins, soins',
+        'Tableau de bord santé',
+        'Rappels',
       ];
-    case 'premium':
+    case 'noads':
       return [
         'Tout du plan Gratuit',
         'Sans publicités',
-        'Tableau de bord santé intelligent',
-        'Rappels avancés personnalisables',
-        'Suivi des médicaments',
-        'Timeline santé',
-        'Analyses et alertes intelligentes',
-        'Export PDF',
-        'Couleurs personnalisées',
+        'Animaux illimités',
       ];
     case 'breeder':
       return [
-        'Tout du plan Premium',
+        'Tout du plan Sans publicités',
         'Suivi de gestation',
         'Date de naissance prévue automatique',
         'Gestion des portées',
         'Lien parents-descendants',
         'Historique de reproduction',
-        'Arbre généalogique',
+        'Suivi des chaleurs',
+        'Transfert QR des profils',
       ];
   }
 }
