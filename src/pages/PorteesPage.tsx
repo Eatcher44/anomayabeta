@@ -122,6 +122,7 @@ export default function PorteesPage() {
 
   const createLitter = async () => {
     if (!user || !motherId || !birthDateValid || nbNewborns < 1) return;
+    const validCount = Math.max(1, Math.min(20, Math.floor(nbNewborns)));
     setSaving(true);
 
     const mother = animaux.find((a) => a.id === motherId);
@@ -130,6 +131,9 @@ export default function PorteesPage() {
     try {
       const fatherIdValue = fatherMode === 'existing' && fatherId ? fatherId : null;
       const fatherNameValue = fatherMode === 'manual' && fatherManualName.trim() ? fatherManualName.trim() : null;
+      const birthDateStr = birthDate.toISOString().split('T')[0];
+
+      if (import.meta.env.DEV) console.log('[Litter] Creating with newbornCount:', validCount);
 
       const { data: litterData, error: litterError } = await supabase
         .from('litters')
@@ -138,7 +142,7 @@ export default function PorteesPage() {
           mother_id: motherId,
           father_id: fatherIdValue,
           father_name: fatherNameValue,
-          birth_date: birthDate.toISOString().split('T')[0],
+          birth_date: birthDateStr,
           reproduction_id: reproductionId,
           notes: null,
         })
@@ -157,8 +161,11 @@ export default function PorteesPage() {
 
       const litterId = (litterData as any).id;
 
-      // Create newborn animal profiles directly with breeder_visible=false, litter_id, mother_id
-      for (let i = 0; i < nbNewborns; i++) {
+      if (import.meta.env.DEV) console.log('[Litter] Created litter:', litterId);
+
+      // Create newborn animal profiles
+      const createdNewborns: any[] = [];
+      for (let i = 0; i < validCount; i++) {
         const { data: newborn, error: nbError } = await supabase
           .from('animals')
           .insert({
@@ -167,7 +174,7 @@ export default function PorteesPage() {
             type: mother.type,
             sexe: 'Femelle',
             race: mother.race || null,
-            naissance: birthDate.toISOString().split('T')[0],
+            naissance: birthDateStr,
             sterilise: false,
             poids: '[]',
             soins: '[]',
@@ -179,12 +186,39 @@ export default function PorteesPage() {
           .select()
           .single();
 
-        if (nbError) console.error('Error creating newborn:', nbError);
+        if (nbError) {
+          console.error('Error creating newborn:', nbError);
+        } else if (newborn) {
+          createdNewborns.push(newborn);
+        }
+      }
+
+      if (import.meta.env.DEV) console.log('[Litter] Newborns created:', createdNewborns.length);
+
+      // Add newborns to local animaux state so LitterDetail can see them immediately
+      if (createdNewborns.length > 0) {
+        const mapped = createdNewborns.map((data: any) => ({
+          id: data.id,
+          nom: data.nom,
+          type: data.type,
+          sexe: data.sexe,
+          race: data.race || undefined,
+          naissance: data.naissance ? new Date(data.naissance).toISOString() : undefined,
+          sterilise: false,
+          breeder_visible: false,
+          litter_id: data.litter_id,
+          mother_id: data.mother_id,
+          poids: [],
+          soins: [],
+          consultations: [],
+          createdAt: data.created_at,
+        }));
+        setAnimaux((prev: any[]) => [...mapped, ...prev]);
       }
 
       setModalOpen(false);
       setReproductionId(null);
-      toast({ title: 'Portée créée', description: `${nbNewborns} profils créés.` });
+      toast({ title: 'Portée créée', description: `${createdNewborns.length} profil(s) créés.` });
       await fetchLitters();
     } catch {
       toast({ title: 'Erreur', variant: 'destructive' });
