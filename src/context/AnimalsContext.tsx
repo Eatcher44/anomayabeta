@@ -55,6 +55,13 @@ export function AnimalsProvider({ children }: { children: React.ReactNode }) {
         couleur: (a as any).couleur || null,
         paradis: (a as any).paradis || false,
         breeder_visible: (a as any).breeder_visible ?? true,
+        commercial_status: (a as any).commercial_status || 'available',
+        buyer_name: (a as any).buyer_name || null,
+        buyer_phone: (a as any).buyer_phone || null,
+        buyer_email: (a as any).buyer_email || null,
+        deposit_received: (a as any).deposit_received || false,
+        planned_departure_date: (a as any).planned_departure_date || null,
+        commercial_notes: (a as any).commercial_notes || null,
         poids: parseJsonArray<WeightEntry>(a.poids, []),
         soins: parseJsonArray<SoinEntry>(a.soins, []),
         consultations: parseJsonArray<ConsultationEntry>(a.consultations, []),
@@ -196,6 +203,12 @@ export function AnimalsProvider({ children }: { children: React.ReactNode }) {
       }
       if ('mother_id' in patch) {
         updatePayload.mother_id = (patch as any).mother_id;
+      }
+      // Commercial fields
+      for (const key of ['commercial_status', 'buyer_name', 'buyer_phone', 'buyer_email', 'deposit_received', 'planned_departure_date', 'commercial_notes'] as const) {
+        if (key in patch) {
+          updatePayload[key] = (patch as any)[key];
+        }
       }
       const { error } = await supabase
         .from('animals')

@@ -17,9 +17,15 @@ export type Database = {
       animals: {
         Row: {
           breeder_visible: boolean
+          buyer_email: string | null
+          buyer_name: string | null
+          buyer_phone: string | null
+          commercial_notes: string | null
+          commercial_status: string | null
           consultations: Json | null
           couleur: string | null
           created_at: string
+          deposit_received: boolean | null
           id: string
           litter_id: string | null
           mother_id: string | null
@@ -27,6 +33,7 @@ export type Database = {
           nom: string
           paradis: boolean
           photo: string | null
+          planned_departure_date: string | null
           poids: Json | null
           puce: string | null
           race: string | null
@@ -39,9 +46,15 @@ export type Database = {
         }
         Insert: {
           breeder_visible?: boolean
+          buyer_email?: string | null
+          buyer_name?: string | null
+          buyer_phone?: string | null
+          commercial_notes?: string | null
+          commercial_status?: string | null
           consultations?: Json | null
           couleur?: string | null
           created_at?: string
+          deposit_received?: boolean | null
           id?: string
           litter_id?: string | null
           mother_id?: string | null
@@ -49,6 +62,7 @@ export type Database = {
           nom: string
           paradis?: boolean
           photo?: string | null
+          planned_departure_date?: string | null
           poids?: Json | null
           puce?: string | null
           race?: string | null
@@ -61,9 +75,15 @@ export type Database = {
         }
         Update: {
           breeder_visible?: boolean
+          buyer_email?: string | null
+          buyer_name?: string | null
+          buyer_phone?: string | null
+          commercial_notes?: string | null
+          commercial_status?: string | null
           consultations?: Json | null
           couleur?: string | null
           created_at?: string
+          deposit_received?: boolean | null
           id?: string
           litter_id?: string | null
           mother_id?: string | null
@@ -71,6 +91,7 @@ export type Database = {
           nom?: string
           paradis?: boolean
           photo?: string | null
+          planned_departure_date?: string | null
           poids?: Json | null
           puce?: string | null
           race?: string | null
