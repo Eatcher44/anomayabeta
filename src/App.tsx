@@ -23,6 +23,7 @@ import ParadisPage from "./pages/ParadisPage";
 import ReproductionPage from "./pages/ReproductionPage";
 import PorteesPage from "./pages/PorteesPage";
 import TransferPage from "./pages/TransferPage";
+import ChaleursPage from "./pages/ChaleursPage";
 
 const queryClient = new QueryClient();
 
@@ -166,6 +167,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <ReproductionPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/chaleurs/:id"
+        element={
+          <ProtectedRoute>
+            <ChaleursPage />
           </ProtectedRoute>
         }
       />

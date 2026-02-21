@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { formatWeight } from '@/components/AnimalRow';
-import { ArrowLeft, Edit, Syringe, Bug, Pill, Calendar, Baby, Bird, QrCode } from 'lucide-react';
+import { ArrowLeft, Edit, Syringe, Bug, Pill, Calendar, Baby, Bird, QrCode, Flame } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -333,6 +333,24 @@ export default function ProfilPage() {
             </p>
           </div>
 
+
+          {/* Chaleurs (breeder, female cats/dogs only) */}
+          {!isParadis && isFemale(animal) && !animal.sterilise && isBreederEligible(animal.type) && (
+            <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
+              <h2 className="font-extrabold mb-3">Chaleurs</h2>
+              {isBreeder ? (
+                <Button onClick={() => navigate(`/chaleurs/${animal.id}`)}>
+                  <Flame className="w-4 h-4 mr-2" />
+                  Gérer les chaleurs
+                </Button>
+              ) : (
+                <Button variant="outline" disabled>
+                  <Flame className="w-4 h-4 mr-2" />
+                  À venir (pack Éleveur)
+                </Button>
+              )}
+            </div>
+          )}
 
           {/* Reproduction (breeder, female cats/dogs only) */}
           {!isParadis && isFemale(animal) && !animal.sterilise && isBreederEligible(animal.type) && (
