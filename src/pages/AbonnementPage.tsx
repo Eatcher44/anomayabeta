@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useBreeder } from '@/context/BreederContext';
 import { toast } from '@/hooks/use-toast';
 import { ArrowLeft, Crown, Check, X, Shield, CreditCard, RefreshCw, Sparkles, FlaskConical } from 'lucide-react';
@@ -46,8 +46,10 @@ const COMPARISON_ROWS = [
 
 export default function AbonnementPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { isBreeder, setBreeder, setNoAds } = useBreeder();
-  const [selectedPlan, setSelectedPlan] = useState<PlanId>('nopub');
+  const initialPlan = searchParams.get('plan') === 'breeder' ? 'breeder' : 'nopub';
+  const [selectedPlan, setSelectedPlan] = useState<PlanId>(initialPlan);
   const [selectedDuration, setSelectedDuration] = useState<Duration>('yearly');
 
   const prices = selectedPlan === 'nopub' ? NO_PUB_PRICES : BREEDER_PRICES;
