@@ -28,6 +28,7 @@ import { isBreederEligible } from '@/utils/breederUtils';
 
 const fmt = (d: string | Date) => new Date(d).toLocaleDateString('fr-FR');
 const isFemale = (a: { sexe?: string }) => (a.sexe || '').toLowerCase().startsWith('f');
+const isMale = (a: { sexe?: string }) => (a.sexe || '').toLowerCase().startsWith('m');
 
 export default function ProfilPage() {
   const { id } = useParams<{ id: string }>();
@@ -56,6 +57,9 @@ export default function ProfilPage() {
   const motherAnimal = animal?.mother_id ? animaux.find((a) => a.id === animal.mother_id) : null;
   const [fatherInfo, setFatherInfo] = useState<{ name: string } | null>(null);
 
+  // Male reproduction records
+  const [maleMatings, setMaleMatings] = useState<any[]>([]);
+
   useEffect(() => {
     if (!animal?.litter_id) return;
     (async () => {
@@ -74,6 +78,43 @@ export default function ProfilPage() {
       }
     })();
   }, [animal?.litter_id, animaux]);
+
+  // Fetch matings where this male is the father
+  useEffect(() => {
+    if (!animal || !isMale(animal) || !isBreederEligible(animal.type)) return;
+    (async () => {
+      const { data } = await supabase
+        .from('reproductions')
+        .select('*')
+        .eq('father_animal_id', animal.id)
+        .order('date_saillie', { ascending: false });
+      if (data) {
+        // Also fetch linked litters
+        const enriched = await Promise.all(
+          data.map(async (r: any) => {
+            const motherAnimal = animaux.find((a) => a.id === r.animal_id);
+            let litter = null;
+            if (r.status === 'birth_confirmed') {
+              const { data: lit } = await supabase
+                .from('litters')
+                .select('id, birth_date')
+                .eq('reproduction_id', r.id)
+                .single();
+              if (lit) {
+                const { count } = await supabase
+                  .from('animals')
+                  .select('id', { count: 'exact', head: true })
+                  .eq('litter_id', lit.id);
+                litter = { ...lit, newborn_count: count || 0 };
+              }
+            }
+            return { ...r, motherName: motherAnimal?.nom || 'Inconnue', litter };
+          })
+        );
+        setMaleMatings(enriched);
+      }
+    })();
+  }, [animal?.id, animaux]);
 
   const soins = animal?.soins || [];
   const bgClass = animal && isFemale(animal) ? 'bg-female' : 'bg-male';
@@ -409,7 +450,42 @@ export default function ProfilPage() {
             </div>
           )}
 
-          {/* Transfer QR (breeder only, cats/dogs) */}
+          {/* Reproduction (breeder, male cats/dogs) */}
+          {!isParadis && isMale(animal) && isBreederEligible(animal.type) && isBreeder && (
+            <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
+              <h2 className="font-extrabold mb-3">Reproduction</h2>
+              {maleMatings.length === 0 ? (
+                <p className="text-sm text-muted-foreground">Aucune saillie enregistrée pour ce mâle.</p>
+              ) : (
+                <div className="space-y-3">
+                  {maleMatings.map((m: any) => {
+                    const statusLabel = m.status === 'cancelled' ? 'Annulée' : m.status === 'birth_confirmed' ? 'Mise-bas effectuée' : 'En cours';
+                    const statusColor = m.status === 'cancelled' ? 'text-muted-foreground' : m.status === 'birth_confirmed' ? 'text-green-600 dark:text-green-400' : 'text-primary';
+                    return (
+                      <div key={m.id} className={`rounded-lg border border-border p-3 ${m.status === 'cancelled' ? 'opacity-60' : ''}`}>
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <p className="font-semibold text-sm">Mère : {m.motherName}</p>
+                            <p className="text-xs text-muted-foreground">Saillie le {fmt(m.date_saillie)}</p>
+                          </div>
+                          <span className={`text-xs font-semibold ${statusColor}`}>{statusLabel}</span>
+                        </div>
+                        {m.litter && (
+                          <button
+                            onClick={() => navigate(`/portee/${m.litter.id}`)}
+                            className="mt-2 text-xs text-primary hover:underline"
+                          >
+                            Portée du {fmt(m.litter.birth_date)} • {m.litter.newborn_count} petit(s) →
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+
           {!isParadis && isBreeder && isBreederEligible(animal.type) && (
             <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
               <h2 className="font-extrabold mb-3">Transfert de profil</h2>

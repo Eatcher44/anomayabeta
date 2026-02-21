@@ -54,6 +54,7 @@ export function AnimalsProvider({ children }: { children: React.ReactNode }) {
         puce: a.puce || undefined,
         couleur: (a as any).couleur || null,
         paradis: (a as any).paradis || false,
+        breeder_visible: (a as any).breeder_visible ?? true,
         poids: parseJsonArray<WeightEntry>(a.poids, []),
         soins: parseJsonArray<SoinEntry>(a.soins, []),
         consultations: parseJsonArray<ConsultationEntry>(a.consultations, []),

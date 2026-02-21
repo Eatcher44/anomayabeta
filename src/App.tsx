@@ -25,6 +25,7 @@ import PorteesPage from "./pages/PorteesPage";
 import TransferPage from "./pages/TransferPage";
 import ChaleursPage from "./pages/ChaleursPage";
 import StatsElevagePage from "./pages/StatsElevagePage";
+import LitterDetailPage from "./pages/LitterDetailPage";
 
 const queryClient = new QueryClient();
 
@@ -184,6 +185,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <PorteesPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/portee/:id"
+        element={
+          <ProtectedRoute>
+            <LitterDetailPage />
           </ProtectedRoute>
         }
       />

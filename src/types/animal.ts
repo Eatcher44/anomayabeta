@@ -50,6 +50,7 @@ export interface Animal {
   paradis?: boolean;
   mother_id?: string | null;
   litter_id?: string | null;
+  breeder_visible?: boolean;
   poids: WeightEntry[];
   soins: SoinEntry[];
   consultations: ConsultationEntry[];

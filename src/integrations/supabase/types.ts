@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       animals: {
         Row: {
+          breeder_visible: boolean
           consultations: Json | null
           couleur: string | null
           created_at: string
@@ -37,6 +38,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          breeder_visible?: boolean
           consultations?: Json | null
           couleur?: string | null
           created_at?: string
@@ -58,6 +60,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          breeder_visible?: boolean
           consultations?: Json | null
           couleur?: string | null
           created_at?: string
@@ -272,8 +275,11 @@ export type Database = {
           confirmed: boolean
           created_at: string
           date_saillie: string
+          father_animal_id: string | null
+          father_external_name: string | null
           id: string
           notes: string | null
+          status: string
           user_id: string
         }
         Insert: {
@@ -281,8 +287,11 @@ export type Database = {
           confirmed?: boolean
           created_at?: string
           date_saillie: string
+          father_animal_id?: string | null
+          father_external_name?: string | null
           id?: string
           notes?: string | null
+          status?: string
           user_id: string
         }
         Update: {
@@ -290,14 +299,24 @@ export type Database = {
           confirmed?: boolean
           created_at?: string
           date_saillie?: string
+          father_animal_id?: string | null
+          father_external_name?: string | null
           id?: string
           notes?: string | null
+          status?: string
           user_id?: string
         }
         Relationships: [
           {
             foreignKeyName: "reproductions_animal_id_fkey"
             columns: ["animal_id"]
+            isOneToOne: false
+            referencedRelation: "animals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reproductions_father_animal_id_fkey"
+            columns: ["father_animal_id"]
             isOneToOne: false
             referencedRelation: "animals"
             referencedColumns: ["id"]
