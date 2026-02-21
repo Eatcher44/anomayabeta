@@ -119,6 +119,54 @@ export type Database = {
           },
         ]
       }
+      breeder_profiles: {
+        Row: {
+          adresse: string | null
+          created_at: string
+          email: string | null
+          id: string
+          logo_url: string | null
+          nom: string | null
+          nom_elevage: string | null
+          prenom: string | null
+          signature_url: string | null
+          siret: string | null
+          telephone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          adresse?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          logo_url?: string | null
+          nom?: string | null
+          nom_elevage?: string | null
+          prenom?: string | null
+          signature_url?: string | null
+          siret?: string | null
+          telephone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          adresse?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          logo_url?: string | null
+          nom?: string | null
+          nom_elevage?: string | null
+          prenom?: string | null
+          signature_url?: string | null
+          siret?: string | null
+          telephone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       heat_cycles: {
         Row: {
           animal_id: string

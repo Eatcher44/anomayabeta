@@ -17,11 +17,21 @@ const C = {
   light: [160, 160, 165] as [number, number, number],
   rule: [200, 200, 205] as [number, number, number],
   rowAlt: [246, 247, 250] as [number, number, number],
-  accent: [40, 80, 140] as [number, number, number],   // subtle medical blue
+  accent: [40, 80, 140] as [number, number, number],
   white: [255, 255, 255] as [number, number, number],
 };
 
 function setC(doc: jsPDF, c: [number, number, number]) { doc.setTextColor(...c); }
+
+// ─── Sanitize strings ────────────────────────────────────────
+function sanitize(str: string | null | undefined): string {
+  if (!str) return '';
+  return str
+    .replace(/[\u0000-\u001F\u007F-\u009F]+/g, '')  // control chars
+    .replace(/&[A-Z]/g, '')                           // stray jsPDF formatting tokens like &B
+    .normalize('NFC')
+    .trim();
+}
 
 // ─── Footer ──────────────────────────────────────────────────
 function footer(doc: jsPDF, page: number, total: number) {
@@ -31,6 +41,13 @@ function footer(doc: jsPDF, page: number, total: number) {
   setC(doc, C.light);
   doc.text('Carnet généré par Anomaya', MARGIN, y);
   doc.text(`${page} / ${total}`, PAGE_W - MARGIN, y, { align: 'right' });
+  // Legal disclaimer
+  doc.setFontSize(5.5);
+  setC(doc, C.light);
+  doc.text(
+    "Document informatif de suivi établi par l'éleveur \u2013 Ne remplace pas un carnet de santé vétérinaire.",
+    PAGE_W / 2, y + 4, { align: 'center' }
+  );
 }
 
 // ─── Separator ───────────────────────────────────────────────
@@ -45,7 +62,7 @@ function section(doc: jsPDF, title: string, y: number): number {
   doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
   setC(doc, C.accent);
-  doc.text(title, MARGIN, y);
+  doc.text(sanitize(title), MARGIN, y);
   rule(doc, y + 3);
   return y + 12;
 }
@@ -55,21 +72,21 @@ function lv(doc: jsPDF, label: string, value: string, x: number, y: number): num
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
   setC(doc, C.medium);
-  doc.text(label, x, y);
+  doc.text(sanitize(label), x, y);
   doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
   setC(doc, C.black);
-  doc.text(value || '—', x, y + 4.5);
+  doc.text(sanitize(value) || '\u2014', x, y + 4.5);
   return y + 13;
 }
 
 // ─── Date formatters ─────────────────────────────────────────
 function fmtLong(iso?: string | null): string {
-  if (!iso) return '—';
+  if (!iso) return '\u2014';
   return new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
 }
 function fmtShort(iso?: string | null): string {
-  if (!iso) return '—';
+  if (!iso) return '\u2014';
   return new Date(iso).toLocaleDateString('fr-FR');
 }
 
@@ -77,9 +94,23 @@ function fmtWeight(g: number): string {
   return g < 1000 ? `${Math.round(g)} g` : `${(g / 1000).toFixed(2)} kg`;
 }
 
-function sexLabel(s: string) { return s === 'Femelle' ? 'Femelle ♀' : 'Mâle ♂'; }
+function sexLabel(s: string) {
+  const norm = sanitize(s).toLowerCase();
+  if (norm.startsWith('f')) return 'Femelle';
+  if (norm.startsWith('m')) return 'Mâle';
+  return sanitize(s);
+}
+
+function birthLine(sexe: string, dateIso?: string | null): string {
+  const norm = sanitize(sexe).toLowerCase();
+  const d = fmtLong(dateIso);
+  if (norm.startsWith('f')) return `Née le ${d}`;
+  if (norm.startsWith('m')) return `Né le ${d}`;
+  return `Né(e) le ${d}`;
+}
+
 function statusLabel(s?: string) {
-  return ({ sold: 'Vendu', kept: 'Gardé', reserved: 'Réservé', option: 'Option', available: 'Disponible' } as Record<string, string>)[s || ''] || '—';
+  return ({ sold: 'Vendu', kept: 'Gardé', reserved: 'Réservé', option: 'Option', available: 'Disponible' } as Record<string, string>)[s || ''] || '\u2014';
 }
 
 function loadImg(url: string): Promise<HTMLImageElement> {
@@ -99,7 +130,6 @@ function weightChart(doc: jsPDF, weights: WeightEntry[], x: number, y: number, w
   const padL = 14, padB = 10;
   const cw = w - padL, ch = h - padB;
 
-  // grid
   doc.setDrawColor(...C.rule);
   doc.setLineWidth(0.12);
   for (let i = 0; i <= 4; i++) {
@@ -109,7 +139,6 @@ function weightChart(doc: jsPDF, weights: WeightEntry[], x: number, y: number, w
     doc.text(fmtWeight(minV + (range * i) / 4), x, gy + 1);
   }
 
-  // line
   doc.setDrawColor(...C.dark);
   doc.setLineWidth(0.5);
   const pts: [number, number][] = weights.map((e, i) => [
@@ -118,11 +147,9 @@ function weightChart(doc: jsPDF, weights: WeightEntry[], x: number, y: number, w
   ]);
   for (let i = 1; i < pts.length; i++) doc.line(pts[i - 1][0], pts[i - 1][1], pts[i][0], pts[i][1]);
 
-  // dots
   doc.setFillColor(...C.dark);
   for (const p of pts) doc.circle(p[0], p[1], 0.7, 'F');
 
-  // date labels
   doc.setFontSize(5); setC(doc, C.light);
   const step = Math.max(1, Math.floor(weights.length / 6));
   weights.forEach((e, i) => {
@@ -137,13 +164,23 @@ async function qrDataUrl(text: string): Promise<string> {
 }
 
 // ─── Public types ────────────────────────────────────────────
+export interface BreederProfileData {
+  nom_elevage?: string;
+  prenom?: string;
+  nom?: string;
+  email?: string;
+  telephone?: string;
+  adresse?: string;
+  siret?: string;
+  logo_url?: string | null;
+  signature_url?: string | null;
+}
+
 export interface CarnetDepartData {
   animal: Animal;
   motherName?: string;
   fatherName?: string;
-  breederName?: string;
-  breederEmail?: string;
-  breederPhone?: string;
+  breederProfile?: BreederProfileData;
   transferCode?: string;
 }
 
@@ -151,13 +188,27 @@ export interface CarnetDepartData {
 // MAIN GENERATOR
 // ═════════════════════════════════════════════════════════════
 export async function generateCarnetDepart(data: CarnetDepartData): Promise<jsPDF> {
-  const { animal, motherName, fatherName, breederName, breederEmail, breederPhone, transferCode } = data;
+  const { animal, motherName, fatherName, breederProfile, transferCode } = data;
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   const totalPages = 6;
   const race = animal.race ? displayBreed(animal.race) : '';
   const genDate = new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
 
+  const bp = breederProfile || {};
+  const breederFullName = [bp.prenom, bp.nom].filter(Boolean).join(' ');
+  const breederDisplayName = breederFullName || 'Informations non renseignées';
+
   // ── PAGE 1 — PAGE DE GARDE ─────────────────────────────────
+  // Optional logo top-right
+  if (bp.logo_url) {
+    try {
+      const logo = await loadImg(bp.logo_url);
+      const maxS = 20;
+      const ratio = Math.min(maxS / logo.width, maxS / logo.height);
+      doc.addImage(logo, 'PNG', PAGE_W - MARGIN - logo.width * ratio, MARGIN, logo.width * ratio, logo.height * ratio);
+    } catch { /* skip logo */ }
+  }
+
   let cy = 80;
   doc.setFontSize(28);
   doc.setFont('helvetica', 'bold');
@@ -170,17 +221,17 @@ export async function generateCarnetDepart(data: CarnetDepartData): Promise<jsPD
   doc.setFontSize(22);
   doc.setFont('helvetica', 'bold');
   setC(doc, C.black);
-  doc.text(animal.nom, PAGE_W / 2, cy, { align: 'center' });
+  doc.text(sanitize(animal.nom), PAGE_W / 2, cy, { align: 'center' });
   cy += 10;
 
   doc.setFontSize(12);
   doc.setFont('helvetica', 'normal');
   setC(doc, C.dark);
-  if (race) { doc.text(race, PAGE_W / 2, cy, { align: 'center' }); cy += 7; }
-  doc.text(`Né(e) le ${fmtLong(animal.naissance)}`, PAGE_W / 2, cy, { align: 'center' }); cy += 7;
+  if (race) { doc.text(sanitize(race), PAGE_W / 2, cy, { align: 'center' }); cy += 7; }
+  doc.text(birthLine(animal.sexe, animal.naissance), PAGE_W / 2, cy, { align: 'center' }); cy += 7;
   doc.text(sexLabel(animal.sexe), PAGE_W / 2, cy, { align: 'center' }); cy += 25;
 
-  // Photo (modest size, centered)
+  // Photo
   if (animal.photo) {
     try {
       const img = await loadImg(animal.photo);
@@ -198,8 +249,12 @@ export async function generateCarnetDepart(data: CarnetDepartData): Promise<jsPD
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
   setC(doc, C.dark);
-  if (breederName) { doc.text(`Éleveur : ${breederName}`, PAGE_W / 2, cy, { align: 'center' }); cy += 6; }
-  if (breederEmail) { doc.text(breederEmail, PAGE_W / 2, cy, { align: 'center' }); cy += 6; }
+  if (bp.nom_elevage) { doc.text(sanitize(bp.nom_elevage), PAGE_W / 2, cy, { align: 'center' }); cy += 6; }
+  if (breederFullName) { doc.text(`Éleveur : ${sanitize(breederFullName)}`, PAGE_W / 2, cy, { align: 'center' }); cy += 6; }
+  if (bp.email) { doc.text(sanitize(bp.email), PAGE_W / 2, cy, { align: 'center' }); cy += 6; }
+  if (!breederFullName && !bp.nom_elevage) {
+    doc.text('Éleveur : informations non renseignées', PAGE_W / 2, cy, { align: 'center' }); cy += 6;
+  }
   doc.setFontSize(8); setC(doc, C.light);
   doc.text(`Document généré le ${genDate}`, PAGE_W / 2, cy + 4, { align: 'center' });
 
@@ -208,21 +263,21 @@ export async function generateCarnetDepart(data: CarnetDepartData): Promise<jsPD
   // ── PAGE 2 — IDENTITÉ ──────────────────────────────────────
   doc.addPage();
   let y = 30;
-  y = section(doc, 'Informations d\'identité', y);
+  y = section(doc, "Informations d'identité", y);
 
   const lx = MARGIN, rx = MARGIN + COL_W + 10;
   let yL = y, yR = y;
   yL = lv(doc, 'Nom', animal.nom, lx, yL);
   yL = lv(doc, 'Sexe', sexLabel(animal.sexe), lx, yL);
-  yL = lv(doc, 'Race', race || '—', lx, yL);
+  yL = lv(doc, 'Race', race || '\u2014', lx, yL);
   yL = lv(doc, 'Date de naissance', fmtLong(animal.naissance), lx, yL);
-  yL = lv(doc, 'Numéro de puce', animal.puce || '—', lx, yL);
+  yL = lv(doc, 'Numéro de puce', animal.puce || '\u2014', lx, yL);
 
-  yR = lv(doc, 'Mère', motherName || '—', rx, yR);
-  yR = lv(doc, 'Père', fatherName || '—', rx, yR);
-  yR = lv(doc, 'Éleveur', breederName || '—', rx, yR);
-  yR = lv(doc, 'Téléphone', breederPhone || '—', rx, yR);
-  yR = lv(doc, 'Email', breederEmail || '—', rx, yR);
+  yR = lv(doc, 'Mère', motherName || '\u2014', rx, yR);
+  yR = lv(doc, 'Père', fatherName || '\u2014', rx, yR);
+  yR = lv(doc, 'Éleveur', breederDisplayName, rx, yR);
+  yR = lv(doc, 'Téléphone', bp.telephone || '\u2014', rx, yR);
+  yR = lv(doc, 'Email', bp.email || '\u2014', rx, yR);
   yR = lv(doc, 'Statut', statusLabel(animal.commercial_status || undefined), rx, yR);
 
   y = Math.max(yL, yR) + 6;
@@ -251,7 +306,6 @@ export async function generateCarnetDepart(data: CarnetDepartData): Promise<jsPD
     doc.setFontSize(10); doc.setFont('helvetica', 'italic'); setC(doc, C.light);
     doc.text('Aucune mesure enregistrée.', MARGIN, y);
   } else {
-    // table header
     doc.setFillColor(...C.rowAlt);
     doc.rect(MARGIN, y - 4.5, CONTENT_W, 8, 'F');
     doc.setFontSize(8); doc.setFont('helvetica', 'bold'); setC(doc, C.dark);
@@ -309,9 +363,9 @@ export async function generateCarnetDepart(data: CarnetDepartData): Promise<jsPD
       for (const v of vaccins) {
         if (y > PAGE_H - 30) { doc.addPage(); y = 30; }
         setC(doc, C.black);
-        doc.text((v.nom || v.produit || '—').substring(0, 25), MARGIN + 4, y);
+        doc.text(sanitize(v.nom || v.produit || '\u2014').substring(0, 25), MARGIN + 4, y);
         doc.text(fmtShort(v.date), MARGIN + 55, y);
-        doc.text(v.prochain ? fmtShort(v.prochain) : '—', MARGIN + 95, y);
+        doc.text(v.prochain ? fmtShort(v.prochain) : '\u2014', MARGIN + 95, y);
         doc.text(v.obligatoire ? 'Obligatoire' : 'Recommandé', MARGIN + 138, y);
         y += 6.5;
       }
@@ -335,10 +389,10 @@ export async function generateCarnetDepart(data: CarnetDepartData): Promise<jsPD
       doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); setC(doc, C.black);
       for (const t of traits) {
         if (y > PAGE_H - 30) { doc.addPage(); y = 30; }
-        doc.text((t.type || '—').substring(0, 18), MARGIN + 4, y);
-        doc.text((t.produit || t.nom || '—').substring(0, 25), MARGIN + 40, y);
+        doc.text(sanitize(t.type || '\u2014').substring(0, 18), MARGIN + 4, y);
+        doc.text(sanitize(t.produit || t.nom || '\u2014').substring(0, 25), MARGIN + 40, y);
         doc.text(fmtShort(t.date || t.debut), MARGIN + 95, y);
-        doc.text((t.notes || '').substring(0, 18), MARGIN + 135, y);
+        doc.text(sanitize(t.notes || '').substring(0, 18), MARGIN + 135, y);
         y += 6.5;
       }
     }
@@ -351,7 +405,7 @@ export async function generateCarnetDepart(data: CarnetDepartData): Promise<jsPD
   y = 30;
   y = section(doc, 'Observations', y);
 
-  const notes = animal.commercial_notes;
+  const notes = sanitize(animal.commercial_notes);
   if (notes) {
     doc.setFontSize(10); doc.setFont('helvetica', 'normal'); setC(doc, C.black);
     const lines = doc.splitTextToSize(notes, CONTENT_W);
@@ -366,15 +420,30 @@ export async function generateCarnetDepart(data: CarnetDepartData): Promise<jsPD
   doc.text('Recommandations', MARGIN, y); y += 8;
   doc.setFontSize(9); doc.setFont('helvetica', 'normal'); setC(doc, C.dark);
   const recs = [
-    '• Visite vétérinaire recommandée dans les 15 jours suivant l\'adoption.',
-    '• Respecter le calendrier de rappels vaccinaux indiqué.',
-    '• Maintenir une alimentation adaptée à l\'âge et à la race.',
-    '• Prévoir une période d\'adaptation dans un environnement calme.',
+    "\u2022 Visite vétérinaire recommandée dans les 15 jours suivant l'adoption.",
+    '\u2022 Respecter le calendrier de rappels vaccinaux indiqué.',
+    "\u2022 Maintenir une alimentation adaptée à l'âge et à la race.",
+    "\u2022 Prévoir une période d'adaptation dans un environnement calme.",
   ];
   for (const r of recs) { doc.text(r, MARGIN, y); y += 6; }
 
-  // Ruled lines for notes
+  // Signature area
   y += 10; rule(doc, y); y += 8;
+  doc.setFontSize(8); setC(doc, C.light); doc.setFont('helvetica', 'italic');
+  doc.text("Signature de l'éleveur :", MARGIN, y); y += 4;
+
+  if (bp.signature_url) {
+    try {
+      const sig = await loadImg(bp.signature_url);
+      const maxW = 50, maxH = 20;
+      const ratio = Math.min(maxW / sig.width, maxH / sig.height);
+      doc.addImage(sig, 'PNG', MARGIN, y, sig.width * ratio, sig.height * ratio);
+      y += sig.height * ratio + 4;
+    } catch { /* skip */ }
+  }
+
+  // Ruled lines for notes
+  y += 6;
   doc.setFontSize(8); setC(doc, C.light); doc.setFont('helvetica', 'italic');
   doc.text('Notes complémentaires :', MARGIN, y); y += 4;
   doc.setDrawColor(...C.rule); doc.setLineWidth(0.15);
@@ -401,7 +470,7 @@ export async function generateCarnetDepart(data: CarnetDepartData): Promise<jsPD
     doc.setFontSize(9); doc.setFont('helvetica', 'normal'); setC(doc, C.medium);
     doc.text('Code de transfert :', PAGE_W / 2, qy, { align: 'center' }); qy += 8;
     doc.setFontSize(20); doc.setFont('helvetica', 'bold'); setC(doc, C.black);
-    doc.text(transferCode, PAGE_W / 2, qy, { align: 'center' }); qy += 14;
+    doc.text(sanitize(transferCode), PAGE_W / 2, qy, { align: 'center' }); qy += 14;
   }
 
   doc.setFontSize(9); doc.setFont('helvetica', 'normal'); setC(doc, C.dark);

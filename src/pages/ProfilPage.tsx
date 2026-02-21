@@ -35,7 +35,7 @@ import { toast } from '@/hooks/use-toast';
 import { useBreeder } from '@/context/BreederContext';
 import { isBreederEligible } from '@/utils/breederUtils';
 import type { Animal, CommercialStatus } from '@/types/animal';
-import { generateCarnetDepart, downloadPdf, sharePdf } from '@/utils/carnetDepart';
+import { generateCarnetDepart, downloadPdf, sharePdf, type BreederProfileData } from '@/utils/carnetDepart';
 
 const fmt = (d: string | Date) => new Date(d).toLocaleDateString('fr-FR');
 const isFemale = (a: { sexe?: string }) => (a.sexe || '').toLowerCase().startsWith('f');
@@ -185,6 +185,7 @@ export default function ProfilPage() {
   const motherAnimal = animal?.mother_id ? animaux.find((a) => a.id === animal.mother_id) : null;
   const [fatherInfo, setFatherInfo] = useState<{ name: string } | null>(null);
   const [maleMatings, setMaleMatings] = useState<any[]>([]);
+  const [breederProfile, setBreederProfile] = useState<BreederProfileData | undefined>(undefined);
 
   useEffect(() => {
     if (!animal?.litter_id) return;
@@ -199,6 +200,15 @@ export default function ProfilPage() {
       }
     })();
   }, [animal?.litter_id, animaux]);
+
+  // Fetch breeder profile
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const { data } = await supabase.from('breeder_profiles').select('*').eq('user_id', user.id).maybeSingle();
+      if (data) setBreederProfile(data as BreederProfileData);
+    })();
+  }, [user]);
 
   useEffect(() => {
     if (!animal || !isMale(animal) || !isBreederEligible(animal.type)) return;
@@ -494,31 +504,41 @@ export default function ProfilPage() {
                 <FileText className="w-4 h-4 text-primary" />
                 <h2 className="font-extrabold">Carnet de départ</h2>
               </div>
-              <p className="text-xs text-muted-foreground mb-3">Générez un carnet PDF professionnel avec l'identité, le suivi de poids, les vaccins et les notes.</p>
-              <Button
-                className="w-full"
-                onClick={async () => {
-                  try {
-                    toast({ title: 'Génération en cours...' });
-                    const doc = await generateCarnetDepart({
-                      animal,
-                      motherName: motherAnimal?.nom,
-                      fatherName: fatherInfo?.name,
-                      breederName: user?.email?.split('@')[0] || undefined,
-                      breederEmail: user?.email || undefined,
-                    });
-                    const filename = `carnet-depart-${animal.nom.toLowerCase().replace(/\s+/g, '-')}.pdf`;
-                    const shared = await sharePdf(doc, filename);
-                    if (!shared) downloadPdf(doc, filename);
-                    toast({ title: 'Carnet généré !' });
-                  } catch {
-                    toast({ title: 'Erreur', description: 'Impossible de générer le carnet', variant: 'destructive' });
-                  }
-                }}
-              >
-                <FileText className="w-4 h-4 mr-2" />
-                📄 Générer carnet de départ
-              </Button>
+              {!breederProfile?.nom ? (
+                <div className="space-y-3">
+                  <p className="text-xs text-muted-foreground">Complétez votre profil éleveur avant de générer le carnet.</p>
+                  <Button variant="outline" className="w-full" onClick={() => navigate('/profil-eleveur')}>
+                    Compléter mon profil éleveur
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  <p className="text-xs text-muted-foreground mb-3">Générez un carnet PDF professionnel avec l'identité, le suivi de poids, les vaccins et les notes.</p>
+                  <Button
+                    className="w-full"
+                    onClick={async () => {
+                      try {
+                        toast({ title: 'Génération en cours...' });
+                        const doc = await generateCarnetDepart({
+                          animal,
+                          motherName: motherAnimal?.nom,
+                          fatherName: fatherInfo?.name,
+                          breederProfile,
+                        });
+                        const filename = `carnet-depart-${animal.nom.toLowerCase().replace(/\s+/g, '-')}.pdf`;
+                        const shared = await sharePdf(doc, filename);
+                        if (!shared) downloadPdf(doc, filename);
+                        toast({ title: 'Carnet généré !' });
+                      } catch {
+                        toast({ title: 'Erreur', description: 'Impossible de générer le carnet', variant: 'destructive' });
+                      }
+                    }}
+                  >
+                    <FileText className="w-4 h-4 mr-2" />
+                    Générer carnet de départ
+                  </Button>
+                </>
+              )}
             </div>
           )}
 
