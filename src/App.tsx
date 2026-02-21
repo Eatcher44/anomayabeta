@@ -17,6 +17,7 @@ import HealthDashboardPage from "./pages/HealthDashboardPage";
 import NotificationsPage from "./pages/NotificationsPage";
 import NotFound from "./pages/NotFound";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
+import AbonnementPage from "./pages/AbonnementPage";
 
 const queryClient = new QueryClient();
 
@@ -136,6 +137,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <NotificationsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/abonnement"
+        element={
+          <ProtectedRoute>
+            <AbonnementPage />
           </ProtectedRoute>
         }
       />
