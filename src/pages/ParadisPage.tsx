@@ -46,11 +46,17 @@ export default function ParadisPage() {
     setDeleteStep(1);
   };
 
-  const handleDeleteStep1 = () => setDeleteStep(2);
+  const handleDeleteStep1 = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setDeleteStep(2);
+  };
 
-  const handleDeleteConfirm = async () => {
+  const handleDeleteConfirm = async (e: React.MouseEvent) => {
+    e.preventDefault();
     if (!deleteTarget) return;
     try {
+      // Cleanup notifications for this animal
+      await supabase.from('notifications').delete().eq('animal_id', deleteTarget.id);
       await deleteAnimal(deleteTarget.id);
       toast({ title: `${deleteTarget.nom} supprimé définitivement` });
     } catch {
