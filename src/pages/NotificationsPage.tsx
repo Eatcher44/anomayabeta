@@ -63,9 +63,17 @@ export default function NotificationsPage() {
 
   const formatDate = (d: string) => new Date(d).toLocaleDateString('fr-FR');
 
+  // Filter out notifications for non-active animals (paradis, transferred, deleted)
+  const activeAnimalIds = new Set(
+    animaux.filter((a) => !a.paradis && a.breeder_visible !== false).map((a) => a.id)
+  );
+  const activeNotifications = notifications.filter(
+    (n) => !n.animal_id || activeAnimalIds.has(n.animal_id)
+  );
+
   const now = new Date();
-  const upcoming = notifications.filter((n) => new Date(n.due_date) >= now);
-  const past = notifications.filter((n) => new Date(n.due_date) < now);
+  const upcoming = activeNotifications.filter((n) => new Date(n.due_date) >= now);
+  const past = activeNotifications.filter((n) => new Date(n.due_date) < now);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[hsl(33,60%,95%)] to-[hsl(30,40%,92%)] dark:from-background dark:to-background">
@@ -81,7 +89,7 @@ export default function NotificationsPage() {
           <div className="flex justify-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
           </div>
-        ) : notifications.length === 0 ? (
+        ) : activeNotifications.length === 0 ? (
           <div className="text-center py-12">
             <Bell className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
             <p className="text-muted-foreground">Aucune notification</p>

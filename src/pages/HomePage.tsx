@@ -456,6 +456,12 @@ export default function HomePage() {
     [animaux]
   );
 
+  // Active animals for health dashboard/alerts: exclude paradis, transferred, non-visible
+  const activeAnimals = useMemo(
+    () => animaux.filter((a) => !a.paradis && a.breeder_visible !== false),
+    [animaux]
+  );
+
   const handleSignOut = async () => {
     await signOut();
     navigate('/auth');
@@ -506,10 +512,10 @@ export default function HomePage() {
           </Button>
         )}
 
-        {/* Compact Health Alerts */}
-        {animaux.length > 0 && (
+        {/* Compact Health Alerts — only active, visible animals */}
+        {activeAnimals.length > 0 && (
           <div className="mb-4">
-            <HealthDashboard animals={animaux} rendezvous={rendezvous} />
+            <HealthDashboard animals={activeAnimals} rendezvous={rendezvous} />
           </div>
         )}
 
