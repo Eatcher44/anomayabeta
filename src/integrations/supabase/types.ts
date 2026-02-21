@@ -20,6 +20,8 @@ export type Database = {
           couleur: string | null
           created_at: string
           id: string
+          litter_id: string | null
+          mother_id: string | null
           naissance: string | null
           nom: string
           paradis: boolean
@@ -39,6 +41,8 @@ export type Database = {
           couleur?: string | null
           created_at?: string
           id?: string
+          litter_id?: string | null
+          mother_id?: string | null
           naissance?: string | null
           nom: string
           paradis?: boolean
@@ -58,6 +62,8 @@ export type Database = {
           couleur?: string | null
           created_at?: string
           id?: string
+          litter_id?: string | null
+          mother_id?: string | null
           naissance?: string | null
           nom?: string
           paradis?: boolean
@@ -72,7 +78,67 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "animals_litter_id_fkey"
+            columns: ["litter_id"]
+            isOneToOne: false
+            referencedRelation: "litters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "animals_mother_id_fkey"
+            columns: ["mother_id"]
+            isOneToOne: false
+            referencedRelation: "animals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      litters: {
+        Row: {
+          birth_date: string
+          created_at: string
+          id: string
+          mother_id: string
+          notes: string | null
+          reproduction_id: string | null
+          user_id: string
+        }
+        Insert: {
+          birth_date: string
+          created_at?: string
+          id?: string
+          mother_id: string
+          notes?: string | null
+          reproduction_id?: string | null
+          user_id: string
+        }
+        Update: {
+          birth_date?: string
+          created_at?: string
+          id?: string
+          mother_id?: string
+          notes?: string | null
+          reproduction_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "litters_mother_id_fkey"
+            columns: ["mother_id"]
+            isOneToOne: false
+            referencedRelation: "animals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "litters_reproduction_id_fkey"
+            columns: ["reproduction_id"]
+            isOneToOne: false
+            referencedRelation: "reproductions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       notifications: {
         Row: {
@@ -156,6 +222,85 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      reproductions: {
+        Row: {
+          animal_id: string
+          confirmed: boolean
+          created_at: string
+          date_saillie: string
+          id: string
+          notes: string | null
+          user_id: string
+        }
+        Insert: {
+          animal_id: string
+          confirmed?: boolean
+          created_at?: string
+          date_saillie: string
+          id?: string
+          notes?: string | null
+          user_id: string
+        }
+        Update: {
+          animal_id?: string
+          confirmed?: boolean
+          created_at?: string
+          date_saillie?: string
+          id?: string
+          notes?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reproductions_animal_id_fkey"
+            columns: ["animal_id"]
+            isOneToOne: false
+            referencedRelation: "animals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transfer_codes: {
+        Row: {
+          animal_id: string
+          claimed_at: string | null
+          code: string
+          created_at: string
+          expires_at: string
+          from_user_id: string
+          id: string
+          to_user_id: string | null
+        }
+        Insert: {
+          animal_id: string
+          claimed_at?: string | null
+          code: string
+          created_at?: string
+          expires_at: string
+          from_user_id: string
+          id?: string
+          to_user_id?: string | null
+        }
+        Update: {
+          animal_id?: string
+          claimed_at?: string | null
+          code?: string
+          created_at?: string
+          expires_at?: string
+          from_user_id?: string
+          id?: string
+          to_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transfer_codes_animal_id_fkey"
+            columns: ["animal_id"]
+            isOneToOne: false
+            referencedRelation: "animals"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

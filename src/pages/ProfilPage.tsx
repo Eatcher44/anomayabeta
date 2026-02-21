@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { formatWeight } from '@/components/AnimalRow';
-import { ArrowLeft, Edit, Syringe, Bug, Pill, Calendar, Baby, Bird } from 'lucide-react';
+import { ArrowLeft, Edit, Syringe, Bug, Pill, Calendar, Baby, Bird, QrCode } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -22,6 +22,7 @@ import { getAgeText } from '@/utils/date';
 import { pickPhotoFile, uploadAnimalPhoto } from '@/utils/photo';
 import { getAllAlerts } from '@/utils/insights';
 import { toast } from '@/hooks/use-toast';
+import { useBreeder } from '@/context/BreederContext';
 
 const fmt = (d: string | Date) => new Date(d).toLocaleDateString('fr-FR');
 const isFemale = (a: { sexe?: string }) => (a.sexe || '').toLowerCase().startsWith('f');
@@ -31,7 +32,7 @@ export default function ProfilPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { animaux, updateAnimal, rendezvous } = useAnimals();
-
+  const { isBreeder } = useBreeder();
   const [editOpen, setEditOpen] = useState(false);
   const [puceInlineEdit, setPuceInlineEdit] = useState(false);
   const [puceDraft, setPuceDraft] = useState('');
@@ -333,14 +334,30 @@ export default function ProfilPage() {
 
 
           {/* Reproduction */}
-          {!isParadis && !animal.sterilise && (
+          {!isParadis && isFemale(animal) && !animal.sterilise && (
             <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
-              <h2 className="font-extrabold mb-3">
-                {isFemale(animal) ? 'Gestation' : 'Reproduction'}
-              </h2>
-              <Button variant="outline" disabled>
-                <Baby className="w-4 h-4 mr-2" />
-                À venir (pack Éleveur)
+              <h2 className="font-extrabold mb-3">Reproduction</h2>
+              {isBreeder ? (
+                <Button onClick={() => navigate(`/reproduction/${animal.id}`)}>
+                  <Baby className="w-4 h-4 mr-2" />
+                  Gérer la reproduction
+                </Button>
+              ) : (
+                <Button variant="outline" disabled>
+                  <Baby className="w-4 h-4 mr-2" />
+                  À venir (pack Éleveur)
+                </Button>
+              )}
+            </div>
+          )}
+
+          {/* Transfer QR (breeder only, for newborns) */}
+          {!isParadis && isBreeder && (
+            <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
+              <h2 className="font-extrabold mb-3">Transfert de profil</h2>
+              <Button variant="outline" onClick={() => navigate(`/transfer/${animal.id}`)}>
+                <QrCode className="w-4 h-4 mr-2" />
+                Transférer ce profil
               </Button>
             </div>
           )}
