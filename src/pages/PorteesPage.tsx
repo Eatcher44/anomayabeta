@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Plus, Baby, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,6 +22,7 @@ interface Litter {
   mother_id: string;
   father_id: string | null;
   father_name: string | null;
+  reproduction_id: string | null;
   birth_date: string;
   notes: string | null;
   created_at: string;
@@ -30,6 +31,7 @@ interface Litter {
 
 export default function PorteesPage() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useAuth();
   const { animaux, addAnimal } = useAnimals();
   const [litters, setLitters] = useState<Litter[]>([]);
@@ -45,6 +47,7 @@ export default function PorteesPage() {
   const [birthDateValid, setBirthDateValid] = useState(true);
   const [nbNewborns, setNbNewborns] = useState(1);
   const [saving, setSaving] = useState(false);
+  const [reproductionId, setReproductionId] = useState<string | null>(null);
 
   const females = animaux.filter((a) =>
     a.sexe?.toLowerCase().startsWith('f') && !a.paradis && isBreederEligible(a.type)
@@ -54,8 +57,6 @@ export default function PorteesPage() {
     a.sexe?.toLowerCase().startsWith('m') && !a.paradis && isBreederEligible(a.type)
   );
 
-  // duplicate removed
-
   const fetchLitters = useCallback(async () => {
     if (!user) return;
     const { data, error } = await supabase
@@ -63,7 +64,6 @@ export default function PorteesPage() {
       .select('*')
       .order('birth_date', { ascending: false });
     if (!error && data) {
-      // Count newborns per litter
       const littersWithCount = await Promise.all(
         (data as Litter[]).map(async (l) => {
           const { count } = await supabase
@@ -82,6 +82,35 @@ export default function PorteesPage() {
     fetchLitters();
   }, [fetchLitters]);
 
+  // Handle prefill from reproduction page
+  useEffect(() => {
+    const fromRepro = searchParams.get('from_reproduction');
+    if (!fromRepro) return;
+
+    setReproductionId(fromRepro);
+    setMotherId(searchParams.get('mother_id') || '');
+
+    const fatherId = searchParams.get('father_animal_id');
+    const fatherName = searchParams.get('father_external_name');
+    if (fatherId) {
+      setFatherMode('existing');
+      setFatherId(fatherId);
+    } else if (fatherName) {
+      setFatherMode('manual');
+      setFatherManualName(fatherName);
+    } else {
+      setFatherMode('none');
+    }
+
+    const bd = searchParams.get('birth_date');
+    if (bd) setBirthDate(new Date(bd));
+
+    setNbNewborns(1);
+    setModalOpen(true);
+    // Clear search params
+    setSearchParams({}, { replace: true });
+  }, [searchParams, setSearchParams]);
+
   const createLitter = async () => {
     if (!user || !motherId || !birthDateValid || nbNewborns < 1) return;
     setSaving(true);
@@ -90,7 +119,6 @@ export default function PorteesPage() {
     if (!mother) { setSaving(false); return; }
 
     try {
-      // Create litter
       const fatherIdValue = fatherMode === 'existing' && fatherId ? fatherId : null;
       const fatherNameValue = fatherMode === 'manual' && fatherManualName.trim() ? fatherManualName.trim() : null;
 
@@ -102,6 +130,7 @@ export default function PorteesPage() {
           father_id: fatherIdValue,
           father_name: fatherNameValue,
           birth_date: birthDate.toISOString().split('T')[0],
+          reproduction_id: reproductionId,
           notes: null,
         })
         .select()
@@ -109,12 +138,20 @@ export default function PorteesPage() {
 
       if (litterError || !litterData) throw litterError;
 
-      // Create newborn animal profiles
+      // If coming from reproduction, mark it as birth_confirmed
+      if (reproductionId) {
+        await supabase
+          .from('reproductions')
+          .update({ status: 'birth_confirmed' })
+          .eq('id', reproductionId);
+      }
+
+      // Create newborn animal profiles with breeder_visible=false
       for (let i = 0; i < nbNewborns; i++) {
         await addAnimal({
           nom: `${mother.nom} - Bébé ${i + 1}`,
           type: mother.type,
-          sexe: 'Femelle', // Default, user will update
+          sexe: 'Femelle',
           race: mother.race,
           naissance: birthDate.toISOString(),
           sterilise: false,
@@ -124,8 +161,7 @@ export default function PorteesPage() {
         });
       }
 
-      // Link newborns to litter (find newly created animals)
-      // We'll need to update the most recent animals
+      // Link newborns to litter and set breeder_visible=false
       const { data: newAnimals } = await supabase
         .from('animals')
         .select('id')
@@ -138,12 +174,17 @@ export default function PorteesPage() {
         for (const na of newAnimals) {
           await supabase
             .from('animals')
-            .update({ litter_id: (litterData as any).id, mother_id: motherId })
+            .update({
+              litter_id: (litterData as any).id,
+              mother_id: motherId,
+              breeder_visible: false,
+            })
             .eq('id', na.id);
         }
       }
 
       setModalOpen(false);
+      setReproductionId(null);
       toast({ title: 'Portée créée', description: `${nbNewborns} profils créés.` });
       await fetchLitters();
     } catch {
@@ -154,8 +195,18 @@ export default function PorteesPage() {
   };
 
   const fmt = (d: string) => new Date(d).toLocaleDateString('fr-FR');
-
   const getMotherName = (mid: string) => animaux.find((a) => a.id === mid)?.nom || 'Inconnue';
+
+  const openCreateModal = () => {
+    setMotherId('');
+    setFatherMode('none');
+    setFatherId('');
+    setFatherManualName('');
+    setNbNewborns(1);
+    setBirthDate(new Date());
+    setReproductionId(null);
+    setModalOpen(true);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[hsl(33,60%,95%)] to-[hsl(30,40%,92%)] dark:from-background dark:to-background">
@@ -168,7 +219,7 @@ export default function PorteesPage() {
       </div>
 
       <div className="p-4 space-y-4">
-        <Button onClick={() => { setMotherId(''); setFatherMode('none'); setFatherId(''); setFatherManualName(''); setNbNewborns(1); setBirthDate(new Date()); setModalOpen(true); }} className="w-full">
+        <Button onClick={openCreateModal} className="w-full">
           <Plus className="w-4 h-4 mr-2" />
           Créer une portée
         </Button>

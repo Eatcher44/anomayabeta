@@ -211,7 +211,7 @@ export default function HomePage() {
 
   // Grouped + sorted animals
   const groupedAnimals = useMemo(() => {
-    let list = animaux.filter(a => !(a as any).paradis);
+    let list = animaux.filter(a => !(a as any).paradis && (a as any).breeder_visible !== false);
     if (searchQuery.trim()) {
       const q = searchQuery.trim().toLowerCase();
       list = list.filter((a) =>
