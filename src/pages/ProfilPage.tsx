@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { formatWeight } from '@/components/AnimalRow';
 import { ArrowLeft, Edit, Syringe, Bug, Pill, Calendar, Baby, Bird, QrCode, Flame } from 'lucide-react';
@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dialog';
 import { useAnimals } from '@/context/AnimalsContext';
 import { useAuth } from '@/context/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import DateField from '@/components/DateField';
 import ColorPicker from '@/components/ColorPicker';
 import { displayBreed } from '@/utils/breeds';
@@ -50,6 +51,29 @@ export default function ProfilPage() {
   const [colorDraft, setColorDraft] = useState<string | null>(null);
 
   const animal = animaux.find((a) => a.id === id);
+
+  // Parent info for newborns
+  const motherAnimal = animal?.mother_id ? animaux.find((a) => a.id === animal.mother_id) : null;
+  const [fatherInfo, setFatherInfo] = useState<{ name: string } | null>(null);
+
+  useEffect(() => {
+    if (!animal?.litter_id) return;
+    (async () => {
+      const { data } = await supabase
+        .from('litters')
+        .select('father_id, father_name')
+        .eq('id', animal.litter_id)
+        .single();
+      if (data) {
+        if (data.father_name) {
+          setFatherInfo({ name: data.father_name });
+        } else if (data.father_id) {
+          const father = animaux.find((a) => a.id === data.father_id);
+          setFatherInfo({ name: father?.nom || 'Inconnu' });
+        }
+      }
+    })();
+  }, [animal?.litter_id, animaux]);
 
   const soins = animal?.soins || [];
   const bgClass = animal && isFemale(animal) ? 'bg-female' : 'bg-male';
@@ -302,6 +326,21 @@ export default function ProfilPage() {
                   )}
                 </div>
               </div>
+              {/* Parents (for newborns linked to a litter) */}
+              {motherAnimal && (
+                <div className="flex justify-between py-1.5">
+                  <span className="text-muted-foreground">Mère</span>
+                  <button onClick={() => navigate(`/profil/${motherAnimal.id}`)} className="font-bold text-primary hover:underline text-sm">
+                    {motherAnimal.nom}
+                  </button>
+                </div>
+              )}
+              {fatherInfo && (
+                <div className="flex justify-between py-1.5">
+                  <span className="text-muted-foreground">Père</span>
+                  <span className="font-bold">{fatherInfo.name}</span>
+                </div>
+              )}
             </div>
           </div>
 

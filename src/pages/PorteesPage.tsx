@@ -20,6 +20,8 @@ import { toast } from '@/hooks/use-toast';
 interface Litter {
   id: string;
   mother_id: string;
+  father_id: string | null;
+  father_name: string | null;
   birth_date: string;
   notes: string | null;
   created_at: string;
@@ -36,6 +38,9 @@ export default function PorteesPage() {
   // Create litter modal
   const [modalOpen, setModalOpen] = useState(false);
   const [motherId, setMotherId] = useState('');
+  const [fatherMode, setFatherMode] = useState<'none' | 'existing' | 'manual'>('none');
+  const [fatherId, setFatherId] = useState('');
+  const [fatherManualName, setFatherManualName] = useState('');
   const [birthDate, setBirthDate] = useState(new Date());
   const [birthDateValid, setBirthDateValid] = useState(true);
   const [nbNewborns, setNbNewborns] = useState(1);
@@ -44,6 +49,12 @@ export default function PorteesPage() {
   const females = animaux.filter((a) =>
     a.sexe?.toLowerCase().startsWith('f') && !a.paradis && isBreederEligible(a.type)
   );
+
+  const males = animaux.filter((a) =>
+    a.sexe?.toLowerCase().startsWith('m') && !a.paradis && isBreederEligible(a.type)
+  );
+
+  // duplicate removed
 
   const fetchLitters = useCallback(async () => {
     if (!user) return;
@@ -80,11 +91,16 @@ export default function PorteesPage() {
 
     try {
       // Create litter
+      const fatherIdValue = fatherMode === 'existing' && fatherId ? fatherId : null;
+      const fatherNameValue = fatherMode === 'manual' && fatherManualName.trim() ? fatherManualName.trim() : null;
+
       const { data: litterData, error: litterError } = await supabase
         .from('litters')
         .insert({
           user_id: user.id,
           mother_id: motherId,
+          father_id: fatherIdValue,
+          father_name: fatherNameValue,
           birth_date: birthDate.toISOString().split('T')[0],
           notes: null,
         })
@@ -152,7 +168,7 @@ export default function PorteesPage() {
       </div>
 
       <div className="p-4 space-y-4">
-        <Button onClick={() => { setMotherId(''); setNbNewborns(1); setBirthDate(new Date()); setModalOpen(true); }} className="w-full">
+        <Button onClick={() => { setMotherId(''); setFatherMode('none'); setFatherId(''); setFatherManualName(''); setNbNewborns(1); setBirthDate(new Date()); setModalOpen(true); }} className="w-full">
           <Plus className="w-4 h-4 mr-2" />
           Créer une portée
         </Button>
@@ -204,6 +220,44 @@ export default function PorteesPage() {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+            <div>
+              <Label>Père (optionnel)</Label>
+              <div className="flex gap-2 mt-1.5 mb-2">
+                {(['none', 'existing', 'manual'] as const).map((mode) => (
+                  <button
+                    key={mode}
+                    type="button"
+                    onClick={() => { setFatherMode(mode); setFatherId(''); setFatherManualName(''); }}
+                    className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
+                      fatherMode === mode
+                        ? 'border-primary bg-accent text-primary'
+                        : 'border-border hover:border-primary text-muted-foreground'
+                    }`}
+                  >
+                    {mode === 'none' ? 'Aucun' : mode === 'existing' ? 'Mes animaux' : 'Nom externe'}
+                  </button>
+                ))}
+              </div>
+              {fatherMode === 'existing' && (
+                <Select value={fatherId} onValueChange={setFatherId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sélectionner le père" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {males.map((m) => (
+                      <SelectItem key={m.id} value={m.id}>{m.nom}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+              {fatherMode === 'manual' && (
+                <Input
+                  value={fatherManualName}
+                  onChange={(e) => setFatherManualName(e.target.value)}
+                  placeholder="Nom du père externe"
+                />
+              )}
             </div>
             <div>
               <Label>Date de naissance</Label>
