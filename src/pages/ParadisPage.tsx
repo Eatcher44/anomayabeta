@@ -1,11 +1,29 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Bird } from 'lucide-react';
+import { ArrowLeft, Bird, Home, MoreVertical, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAnimals } from '@/context/AnimalsContext';
 import { displayBreed } from '@/utils/breeds';
 import { getAgeText } from '@/utils/date';
 import { formatWeight } from '@/components/AnimalRow';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 
 function lastPoidsKg(animal: any): number | null {
   if (!Array.isArray(animal?.poids) || animal.poids.length === 0) return null;
@@ -15,19 +33,45 @@ function lastPoidsKg(animal: any): number | null {
 
 export default function ParadisPage() {
   const navigate = useNavigate();
-  const { animaux } = useAnimals();
+  const { animaux, deleteAnimal } = useAnimals();
 
   const paradisAnimaux = animaux.filter((a) => a.paradis === true);
+
+  // Permanent delete flow (double confirmation)
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; nom: string } | null>(null);
+  const [deleteStep, setDeleteStep] = useState<1 | 2>(1);
+
+  const startDelete = (id: string, nom: string) => {
+    setDeleteTarget({ id, nom });
+    setDeleteStep(1);
+  };
+
+  const handleDeleteStep1 = () => setDeleteStep(2);
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteTarget) return;
+    try {
+      await deleteAnimal(deleteTarget.id);
+      toast({ title: `${deleteTarget.nom} supprimé définitivement` });
+    } catch {
+      toast({ title: 'Erreur', description: 'Impossible de supprimer', variant: 'destructive' });
+    }
+    setDeleteTarget(null);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[hsl(220,30%,96%)] to-[hsl(260,20%,94%)] dark:from-background dark:to-background">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b border-border px-4 py-3 flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+        <Button variant="ghost" size="icon" onClick={() => navigate('/', { replace: true })}>
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <Bird className="w-5 h-5 text-muted-foreground" />
-        <h1 className="font-bold text-lg">Paradis</h1>
+        <h1 className="font-bold text-lg flex-1">Paradis</h1>
+        <Button variant="ghost" size="sm" onClick={() => navigate('/', { replace: true })} className="text-primary gap-1.5">
+          <Home className="w-4 h-4" />
+          Ma famille
+        </Button>
       </div>
 
       <div className="p-4">
@@ -41,23 +85,28 @@ export default function ParadisPage() {
             {paradisAnimaux.map((animal) => {
               const poids = lastPoidsKg(animal);
               return (
-                <button
+                <div
                   key={animal.id}
-                  onClick={() => navigate(`/profil/${animal.id}`)}
                   className="w-full text-left bg-card rounded-2xl border border-border p-4 shadow-sm hover:shadow-md transition-shadow"
                 >
                   <div className="flex items-center gap-4">
                     {/* Photo */}
-                    <div className="w-16 h-16 rounded-xl bg-muted border border-border flex items-center justify-center overflow-hidden flex-shrink-0">
+                    <button
+                      onClick={() => navigate(`/profil/${animal.id}`)}
+                      className="w-16 h-16 rounded-xl bg-muted border border-border flex items-center justify-center overflow-hidden flex-shrink-0"
+                    >
                       {animal.photo ? (
                         <img src={animal.photo} alt={animal.nom} className="w-full h-full object-cover" />
                       ) : (
                         <Bird className="w-6 h-6 text-muted-foreground/40" />
                       )}
-                    </div>
+                    </button>
 
                     {/* Info */}
-                    <div className="flex-1 min-w-0">
+                    <button
+                      onClick={() => navigate(`/profil/${animal.id}`)}
+                      className="flex-1 min-w-0 text-left"
+                    >
                       <p className="text-lg font-bold text-foreground">{animal.nom}</p>
                       {animal.race && animal.race !== '—' && (
                         <p className="text-sm text-muted-foreground">{displayBreed(animal.race)}</p>
@@ -68,17 +117,71 @@ export default function ParadisPage() {
                         )}
                         <span>{formatWeight(poids)}</span>
                       </div>
-                    </div>
+                    </button>
+
+                    {/* 3-dot menu */}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="flex-shrink-0">
+                          <MoreVertical className="w-4 h-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          onClick={() => startDelete(animal.id, animal.nom)}
+                          className="text-destructive focus:text-destructive"
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Supprimer définitivement
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
 
                     {/* Memorial indicator */}
                     <div className="flex-shrink-0 text-2xl opacity-50">🕊️</div>
                   </div>
-                </button>
+                </div>
               );
             })}
           </div>
         )}
       </div>
+
+      {/* Delete confirmation #1 */}
+      <AlertDialog open={!!deleteTarget && deleteStep === 1} onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer définitivement</AlertDialogTitle>
+            <AlertDialogDescription>
+              Supprimer définitivement le profil de {deleteTarget?.nom} ?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDeleteTarget(null)}>Non</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteStep1} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Oui
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete confirmation #2 */}
+      <AlertDialog open={!!deleteTarget && deleteStep === 2} onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
+            <AlertDialogDescription>
+              Vous perdrez toutes les données de {deleteTarget?.nom}. Confirmer la suppression ?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDeleteTarget(null)}>Non</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Oui, supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

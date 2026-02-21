@@ -229,8 +229,8 @@ export default function ProfilPage() {
     };
 
     const handleBackNav = () => {
-      if (isParadis) return navigate('/paradis');
-      if (isNewborn && animal.litter_id) return navigate(`/portee/${animal.litter_id}`);
+      if (isParadis) return navigate('/paradis', { replace: true });
+      if (isNewborn && animal.litter_id) return navigate(`/portee/${animal.litter_id}`, { replace: true });
       return navigate('/');
     };
 
