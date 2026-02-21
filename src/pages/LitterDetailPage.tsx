@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Baby, ChevronRight, Plus, MoreVertical, Trash2, Bird } from 'lucide-react';
+import { ArrowLeft, Baby, ChevronRight, Plus, MoreVertical, Trash2, Bird, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
@@ -10,6 +12,9 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle,
+} from '@/components/ui/dialog';
 import { useAnimals } from '@/context/AnimalsContext';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -23,25 +28,30 @@ export default function LitterDetailPage() {
   const { animaux, setAnimaux } = useAnimals();
 
   const [litter, setLitter] = useState<any>(null);
-  const [newborns, setNewborns] = useState<Animal[]>([]);
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [paradisId, setParadisId] = useState<string | null>(null);
 
+  // Recovery modal
+  const [recoveryOpen, setRecoveryOpen] = useState(false);
+  const [recoveryCount, setRecoveryCount] = useState(1);
+  const [recovering, setRecovering] = useState(false);
+
   const fetchLitter = useCallback(async () => {
     if (!user || !id) return;
     const { data } = await supabase.from('litters').select('*').eq('id', id).single();
     if (data) setLitter(data);
-
-    const nb = animaux.filter((a) => a.litter_id === id && !a.paradis);
-    setNewborns(nb);
     setLoading(false);
-  }, [user, id, animaux]);
+  }, [user, id]);
 
   useEffect(() => {
     fetchLitter();
   }, [fetchLitter]);
+
+  // Derive newborns from animaux state
+  const newborns = animaux.filter((a) => a.litter_id === id && !a.paradis);
+  const allNewborns = animaux.filter((a) => a.litter_id === id);
 
   if (loading) {
     return (
@@ -161,6 +171,68 @@ export default function LitterDetailPage() {
     setParadisId(null);
   };
 
+  // Recovery: generate missing newborn profiles
+  const handleRecovery = async () => {
+    if (!user || !litter || recoveryCount < 1) return;
+    setRecovering(true);
+    try {
+      const mother = animaux.find((a) => a.id === litter.mother_id);
+      const existingCount = animaux.filter((a) => a.litter_id === id).length;
+      const created: any[] = [];
+
+      for (let i = 0; i < recoveryCount; i++) {
+        const { data, error } = await supabase
+          .from('animals')
+          .insert({
+            user_id: user.id,
+            nom: `Petit ${existingCount + i + 1}`,
+            type: mother?.type || 'Chat',
+            sexe: 'Femelle',
+            race: mother?.race || null,
+            naissance: litter.birth_date,
+            sterilise: false,
+            poids: '[]',
+            soins: '[]',
+            consultations: '[]',
+            breeder_visible: false,
+            litter_id: id,
+            mother_id: litter.mother_id,
+          } as any)
+          .select()
+          .single();
+        if (error) console.error(error);
+        else if (data) created.push(data);
+      }
+
+      if (created.length > 0) {
+        const mapped = created.map((data: any) => ({
+          id: data.id,
+          nom: data.nom,
+          type: data.type,
+          sexe: data.sexe,
+          race: data.race || undefined,
+          naissance: data.naissance ? new Date(data.naissance).toISOString() : undefined,
+          sterilise: false,
+          breeder_visible: false,
+          litter_id: data.litter_id,
+          mother_id: data.mother_id,
+          poids: [],
+          soins: [],
+          consultations: [],
+          createdAt: data.created_at,
+        }));
+        setAnimaux((prev: any[]) => [...mapped, ...prev]);
+      }
+
+      setRecoveryOpen(false);
+      toast({ title: `${created.length} profil(s) générés` });
+    } catch {
+      toast({ title: 'Erreur', variant: 'destructive' });
+    } finally {
+      setRecovering(false);
+    }
+  };
+
   const getSexBgClass = (nb: Animal) => {
     const sex = nb.sexe?.toLowerCase();
     if (!sex || (sex !== 'mâle' && sex !== 'male' && sex !== 'femelle' && sex !== 'female')) {
@@ -176,9 +248,6 @@ export default function LitterDetailPage() {
     const sex = nb.sexe?.toLowerCase();
     return !sex || (sex !== 'mâle' && sex !== 'male' && sex !== 'femelle' && sex !== 'female');
   };
-
-  // Count all newborns including paradis for the total
-  const allNewborns = animaux.filter((a) => a.litter_id === id);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[hsl(33,60%,95%)] to-[hsl(30,40%,92%)] dark:from-background dark:to-background">
@@ -230,7 +299,17 @@ export default function LitterDetailPage() {
         {/* Newborn list */}
         <h2 className="font-extrabold text-lg">Nouveau-nés</h2>
         {newborns.length === 0 ? (
-          <p className="text-center text-muted-foreground py-4">Aucun nouveau-né enregistré.</p>
+          <div className="text-center py-6 space-y-3">
+            <p className="text-muted-foreground">Aucun nouveau-né enregistré.</p>
+            <Button
+              variant="outline"
+              onClick={() => { setRecoveryCount(1); setRecoveryOpen(true); }}
+              className="gap-2"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Générer les profils manquants
+            </Button>
+          </div>
         ) : (
           <div className="space-y-2">
             {newborns.map((nb) => (
@@ -351,6 +430,31 @@ export default function LitterDetailPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Recovery modal */}
+      <Dialog open={recoveryOpen} onOpenChange={setRecoveryOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Générer les profils manquants</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <Label>Combien de petits à créer ?</Label>
+              <Input
+                type="number"
+                min={1}
+                max={20}
+                value={recoveryCount}
+                onChange={(e) => setRecoveryCount(Math.max(1, Math.min(20, parseInt(e.target.value) || 1)))}
+                className="mt-1.5"
+              />
+            </div>
+            <Button onClick={handleRecovery} disabled={recovering || recoveryCount < 1} className="w-full">
+              {recovering ? 'Génération...' : `Créer ${recoveryCount} profil(s)`}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
