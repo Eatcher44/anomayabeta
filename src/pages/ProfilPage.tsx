@@ -23,6 +23,7 @@ import { pickPhotoFile, uploadAnimalPhoto } from '@/utils/photo';
 import { getAllAlerts } from '@/utils/insights';
 import { toast } from '@/hooks/use-toast';
 import { useBreeder } from '@/context/BreederContext';
+import { isBreederEligible } from '@/utils/breederUtils';
 
 const fmt = (d: string | Date) => new Date(d).toLocaleDateString('fr-FR');
 const isFemale = (a: { sexe?: string }) => (a.sexe || '').toLowerCase().startsWith('f');
@@ -333,8 +334,8 @@ export default function ProfilPage() {
           </div>
 
 
-          {/* Reproduction */}
-          {!isParadis && isFemale(animal) && !animal.sterilise && (
+          {/* Reproduction (breeder, female cats/dogs only) */}
+          {!isParadis && isFemale(animal) && !animal.sterilise && isBreederEligible(animal.type) && (
             <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
               <h2 className="font-extrabold mb-3">Reproduction</h2>
               {isBreeder ? (
@@ -351,8 +352,8 @@ export default function ProfilPage() {
             </div>
           )}
 
-          {/* Transfer QR (breeder only, for newborns) */}
-          {!isParadis && isBreeder && (
+          {/* Transfer QR (breeder only, cats/dogs) */}
+          {!isParadis && isBreeder && isBreederEligible(animal.type) && (
             <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
               <h2 className="font-extrabold mb-3">Transfert de profil</h2>
               <Button variant="outline" onClick={() => navigate(`/transfer/${animal.id}`)}>
