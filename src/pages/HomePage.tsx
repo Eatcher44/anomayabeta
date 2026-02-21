@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Calendar, LogOut, GripVertical, Bell, Activity, Crown, Bird, Baby } from 'lucide-react';
+import { Plus, Calendar, LogOut, GripVertical, Bell, Activity, Crown, Bird, Baby, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -635,15 +635,24 @@ export default function HomePage() {
         <Bird className="w-5 h-5 text-muted-foreground" />
       </button>
 
-      {/* Portées button (breeder only) */}
+      {/* Breeder shortcuts */}
       {isBreeder && (
-        <button
-          onClick={() => navigate('/portees')}
-          className="fixed bottom-6 left-20 z-30 w-12 h-12 rounded-full bg-primary border border-primary shadow-lg flex items-center justify-center hover:bg-primary/90 transition-colors"
-          title="Portées"
-        >
-          <Baby className="w-5 h-5 text-primary-foreground" />
-        </button>
+        <>
+          <button
+            onClick={() => navigate('/portees')}
+            className="fixed bottom-6 left-20 z-30 w-12 h-12 rounded-full bg-primary border border-primary shadow-lg flex items-center justify-center hover:bg-primary/90 transition-colors"
+            title="Portées"
+          >
+            <Baby className="w-5 h-5 text-primary-foreground" />
+          </button>
+          <button
+            onClick={() => navigate('/stats-elevage')}
+            className="fixed bottom-6 left-36 z-30 w-12 h-12 rounded-full bg-primary border border-primary shadow-lg flex items-center justify-center hover:bg-primary/90 transition-colors"
+            title="Statistiques élevage"
+          >
+            <BarChart3 className="w-5 h-5 text-primary-foreground" />
+          </button>
+        </>
       )}
 
       {/* FAB RDV */}

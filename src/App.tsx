@@ -24,6 +24,7 @@ import ReproductionPage from "./pages/ReproductionPage";
 import PorteesPage from "./pages/PorteesPage";
 import TransferPage from "./pages/TransferPage";
 import ChaleursPage from "./pages/ChaleursPage";
+import StatsElevagePage from "./pages/StatsElevagePage";
 
 const queryClient = new QueryClient();
 
@@ -183,6 +184,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <PorteesPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/stats-elevage"
+        element={
+          <ProtectedRoute>
+            <StatsElevagePage />
           </ProtectedRoute>
         }
       />
