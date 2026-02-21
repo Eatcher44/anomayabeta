@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { formatWeight } from '@/components/AnimalRow';
-import { ArrowLeft, Edit, Syringe, Bug, Pill, Calendar, Baby, Bird, QrCode, Flame, Tag, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Edit, Syringe, Bug, Pill, Calendar, Baby, Bird, QrCode, Flame, Tag, AlertTriangle, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -35,6 +35,7 @@ import { toast } from '@/hooks/use-toast';
 import { useBreeder } from '@/context/BreederContext';
 import { isBreederEligible } from '@/utils/breederUtils';
 import type { Animal, CommercialStatus } from '@/types/animal';
+import { generateCarnetDepart, downloadPdf, sharePdf } from '@/utils/carnetDepart';
 
 const fmt = (d: string | Date) => new Date(d).toLocaleDateString('fr-FR');
 const isFemale = (a: { sexe?: string }) => (a.sexe || '').toLowerCase().startsWith('f');
@@ -484,6 +485,41 @@ export default function ProfilPage() {
           {/* Commercialisation (newborns only) */}
           {!isParadis && isNewborn && isBreeder && (
             <CommercialSection animal={animal} updateAnimal={updateAnimal} navigate={navigate} />
+          )}
+
+          {/* Carnet de Départ (sold/kept newborns only) */}
+          {!isParadis && isNewborn && isBreeder && (animal.commercial_status === 'sold' || animal.commercial_status === 'kept') && (
+            <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
+              <div className="flex items-center gap-2 mb-3">
+                <FileText className="w-4 h-4 text-primary" />
+                <h2 className="font-extrabold">Carnet de départ</h2>
+              </div>
+              <p className="text-xs text-muted-foreground mb-3">Générez un carnet PDF professionnel avec l'identité, le suivi de poids, les vaccins et les notes.</p>
+              <Button
+                className="w-full"
+                onClick={async () => {
+                  try {
+                    toast({ title: 'Génération en cours...' });
+                    const doc = await generateCarnetDepart({
+                      animal,
+                      motherName: motherAnimal?.nom,
+                      fatherName: fatherInfo?.name,
+                      breederName: user?.email?.split('@')[0] || undefined,
+                      breederEmail: user?.email || undefined,
+                    });
+                    const filename = `carnet-depart-${animal.nom.toLowerCase().replace(/\s+/g, '-')}.pdf`;
+                    const shared = await sharePdf(doc, filename);
+                    if (!shared) downloadPdf(doc, filename);
+                    toast({ title: 'Carnet généré !' });
+                  } catch {
+                    toast({ title: 'Erreur', description: 'Impossible de générer le carnet', variant: 'destructive' });
+                  }
+                }}
+              >
+                <FileText className="w-4 h-4 mr-2" />
+                📄 Générer carnet de départ
+              </Button>
+            </div>
           )}
 
           {/* Ajouter à Ma famille (newborns — kept or default) */}
