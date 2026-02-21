@@ -3,6 +3,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useAnimals } from '@/context/AnimalsContext';
 import { isBreederEligible } from '@/utils/breederUtils';
 import { getSpeciesConfig } from '@/utils/speciesConfig';
+import { normalizeType } from '@/utils/normalize';
 import { supabase } from '@/integrations/supabase/client';
 
 export interface Reproduction {
@@ -28,18 +29,23 @@ export interface Litter {
   deceased_count: number;
 }
 
-export function useElevageData() {
+export type ElevageAlert = { text: string; severity: 'urgent' | 'warning' | 'info' };
+
+export function useElevageData(species: string) {
   const { user } = useAuth();
   const { animaux } = useAnimals();
   const [reproductions, setReproductions] = useState<Reproduction[]>([]);
   const [litters, setLitters] = useState<Litter[]>([]);
   const [loading, setLoading] = useState(true);
 
-  /** Get gestation avg days for a reproduction based on the mother's species */
+  const speciesKey = normalizeType(species).toLowerCase();
+
+  const isSpecies = useCallback((type: string) => normalizeType(type).toLowerCase() === speciesKey, [speciesKey]);
+
   const getGestationDays = useCallback((animalId: string) => {
     const animal = animaux.find(a => a.id === animalId);
-    return getSpeciesConfig(animal?.type || 'chat').gestationAvgDays;
-  }, [animaux]);
+    return getSpeciesConfig(animal?.type || species).gestationAvgDays;
+  }, [animaux, species]);
 
   const fetchData = useCallback(async () => {
     if (!user) return;
@@ -64,18 +70,15 @@ export function useElevageData() {
           const { count: transferredCount } = await supabase
             .from('transfer_codes')
             .select('id', { count: 'exact', head: true })
-            .in('animal_id', all.map(n => n.id))
+            .in('animal_id', all.length > 0 ? all.map(n => n.id) : ['__none__'])
             .not('claimed_at', 'is', null);
-
-          const deceased = all.filter(n => n.paradis).length;
-          const transferred = transferredCount || 0;
 
           return {
             ...l,
             newborn_count: all.length,
             alive_count: alive.length,
-            transferred_count: transferred,
-            deceased_count: deceased,
+            transferred_count: transferredCount || 0,
+            deceased_count: all.filter(n => n.paradis).length,
           } as Litter;
         })
       );
@@ -86,118 +89,135 @@ export function useElevageData() {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
+  // All eligible animals of this species
   const eligible = useMemo(
-    () => animaux.filter(a => !a.paradis && a.breeder_visible !== false && isBreederEligible(a.type)),
-    [animaux]
+    () => animaux.filter(a => !a.paradis && a.breeder_visible !== false && isBreederEligible(a.type) && isSpecies(a.type)),
+    [animaux, isSpecies]
   );
   const females = useMemo(() => eligible.filter(a => a.sexe?.toLowerCase().startsWith('f')), [eligible]);
   const males = useMemo(() => eligible.filter(a => a.sexe?.toLowerCase().startsWith('m')), [eligible]);
 
+  // Reproductions where the mother is this species
+  const speciesAnimalIds = useMemo(() => new Set(animaux.filter(a => isSpecies(a.type)).map(a => a.id)), [animaux, isSpecies]);
+
+  const speciesReproductions = useMemo(
+    () => reproductions.filter(r => speciesAnimalIds.has(r.animal_id)),
+    [reproductions, speciesAnimalIds]
+  );
+
   const activeGestations = useMemo(() => {
     const now = Date.now();
-    return reproductions.filter(r => {
+    return speciesReproductions.filter(r => {
       if (r.status !== 'active') return false;
       const gDays = getGestationDays(r.animal_id);
       const start = new Date(r.date_saillie).getTime();
       const days = Math.floor((now - start) / 86400000);
       return days >= 0 && days <= gDays;
     });
-  }, [reproductions, getGestationDays]);
+  }, [speciesReproductions, getGestationDays]);
+
+  // Litters where mother is this species
+  const speciesLitters = useMemo(
+    () => litters.filter(l => speciesAnimalIds.has(l.mother_id)),
+    [litters, speciesAnimalIds]
+  );
 
   const activeLitters = useMemo(() => {
     const threeMonthsAgo = Date.now() - 90 * 86400000;
-    return litters.filter(l => new Date(l.birth_date).getTime() > threeMonthsAgo);
-  }, [litters]);
+    return speciesLitters.filter(l => new Date(l.birth_date).getTime() > threeMonthsAgo);
+  }, [speciesLitters]);
 
   const archivedLitters = useMemo(() => {
     const threeMonthsAgo = Date.now() - 90 * 86400000;
-    return litters.filter(l => new Date(l.birth_date).getTime() <= threeMonthsAgo);
-  }, [litters]);
+    return speciesLitters.filter(l => new Date(l.birth_date).getTime() <= threeMonthsAgo);
+  }, [speciesLitters]);
+
+  const speciesNewborns = useMemo(
+    () => animaux.filter(a => a.litter_id && isSpecies(a.type)),
+    [animaux, isSpecies]
+  );
 
   const availableKittens = useMemo(
-    () => animaux.filter(a =>
-      a.litter_id && !a.paradis &&
-      (a.commercial_status === 'available' || !a.commercial_status)
-    ),
-    [animaux]
+    () => speciesNewborns.filter(a => !a.paradis && (a.commercial_status === 'available' || !a.commercial_status)),
+    [speciesNewborns]
   );
 
   const soldPendingKittens = useMemo(
-    () => animaux.filter(a =>
-      a.litter_id && !a.paradis &&
-      (a.commercial_status === 'sold' || a.commercial_status === 'reserved')
-    ),
-    [animaux]
+    () => speciesNewborns.filter(a => !a.paradis && (a.commercial_status === 'sold' || a.commercial_status === 'reserved')),
+    [speciesNewborns]
   );
 
-  // Global stats
+  // Stats
   const globalStats = useMemo(() => {
-    const totalLitters = litters.length;
-    const totalKittens = litters.reduce((s, l) => s + l.newborn_count, 0);
+    const totalLitters = speciesLitters.length;
+    const totalKittens = speciesLitters.reduce((s, l) => s + l.newborn_count, 0);
     const avgPerLitter = totalLitters > 0 ? +(totalKittens / totalLitters).toFixed(1) : 0;
-    const totalDeceased = litters.reduce((s, l) => s + l.deceased_count, 0);
-    const survivalRate = totalKittens > 0 ? Math.round(((totalKittens - totalDeceased) / totalKittens) * 100) : 100;
+    const totalDeceased = speciesLitters.reduce((s, l) => s + l.deceased_count, 0);
+    const totalTransferred = speciesLitters.reduce((s, l) => s + l.transferred_count, 0);
 
-    const allNewborns = animaux.filter(a => a.litter_id);
-    const maleCount = allNewborns.filter(a => a.sexe?.toLowerCase().startsWith('m')).length;
-    const femaleCount = allNewborns.filter(a => a.sexe?.toLowerCase().startsWith('f')).length;
+    const maleCount = speciesNewborns.filter(a => a.sexe?.toLowerCase().startsWith('m')).length;
+    const femaleCount = speciesNewborns.filter(a => a.sexe?.toLowerCase().startsWith('f')).length;
     const sexRatio = maleCount + femaleCount > 0 ? `${maleCount}♂ / ${femaleCount}♀` : '—';
 
+    const transferRate = totalKittens > 0 ? Math.round((totalTransferred / totalKittens) * 100) : 0;
+    const paradisRate = totalKittens > 0 ? Math.round((totalDeceased / totalKittens) * 100) : 0;
+
     const currentYear = new Date().getFullYear();
-    const yearLitters = litters.filter(l => new Date(l.birth_date).getFullYear() === currentYear);
+    const yearLitters = speciesLitters.filter(l => new Date(l.birth_date).getFullYear() === currentYear);
     const yearProduction = yearLitters.reduce((s, l) => s + l.newborn_count, 0);
 
-    return { totalLitters, totalKittens, avgPerLitter, survivalRate, sexRatio, yearProduction };
-  }, [litters, animaux]);
+    return { totalLitters, totalKittens, avgPerLitter, sexRatio, transferRate, paradisRate, yearLitters: yearLitters.length, yearProduction };
+  }, [speciesLitters, speciesNewborns]);
 
-  // Alerts — species-aware
+  // Alerts
   const alerts = useMemo(() => {
-    const result: { text: string; severity: 'urgent' | 'warning' | 'info' }[] = [];
+    const result: ElevageAlert[] = [];
+    const config = getSpeciesConfig(species);
 
     activeGestations.forEach(g => {
-      const gDays = getGestationDays(g.animal_id);
       const days = Math.floor((Date.now() - new Date(g.date_saillie).getTime()) / 86400000);
       const mother = animaux.find(a => a.id === g.animal_id);
       const name = mother?.nom || 'Femelle';
-      if (days >= gDays - 8) {
-        result.push({ text: `${name} : mise-bas imminente (J${days}/${gDays})`, severity: 'urgent' });
-      } else if (days >= gDays - 18) {
-        result.push({ text: `${name} : gestation à surveiller (J${days}/${gDays})`, severity: 'warning' });
+      if (days > config.gestationMaxDays) {
+        result.push({ text: `${name} : mise-bas dépassée (J${days}/${config.gestationAvgDays})`, severity: 'urgent' });
+      } else if (days >= config.gestationMinDays) {
+        result.push({ text: `${name} : mise-bas imminente (J${days}/${config.gestationAvgDays})`, severity: 'urgent' });
+      } else if (days >= config.gestationAvgDays - 18) {
+        result.push({ text: `${name} : gestation à surveiller (J${days}/${config.gestationAvgDays})`, severity: 'warning' });
       }
     });
 
-    // Kitten vaccine alerts
-    const kittensDue = animaux.filter(a => {
-      if (!a.litter_id || a.paradis) return false;
+    const kittensDue = speciesNewborns.filter(a => {
+      if (a.paradis) return false;
       const birth = a.naissance ? new Date(a.naissance) : null;
       if (!birth) return false;
       const ageWeeks = Math.floor((Date.now() - birth.getTime()) / (7 * 86400000));
-      const hasVaccine = a.soins?.some(s => s.type === 'vaccin');
+      const hasVaccine = a.soins?.some(s => s.type === 'vaccin' || s.type === 'Vaccin');
       return ageWeeks >= 8 && !hasVaccine;
     });
     if (kittensDue.length > 0) {
-      result.push({ text: `${kittensDue.length} chaton(s) en attente de primo-vaccination`, severity: 'warning' });
+      result.push({ text: `${kittensDue.length} petit(s) en attente de primo-vaccination`, severity: 'warning' });
     }
 
-    // Deworm alerts for kittens based on species config
-    const kittensNeedDeworm = animaux.filter(a => {
-      if (!a.litter_id || a.paradis) return false;
+    const needDeworm = speciesNewborns.filter(a => {
+      if (a.paradis) return false;
       const birth = a.naissance ? new Date(a.naissance) : null;
       if (!birth) return false;
-      const config = getSpeciesConfig(a.type);
       const ageDays = Math.floor((Date.now() - birth.getTime()) / 86400000);
       if (ageDays < config.dewormIntervalDays) return false;
-      const hasVermifuge = a.soins?.some(s => s.type === 'Vermifuge');
-      return !hasVermifuge;
+      return !a.soins?.some(s => s.type === 'Vermifuge');
     });
-    if (kittensNeedDeworm.length > 0) {
-      result.push({ text: `${kittensNeedDeworm.length} petit(s) à vermifuger`, severity: 'warning' });
+    if (needDeworm.length > 0) {
+      result.push({ text: `${needDeworm.length} petit(s) à vermifuger`, severity: 'warning' });
     }
 
     return result;
-  }, [activeGestations, animaux, getGestationDays]);
+  }, [activeGestations, speciesNewborns, animaux, species]);
 
-  const getAnimalName = (id: string) => animaux.find(a => a.id === id)?.nom || 'Inconnu';
+  // Count urgent alerts per species (for badge on tabs)
+  const urgentCount = useMemo(() => alerts.filter(a => a.severity === 'urgent').length, [alerts]);
+
+  const getAnimalName = useCallback((id: string) => animaux.find(a => a.id === id)?.nom || 'Inconnu', [animaux]);
 
   return {
     loading,
@@ -205,16 +225,38 @@ export function useElevageData() {
     eligible,
     females,
     males,
-    reproductions,
+    reproductions: speciesReproductions,
     activeGestations,
-    litters,
+    litters: speciesLitters,
     activeLitters,
     archivedLitters,
     availableKittens,
     soldPendingKittens,
     globalStats,
     alerts,
+    urgentCount,
     getAnimalName,
     getGestationDays,
   };
+}
+
+/** Lightweight hook to just count urgent alerts for a species without full data loading */
+export function useSpeciesUrgentCount(species: string) {
+  const { animaux } = useAnimals();
+  const speciesKey = normalizeType(species).toLowerCase();
+
+  return useMemo(() => {
+    const config = getSpeciesConfig(species);
+    let count = 0;
+    // Check newborns needing vaccines
+    const newborns = animaux.filter(a => a.litter_id && !a.paradis && normalizeType(a.type).toLowerCase() === speciesKey);
+    const needVax = newborns.filter(a => {
+      const birth = a.naissance ? new Date(a.naissance) : null;
+      if (!birth) return false;
+      const ageWeeks = Math.floor((Date.now() - birth.getTime()) / (7 * 86400000));
+      return ageWeeks >= 8 && !a.soins?.some(s => s.type === 'vaccin' || s.type === 'Vaccin');
+    });
+    if (needVax.length > 0) count++;
+    return count;
+  }, [animaux, speciesKey, species]);
 }
