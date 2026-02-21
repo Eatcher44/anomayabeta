@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Baby, ChevronRight, Plus, MoreVertical, Trash2, Bird, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Baby, ChevronRight, Plus, MoreVertical, Trash2, Bird, RefreshCw, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -21,6 +21,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import type { Animal } from '@/types/animal';
 
+function isSexUnsetStatic(a: Animal) {
+  const sex = a.sexe?.toLowerCase();
+  return !sex || (sex !== 'mâle' && sex !== 'male' && sex !== 'femelle' && sex !== 'female');
+}
+
 export default function LitterDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -38,6 +43,9 @@ export default function LitterDetailPage() {
   const [recoveryCount, setRecoveryCount] = useState(1);
   const [recovering, setRecovering] = useState(false);
 
+  // Filter
+  const [filterUnset, setFilterUnset] = useState(false);
+
   const fetchLitter = useCallback(async () => {
     if (!user || !id) return;
     const { data } = await supabase.from('litters').select('*').eq('id', id).single();
@@ -50,8 +58,14 @@ export default function LitterDetailPage() {
   }, [fetchLitter]);
 
   // Derive newborns from animaux state
-  const newborns = animaux.filter((a) => a.litter_id === id && !a.paradis);
   const allNewborns = animaux.filter((a) => a.litter_id === id);
+  const activeNewborns = allNewborns.filter((a) => !a.paradis);
+
+  const sexDefined = useMemo(() => activeNewborns.filter((a) => !isSexUnsetStatic(a)).length, [activeNewborns]);
+  const sexTotal = activeNewborns.length;
+  const sexRemaining = sexTotal - sexDefined;
+
+  const newborns = filterUnset ? activeNewborns.filter((a) => isSexUnsetStatic(a)) : activeNewborns;
 
   if (loading) {
     return (
@@ -244,10 +258,7 @@ export default function LitterDetailPage() {
     return 'bg-[hsl(340,60%,93%)] dark:bg-[hsl(340,30%,18%)] border-[hsl(340,40%,78%)] dark:border-[hsl(340,20%,30%)]';
   };
 
-  const isSexUnset = (nb: Animal) => {
-    const sex = nb.sexe?.toLowerCase();
-    return !sex || (sex !== 'mâle' && sex !== 'male' && sex !== 'femelle' && sex !== 'female');
-  };
+  const isSexUnset = isSexUnsetStatic;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[hsl(33,60%,95%)] to-[hsl(30,40%,92%)] dark:from-background dark:to-background">
@@ -288,6 +299,12 @@ export default function LitterDetailPage() {
             <span className="text-muted-foreground">Nombre de petits</span>
             <span className="font-bold">{allNewborns.length}</span>
           </div>
+          <div className="flex justify-between items-center">
+            <span className="text-muted-foreground">Sexes définis</span>
+            <Badge variant={sexDefined === sexTotal && sexTotal > 0 ? 'default' : 'secondary'} className="text-xs">
+              {sexDefined} / {sexTotal}
+            </Badge>
+          </div>
         </div>
 
         {/* Add newborn button */}
@@ -296,8 +313,44 @@ export default function LitterDetailPage() {
           {adding ? 'Ajout...' : 'Ajouter un nouveau-né'}
         </Button>
 
-        {/* Newborn list */}
-        <h2 className="font-extrabold text-lg">Nouveau-nés</h2>
+        {/* Section header with filter & action */}
+        <div className="flex items-center justify-between">
+          <h2 className="font-extrabold text-lg">Nouveau-nés</h2>
+          <div className="flex items-center gap-2">
+            <div className="flex rounded-full border border-border overflow-hidden text-xs">
+              <button
+                onClick={() => setFilterUnset(false)}
+                className={`px-3 py-1 transition-colors ${!filterUnset ? 'bg-primary text-primary-foreground' : 'bg-card text-muted-foreground hover:bg-accent'}`}
+              >
+                Tous
+              </button>
+              <button
+                onClick={() => setFilterUnset(true)}
+                className={`px-3 py-1 transition-colors ${filterUnset ? 'bg-primary text-primary-foreground' : 'bg-card text-muted-foreground hover:bg-accent'}`}
+              >
+                À définir
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Banner for remaining unknown sexes */}
+        {sexRemaining > 0 && (
+          <div className="flex items-center justify-between bg-[hsl(145,40%,92%)] dark:bg-[hsl(145,25%,18%)] border border-[hsl(145,30%,75%)] dark:border-[hsl(145,20%,30%)] rounded-lg px-3 py-2">
+            <p className="text-xs text-muted-foreground">
+              Il reste {sexRemaining} sexe{sexRemaining > 1 ? 's' : ''} à définir.
+            </p>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-xs h-7 gap-1"
+              onClick={() => navigate('/portees')}
+            >
+              <Clock className="w-3 h-3" />
+              Définir plus tard
+            </Button>
+          </div>
+        )}
         {newborns.length === 0 ? (
           <div className="text-center py-6 space-y-3">
             <p className="text-muted-foreground">Aucun nouveau-né enregistré.</p>
@@ -331,9 +384,16 @@ export default function LitterDetailPage() {
                         )}
                       </div>
                       <div>
-                        <p className="font-bold">{nb.nom}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="font-bold">{nb.nom}</p>
+                          {isSexUnset(nb) && (
+                            <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 bg-[hsl(145,40%,88%)] dark:bg-[hsl(145,25%,22%)] border-[hsl(145,30%,70%)] text-[hsl(145,40%,30%)] dark:text-[hsl(145,50%,65%)]">
+                              Sexe à définir
+                            </Badge>
+                          )}
+                        </div>
                         <p className="text-xs text-muted-foreground">
-                          {isSexUnset(nb) ? 'Sexe non défini' : nb.sexe}
+                          {isSexUnset(nb) ? 'Non défini' : nb.sexe}
                           {nb.race ? ` • ${nb.race}` : ''}
                         </p>
                       </div>
