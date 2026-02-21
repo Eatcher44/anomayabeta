@@ -63,7 +63,7 @@ export default function PreparerDepartPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[hsl(33,60%,95%)] to-[hsl(30,40%,92%)] dark:from-background dark:to-background pb-24">
+    <div className="min-h-screen bg-gradient-to-b from-[hsl(33,60%,95%)] to-[hsl(30,40%,92%)] dark:from-background dark:to-background" style={{ paddingBottom: 'calc(64px + env(safe-area-inset-bottom, 0px) + 24px)' }}>
       {/* Header */}
       <div className="px-4 pt-6 pb-3">
         <div className="flex items-center gap-3">

@@ -584,8 +584,8 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* Grouped list */}
-      <div className="px-4 pb-32">
+      {/* Grouped list — padding accounts for bottom nav + safe area */}
+      <div className="px-4" style={{ paddingBottom: 'calc(64px + env(safe-area-inset-bottom, 0px) + 80px)' }}>
         {groupedAnimals.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">
             <p>Aucun animal pour le moment.</p>
@@ -632,29 +632,29 @@ export default function HomePage() {
         )}
       </div>
 
-      {/* Paradis button */}
+      {/* Paradis button — above bottom nav */}
       <button
         onClick={() => navigate('/paradis')}
-        className="fixed bottom-6 left-6 z-30 w-12 h-12 rounded-full bg-muted border border-border shadow-lg flex items-center justify-center hover:bg-accent transition-colors"
+        className="fixed left-4 z-30 w-12 h-12 rounded-full bg-muted border border-border shadow-lg flex items-center justify-center hover:bg-accent transition-colors"
+        style={{ bottom: 'calc(64px + env(safe-area-inset-bottom, 0px) + 16px)' }}
         title="Paradis"
       >
         <Bird className="w-5 h-5 text-muted-foreground" />
       </button>
 
-      {/* Transférés button */}
+      {/* Transférés button — above Paradis button */}
       {isBreeder && (
         <button
           onClick={() => navigate('/transferes')}
-          className="fixed bottom-20 left-6 z-30 w-12 h-12 rounded-full bg-muted border border-border shadow-lg flex items-center justify-center hover:bg-accent transition-colors"
+          className="fixed left-4 z-30 w-12 h-12 rounded-full bg-muted border border-border shadow-lg flex items-center justify-center hover:bg-accent transition-colors"
+          style={{ bottom: 'calc(64px + env(safe-area-inset-bottom, 0px) + 72px)' }}
           title="Transférés"
         >
           <ArrowRightLeft className="w-5 h-5 text-muted-foreground" />
         </button>
       )}
 
-      {/* Breeder navigation is now in bottom tab bar */}
-
-      {/* FAB RDV */}
+      {/* FAB RDV — uses .fab class which is already positioned above nav */}
       <button onClick={() => setRdvOpen(true)} className="fab" title="Nouveau rendez-vous">
         <Calendar className="w-6 h-6" />
       </button>

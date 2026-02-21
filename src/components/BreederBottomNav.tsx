@@ -3,6 +3,9 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Home, Stethoscope } from 'lucide-react';
 import { useBreeder } from '@/context/BreederContext';
 
+/** Fixed height of the bottom nav (excluding safe-area). Use for offset calculations. */
+export const BOTTOM_NAV_HEIGHT = 64;
+
 export default function BreederBottomNav() {
   const { isBreeder } = useBreeder();
   const navigate = useNavigate();
@@ -16,8 +19,14 @@ export default function BreederBottomNav() {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-card/95 backdrop-blur border-t border-border safe-area-bottom">
-      <div className="flex items-center justify-around max-w-lg mx-auto">
+    <nav
+      className="fixed bottom-0 left-0 right-0 z-40 bg-card border-t border-border"
+      style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+    >
+      <div
+        className="flex items-center justify-around max-w-lg mx-auto"
+        style={{ height: `${BOTTOM_NAV_HEIGHT}px` }}
+      >
         {tabs.map(tab => {
           const active = tab.path === '/' ? location.pathname === '/' : location.pathname.startsWith(tab.path);
           return (
