@@ -48,6 +48,8 @@ export interface Animal {
   puce?: string;
   couleur?: string | null;
   paradis?: boolean;
+  mother_id?: string | null;
+  litter_id?: string | null;
   poids: WeightEntry[];
   soins: SoinEntry[];
   consultations: ConsultationEntry[];

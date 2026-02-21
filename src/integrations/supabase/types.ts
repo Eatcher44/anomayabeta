@@ -129,6 +129,8 @@ export type Database = {
         Row: {
           birth_date: string
           created_at: string
+          father_id: string | null
+          father_name: string | null
           id: string
           mother_id: string
           notes: string | null
@@ -138,6 +140,8 @@ export type Database = {
         Insert: {
           birth_date: string
           created_at?: string
+          father_id?: string | null
+          father_name?: string | null
           id?: string
           mother_id: string
           notes?: string | null
@@ -147,6 +151,8 @@ export type Database = {
         Update: {
           birth_date?: string
           created_at?: string
+          father_id?: string | null
+          father_name?: string | null
           id?: string
           mother_id?: string
           notes?: string | null
@@ -154,6 +160,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "litters_father_id_fkey"
+            columns: ["father_id"]
+            isOneToOne: false
+            referencedRelation: "animals"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "litters_mother_id_fkey"
             columns: ["mother_id"]
