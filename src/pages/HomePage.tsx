@@ -35,6 +35,7 @@ import { pickPhotoFile, uploadAnimalPhoto } from '@/utils/photo';
 import { toast } from '@/hooks/use-toast';
 import type { Animal, RendezVous } from '@/types/animal';
 import { useBreeder } from '@/context/BreederContext';
+import { BOTTOM_NAV_HEIGHT } from '@/components/BreederBottomNav';
 
 type SortKey = 'alpha' | 'alpha-desc' | 'age-asc' | 'age-desc' | 'poids-asc' | 'poids-desc';
 
@@ -585,7 +586,7 @@ export default function HomePage() {
       )}
 
       {/* Grouped list — padding accounts for bottom nav + safe area */}
-      <div className="px-4" style={{ paddingBottom: 'calc(64px + env(safe-area-inset-bottom, 0px) + 80px)' }}>
+      <div className="px-4" style={{ paddingBottom: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom, 0px) + 80px)` }}>
         {groupedAnimals.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">
             <p>Aucun animal pour le moment.</p>
@@ -636,7 +637,7 @@ export default function HomePage() {
       <button
         onClick={() => navigate('/paradis')}
         className="fixed left-4 z-30 w-12 h-12 rounded-full bg-muted border border-border shadow-lg flex items-center justify-center hover:bg-accent transition-colors"
-        style={{ bottom: 'calc(64px + env(safe-area-inset-bottom, 0px) + 16px)' }}
+        style={{ bottom: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom, 0px) + 16px)` }}
         title="Paradis"
       >
         <Bird className="w-5 h-5 text-muted-foreground" />
@@ -647,7 +648,7 @@ export default function HomePage() {
         <button
           onClick={() => navigate('/transferes')}
           className="fixed left-4 z-30 w-12 h-12 rounded-full bg-muted border border-border shadow-lg flex items-center justify-center hover:bg-accent transition-colors"
-          style={{ bottom: 'calc(64px + env(safe-area-inset-bottom, 0px) + 72px)' }}
+          style={{ bottom: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom, 0px) + ${16 + 12 + 48}px)` }}
           title="Transférés"
         >
           <ArrowRightLeft className="w-5 h-5 text-muted-foreground" />
