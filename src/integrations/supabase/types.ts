@@ -95,6 +95,36 @@ export type Database = {
           },
         ]
       }
+      heat_cycles: {
+        Row: {
+          animal_id: string
+          created_at: string
+          date_debut: string
+          date_fin: string | null
+          id: string
+          notes: string | null
+          user_id: string
+        }
+        Insert: {
+          animal_id: string
+          created_at?: string
+          date_debut: string
+          date_fin?: string | null
+          id?: string
+          notes?: string | null
+          user_id: string
+        }
+        Update: {
+          animal_id?: string
+          created_at?: string
+          date_debut?: string
+          date_fin?: string | null
+          id?: string
+          notes?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       litters: {
         Row: {
           birth_date: string
