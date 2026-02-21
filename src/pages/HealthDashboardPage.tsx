@@ -49,27 +49,33 @@ export default function HealthDashboardPage() {
   const navigate = useNavigate();
   const { animaux, rendezvous } = useAnimals();
 
-  const sortedAnimals = useMemo(
-    () => [...animaux].sort((a, b) => (a.nom || '').localeCompare(b.nom || '')),
+  // Only include active, visible animals — exclude paradis, transferred, breeder newborns
+  const activeAnimals = useMemo(
+    () => animaux.filter((a) => !a.paradis && a.breeder_visible !== false),
     [animaux]
+  );
+
+  const sortedAnimals = useMemo(
+    () => [...activeAnimals].sort((a, b) => (a.nom || '').localeCompare(b.nom || '')),
+    [activeAnimals]
   );
 
   const statusByAnimal = useMemo(() => {
     const map: Record<string, AnimalHealthStatus> = {};
-    for (const animal of animaux) {
+    for (const animal of activeAnimals) {
       map[animal.id] = getAnimalHealthStatus(animal, rendezvous);
     }
     return map;
-  }, [animaux, rendezvous]);
+  }, [activeAnimals, rendezvous]);
 
   const alertsByAnimal = useMemo(() => {
     const map: Record<string, HealthAlert[]> = {};
-    for (const animal of animaux) {
+    for (const animal of activeAnimals) {
       const animalAlerts = getAllAlerts([animal], rendezvous.filter((r) => r.animalIds?.includes(animal.id)));
       map[animal.id] = animalAlerts;
     }
     return map;
-  }, [animaux, rendezvous]);
+  }, [activeAnimals, rendezvous]);
 
   const handleAlertClick = (alert: HealthAlert) => {
     if (!alert.animalId) return;
