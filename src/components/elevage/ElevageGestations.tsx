@@ -10,14 +10,13 @@ import type { Reproduction } from '@/hooks/useElevageData';
 interface Props {
   reproductions: Reproduction[];
   animaux: Animal[];
-  gestationDays: number;
+  getGestationDays: (animalId: string) => number;
 }
 
-export default function ElevageGestations({ reproductions, animaux, gestationDays }: Props) {
+export default function ElevageGestations({ reproductions, animaux, getGestationDays }: Props) {
   const navigate = useNavigate();
   const fmt = (d: string) => new Date(d).toLocaleDateString('fr-FR');
 
-  // Group by status
   const active = reproductions.filter(r => r.status === 'active');
   const cancelled = reproductions.filter(r => r.status === 'cancelled');
   const confirmed = reproductions.filter(r => r.status === 'birth_confirmed' || r.confirmed);
@@ -28,6 +27,7 @@ export default function ElevageGestations({ reproductions, animaux, gestationDay
       <div className="space-y-2">
         <h3 className="text-[11px] font-bold text-muted-foreground uppercase">{label} ({items.length})</h3>
         {items.map(g => {
+          const gestationDays = getGestationDays(g.animal_id);
           const start = new Date(g.date_saillie);
           const expected = new Date(start);
           expected.setDate(expected.getDate() + gestationDays);

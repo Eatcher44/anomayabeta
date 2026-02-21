@@ -66,7 +66,7 @@ export default function ElevagePage() {
           <ElevageGestations
             reproductions={data.reproductions}
             animaux={data.animaux}
-            gestationDays={data.GESTATION_DAYS}
+            getGestationDays={data.getGestationDays}
           />
         </section>
 

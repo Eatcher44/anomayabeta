@@ -2,9 +2,8 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useAnimals } from '@/context/AnimalsContext';
 import { isBreederEligible } from '@/utils/breederUtils';
+import { getSpeciesConfig } from '@/utils/speciesConfig';
 import { supabase } from '@/integrations/supabase/client';
-
-const GESTATION_DAYS = 63;
 
 export interface Reproduction {
   id: string;
@@ -36,6 +35,12 @@ export function useElevageData() {
   const [litters, setLitters] = useState<Litter[]>([]);
   const [loading, setLoading] = useState(true);
 
+  /** Get gestation avg days for a reproduction based on the mother's species */
+  const getGestationDays = useCallback((animalId: string) => {
+    const animal = animaux.find(a => a.id === animalId);
+    return getSpeciesConfig(animal?.type || 'chat').gestationAvgDays;
+  }, [animaux]);
+
   const fetchData = useCallback(async () => {
     if (!user) return;
     const [reproRes, litterRes] = await Promise.all([
@@ -56,7 +61,6 @@ export function useElevageData() {
           const all = newborns || [];
           const alive = all.filter(n => !n.paradis);
 
-          // Count transferred
           const { count: transferredCount } = await supabase
             .from('transfer_codes')
             .select('id', { count: 'exact', head: true })
@@ -93,11 +97,12 @@ export function useElevageData() {
     const now = Date.now();
     return reproductions.filter(r => {
       if (r.status !== 'active') return false;
+      const gDays = getGestationDays(r.animal_id);
       const start = new Date(r.date_saillie).getTime();
       const days = Math.floor((now - start) / 86400000);
-      return days >= 0 && days <= GESTATION_DAYS;
+      return days >= 0 && days <= gDays;
     });
-  }, [reproductions]);
+  }, [reproductions, getGestationDays]);
 
   const activeLitters = useMemo(() => {
     const threeMonthsAgo = Date.now() - 90 * 86400000;
@@ -145,31 +150,52 @@ export function useElevageData() {
     return { totalLitters, totalKittens, avgPerLitter, survivalRate, sexRatio, yearProduction };
   }, [litters, animaux]);
 
-  // Alerts
-  const alerts: { text: string; severity: 'urgent' | 'warning' | 'info' }[] = [];
-  activeGestations.forEach(g => {
-    const days = Math.floor((Date.now() - new Date(g.date_saillie).getTime()) / 86400000);
-    if (days >= 55) {
-      const mother = animaux.find(a => a.id === g.animal_id);
-      alerts.push({ text: `${mother?.nom || 'Femelle'} : mise-bas imminente (J${days}/${GESTATION_DAYS})`, severity: 'urgent' });
-    } else if (days >= 45) {
-      const mother = animaux.find(a => a.id === g.animal_id);
-      alerts.push({ text: `${mother?.nom || 'Femelle'} : gestation à surveiller (J${days}/${GESTATION_DAYS})`, severity: 'warning' });
-    }
-  });
+  // Alerts — species-aware
+  const alerts = useMemo(() => {
+    const result: { text: string; severity: 'urgent' | 'warning' | 'info' }[] = [];
 
-  // Kitten vaccine alerts
-  const kittensDue = animaux.filter(a => {
-    if (!a.litter_id || a.paradis) return false;
-    const birth = a.naissance ? new Date(a.naissance) : null;
-    if (!birth) return false;
-    const ageWeeks = Math.floor((Date.now() - birth.getTime()) / (7 * 86400000));
-    const hasVaccine = a.soins?.some(s => s.type === 'vaccin');
-    return ageWeeks >= 8 && !hasVaccine;
-  });
-  if (kittensDue.length > 0) {
-    alerts.push({ text: `${kittensDue.length} chaton(s) en attente de primo-vaccination`, severity: 'warning' });
-  }
+    activeGestations.forEach(g => {
+      const gDays = getGestationDays(g.animal_id);
+      const days = Math.floor((Date.now() - new Date(g.date_saillie).getTime()) / 86400000);
+      const mother = animaux.find(a => a.id === g.animal_id);
+      const name = mother?.nom || 'Femelle';
+      if (days >= gDays - 8) {
+        result.push({ text: `${name} : mise-bas imminente (J${days}/${gDays})`, severity: 'urgent' });
+      } else if (days >= gDays - 18) {
+        result.push({ text: `${name} : gestation à surveiller (J${days}/${gDays})`, severity: 'warning' });
+      }
+    });
+
+    // Kitten vaccine alerts
+    const kittensDue = animaux.filter(a => {
+      if (!a.litter_id || a.paradis) return false;
+      const birth = a.naissance ? new Date(a.naissance) : null;
+      if (!birth) return false;
+      const ageWeeks = Math.floor((Date.now() - birth.getTime()) / (7 * 86400000));
+      const hasVaccine = a.soins?.some(s => s.type === 'vaccin');
+      return ageWeeks >= 8 && !hasVaccine;
+    });
+    if (kittensDue.length > 0) {
+      result.push({ text: `${kittensDue.length} chaton(s) en attente de primo-vaccination`, severity: 'warning' });
+    }
+
+    // Deworm alerts for kittens based on species config
+    const kittensNeedDeworm = animaux.filter(a => {
+      if (!a.litter_id || a.paradis) return false;
+      const birth = a.naissance ? new Date(a.naissance) : null;
+      if (!birth) return false;
+      const config = getSpeciesConfig(a.type);
+      const ageDays = Math.floor((Date.now() - birth.getTime()) / 86400000);
+      if (ageDays < config.dewormIntervalDays) return false;
+      const hasVermifuge = a.soins?.some(s => s.type === 'Vermifuge');
+      return !hasVermifuge;
+    });
+    if (kittensNeedDeworm.length > 0) {
+      result.push({ text: `${kittensNeedDeworm.length} petit(s) à vermifuger`, severity: 'warning' });
+    }
+
+    return result;
+  }, [activeGestations, animaux, getGestationDays]);
 
   const getAnimalName = (id: string) => animaux.find(a => a.id === id)?.nom || 'Inconnu';
 
@@ -189,6 +215,6 @@ export function useElevageData() {
     globalStats,
     alerts,
     getAnimalName,
-    GESTATION_DAYS,
+    getGestationDays,
   };
 }
