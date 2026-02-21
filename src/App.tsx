@@ -26,6 +26,7 @@ import TransferPage from "./pages/TransferPage";
 import ChaleursPage from "./pages/ChaleursPage";
 import StatsElevagePage from "./pages/StatsElevagePage";
 import LitterDetailPage from "./pages/LitterDetailPage";
+import TransferesPage from "./pages/TransferesPage";
 
 const queryClient = new QueryClient();
 
@@ -217,6 +218,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <TransferPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/transferes"
+        element={
+          <ProtectedRoute>
+            <TransferesPage />
           </ProtectedRoute>
         }
       />

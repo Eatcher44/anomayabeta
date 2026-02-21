@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Calendar, LogOut, GripVertical, Bell, Activity, Crown, Bird, Baby, BarChart3 } from 'lucide-react';
+import { Plus, Calendar, LogOut, GripVertical, Bell, Activity, Crown, Bird, Baby, BarChart3, ArrowRightLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -634,6 +634,17 @@ export default function HomePage() {
       >
         <Bird className="w-5 h-5 text-muted-foreground" />
       </button>
+
+      {/* Transférés button */}
+      {isBreeder && (
+        <button
+          onClick={() => navigate('/transferes')}
+          className="fixed bottom-20 left-6 z-30 w-12 h-12 rounded-full bg-muted border border-border shadow-lg flex items-center justify-center hover:bg-accent transition-colors"
+          title="Transférés"
+        >
+          <ArrowRightLeft className="w-5 h-5 text-muted-foreground" />
+        </button>
+      )}
 
       {/* Breeder shortcuts */}
       {isBreeder && (

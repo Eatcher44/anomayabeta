@@ -1,29 +1,40 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Baby, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Baby, ChevronRight, Plus, MoreVertical, Trash2, Bird } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { useAnimals } from '@/context/AnimalsContext';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 import type { Animal } from '@/types/animal';
 
 export default function LitterDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { animaux } = useAnimals();
+  const { animaux, setAnimaux } = useAnimals();
 
   const [litter, setLitter] = useState<any>(null);
   const [newborns, setNewborns] = useState<Animal[]>([]);
   const [loading, setLoading] = useState(true);
+  const [adding, setAdding] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [paradisId, setParadisId] = useState<string | null>(null);
 
   const fetchLitter = useCallback(async () => {
     if (!user || !id) return;
     const { data } = await supabase.from('litters').select('*').eq('id', id).single();
     if (data) setLitter(data);
 
-    // Newborns are in animaux context (litter_id match)
-    const nb = animaux.filter((a) => a.litter_id === id);
+    const nb = animaux.filter((a) => a.litter_id === id && !a.paradis);
     setNewborns(nb);
     setLoading(false);
   }, [user, id, animaux]);
@@ -54,6 +65,120 @@ export default function LitterDetailPage() {
     : litter.father_name || null;
 
   const fmt = (d: string) => new Date(d).toLocaleDateString('fr-FR');
+
+  const handleSetSex = async (animalId: string, sex: 'Mâle' | 'Femelle') => {
+    try {
+      const { error } = await supabase
+        .from('animals')
+        .update({ sexe: sex })
+        .eq('id', animalId);
+      if (error) throw error;
+      setAnimaux((prev) =>
+        prev.map((a) => (a.id === animalId ? { ...a, sexe: sex } : a))
+      );
+    } catch {
+      toast({ title: 'Erreur', variant: 'destructive' });
+    }
+  };
+
+  const handleAddNewborn = async () => {
+    if (!user || !litter) return;
+    setAdding(true);
+    try {
+      const mother = animaux.find((a) => a.id === litter.mother_id);
+      const existingCount = animaux.filter((a) => a.litter_id === id).length;
+      const { data, error } = await supabase
+        .from('animals')
+        .insert({
+          user_id: user.id,
+          nom: `Petit ${existingCount + 1}`,
+          type: mother?.type || 'Chat',
+          sexe: 'Femelle',
+          race: mother?.race || null,
+          naissance: litter.birth_date,
+          sterilise: false,
+          poids: '[]',
+          soins: '[]',
+          consultations: '[]',
+          breeder_visible: false,
+          litter_id: id,
+          mother_id: litter.mother_id,
+        } as any)
+        .select()
+        .single();
+      if (error) throw error;
+      if (data) {
+        const newAnimal: Animal = {
+          id: data.id,
+          nom: data.nom,
+          type: data.type,
+          sexe: data.sexe,
+          race: data.race || undefined,
+          naissance: data.naissance ? new Date(data.naissance).toISOString() : undefined,
+          sterilise: false,
+          breeder_visible: false,
+          litter_id: (data as any).litter_id,
+          mother_id: (data as any).mother_id,
+          poids: [],
+          soins: [],
+          consultations: [],
+          createdAt: data.created_at,
+        };
+        setAnimaux((prev) => [newAnimal, ...prev]);
+      }
+      toast({ title: 'Nouveau-né ajouté' });
+    } catch {
+      toast({ title: 'Erreur', variant: 'destructive' });
+    } finally {
+      setAdding(false);
+    }
+  };
+
+  const handleDeleteNewborn = async () => {
+    if (!deleteId) return;
+    try {
+      await supabase.from('animals').delete().eq('id', deleteId);
+      setAnimaux((prev) => prev.filter((a) => a.id !== deleteId));
+      toast({ title: 'Nouveau-né supprimé' });
+    } catch {
+      toast({ title: 'Erreur', variant: 'destructive' });
+    }
+    setDeleteId(null);
+  };
+
+  const handleParadisNewborn = async () => {
+    if (!paradisId) return;
+    try {
+      await supabase.from('animals').update({ paradis: true }).eq('id', paradisId);
+      await supabase.from('notifications').delete().eq('animal_id', paradisId);
+      setAnimaux((prev) =>
+        prev.map((a) => (a.id === paradisId ? { ...a, paradis: true } : a))
+      );
+      toast({ title: 'Envoyé au paradis 🕊️' });
+    } catch {
+      toast({ title: 'Erreur', variant: 'destructive' });
+    }
+    setParadisId(null);
+  };
+
+  const getSexBgClass = (nb: Animal) => {
+    const sex = nb.sexe?.toLowerCase();
+    if (!sex || (sex !== 'mâle' && sex !== 'male' && sex !== 'femelle' && sex !== 'female')) {
+      return 'bg-[hsl(145,40%,92%)] dark:bg-[hsl(145,25%,18%)] border-[hsl(145,30%,75%)] dark:border-[hsl(145,20%,30%)]';
+    }
+    if (sex.startsWith('m')) {
+      return 'bg-[hsl(211,60%,93%)] dark:bg-[hsl(211,30%,18%)] border-[hsl(211,40%,78%)] dark:border-[hsl(211,20%,30%)]';
+    }
+    return 'bg-[hsl(340,60%,93%)] dark:bg-[hsl(340,30%,18%)] border-[hsl(340,40%,78%)] dark:border-[hsl(340,20%,30%)]';
+  };
+
+  const isSexUnset = (nb: Animal) => {
+    const sex = nb.sexe?.toLowerCase();
+    return !sex || (sex !== 'mâle' && sex !== 'male' && sex !== 'femelle' && sex !== 'female');
+  };
+
+  // Count all newborns including paradis for the total
+  const allNewborns = animaux.filter((a) => a.litter_id === id);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[hsl(33,60%,95%)] to-[hsl(30,40%,92%)] dark:from-background dark:to-background">
@@ -92,9 +217,15 @@ export default function LitterDetailPage() {
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Nombre de petits</span>
-            <span className="font-bold">{newborns.length}</span>
+            <span className="font-bold">{allNewborns.length}</span>
           </div>
         </div>
+
+        {/* Add newborn button */}
+        <Button onClick={handleAddNewborn} disabled={adding} variant="outline" className="w-full">
+          <Plus className="w-4 h-4 mr-2" />
+          {adding ? 'Ajout...' : 'Ajouter un nouveau-né'}
+        </Button>
 
         {/* Newborn list */}
         <h2 className="font-extrabold text-lg">Nouveau-nés</h2>
@@ -103,32 +234,123 @@ export default function LitterDetailPage() {
         ) : (
           <div className="space-y-2">
             {newborns.map((nb) => (
-              <button
+              <div
                 key={nb.id}
-                onClick={() => navigate(`/profil/${nb.id}`)}
-                className="w-full text-left bg-card rounded-xl border border-border p-4 shadow-sm hover:shadow-md transition-shadow"
+                className={`rounded-xl border p-4 shadow-sm transition-shadow ${getSexBgClass(nb)}`}
               >
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center overflow-hidden">
-                      {nb.photo ? (
-                        <img src={nb.photo} alt={nb.nom} className="w-full h-full object-cover" />
-                      ) : (
-                        <Baby className="w-4 h-4 text-muted-foreground" />
-                      )}
+                  <button
+                    onClick={() => navigate(`/profil/${nb.id}`)}
+                    className="flex-1 text-left"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center overflow-hidden">
+                        {nb.photo ? (
+                          <img src={nb.photo} alt={nb.nom} className="w-full h-full object-cover" />
+                        ) : (
+                          <Baby className="w-4 h-4 text-muted-foreground" />
+                        )}
+                      </div>
+                      <div>
+                        <p className="font-bold">{nb.nom}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {isSexUnset(nb) ? 'Sexe non défini' : nb.sexe}
+                          {nb.race ? ` • ${nb.race}` : ''}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-bold">{nb.nom}</p>
-                      <p className="text-xs text-muted-foreground">{nb.sexe} {nb.race ? `• ${nb.race}` : ''}</p>
-                    </div>
+                  </button>
+
+                  <div className="flex items-center gap-1">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <MoreVertical className="w-4 h-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => setParadisId(nb.id)}>
+                          <Bird className="w-4 h-4 mr-2" />
+                          Envoyer au paradis
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="text-destructive focus:text-destructive"
+                          onClick={() => setDeleteId(nb.id)}
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Supprimer
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                    <ChevronRight className="w-5 h-5 text-muted-foreground" />
                   </div>
-                  <ChevronRight className="w-5 h-5 text-muted-foreground" />
                 </div>
-              </button>
+
+                {/* Sex selection buttons if sex not set */}
+                {isSexUnset(nb) && (
+                  <div className="flex gap-2 mt-3">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="flex-1 bg-[hsl(211,60%,93%)] border-[hsl(211,40%,70%)] text-[hsl(211,60%,35%)] hover:bg-[hsl(211,60%,88%)] dark:bg-[hsl(211,30%,20%)] dark:text-[hsl(211,70%,70%)] dark:border-[hsl(211,20%,35%)]"
+                      onClick={(e) => { e.stopPropagation(); handleSetSex(nb.id, 'Mâle'); }}
+                    >
+                      ♂ Mâle
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="flex-1 bg-[hsl(340,60%,93%)] border-[hsl(340,40%,70%)] text-[hsl(340,60%,35%)] hover:bg-[hsl(340,60%,88%)] dark:bg-[hsl(340,30%,20%)] dark:text-[hsl(340,70%,70%)] dark:border-[hsl(340,20%,35%)]"
+                      onClick={(e) => { e.stopPropagation(); handleSetSex(nb.id, 'Femelle'); }}
+                    >
+                      ♀ Femelle
+                    </Button>
+                  </div>
+                )}
+              </div>
             ))}
           </div>
         )}
       </div>
+
+      {/* Delete confirmation */}
+      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer ce nouveau-né ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Cette action supprimera définitivement le profil et toutes ses données associées.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteNewborn}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Paradis confirmation */}
+      <AlertDialog open={!!paradisId} onOpenChange={(open) => !open && setParadisId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Envoyer au paradis ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Le profil sera archivé en mode lecture seule et les notifications supprimées.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={handleParadisNewborn}>
+              Confirmer 🕊️
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
