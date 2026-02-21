@@ -8,10 +8,9 @@ interface Props {
   eligible: Animal[];
   litters: Litter[];
   reproductions: Reproduction[];
-  animaux: Animal[];
 }
 
-export default function ElevageReproducteurs({ eligible, litters, reproductions, animaux }: Props) {
+export default function ElevageReproducteurs({ eligible, litters, reproductions }: Props) {
   const navigate = useNavigate();
 
   if (eligible.length === 0) {
@@ -25,8 +24,15 @@ export default function ElevageReproducteurs({ eligible, litters, reproductions,
         const animalLitters = litters.filter(l => l.mother_id === a.id);
         const litterCount = animalLitters.length;
         const totalKittens = animalLitters.reduce((s, l) => s + l.newborn_count, 0);
-        const avgPerLitter = litterCount > 0 ? (totalKittens / litterCount).toFixed(1) : '—';
-        const saillieCount = reproductions.filter(r => r.animal_id === a.id || r.father_animal_id === a.id).length;
+
+        const animalRepros = reproductions.filter(r => r.animal_id === a.id || r.father_animal_id === a.id);
+        const saillieCount = animalRepros.length;
+
+        // Last date
+        const lastDate = isFemale
+          ? (animalLitters.length > 0 ? animalLitters[0].birth_date : null)
+          : (animalRepros.length > 0 ? animalRepros[0].date_saillie : null);
+        const lastLabel = lastDate ? new Date(lastDate).toLocaleDateString('fr-FR') : '—';
 
         return (
           <button
@@ -45,11 +51,11 @@ export default function ElevageReproducteurs({ eligible, litters, reproductions,
               <p className="font-bold text-sm truncate">{a.nom}</p>
               {isFemale ? (
                 <p className="text-[11px] text-muted-foreground">
-                  {litterCount} portée(s) • {totalKittens} petit(s) • moy. {avgPerLitter}
+                  {litterCount} portée(s) • {totalKittens} petit(s) • dern. {lastLabel}
                 </p>
               ) : (
                 <p className="text-[11px] text-muted-foreground">
-                  {saillieCount} saillie(s)
+                  {saillieCount} saillie(s) • dern. {lastLabel}
                 </p>
               )}
             </div>

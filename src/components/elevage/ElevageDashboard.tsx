@@ -1,8 +1,9 @@
 import React from 'react';
 import {
-  Heart, Users, Clock, Baby, ShoppingCart, AlertTriangle, TrendingUp, Activity,
+  Heart, Users, Clock, Baby, ShoppingCart, AlertTriangle,
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
+import type { ElevageAlert } from '@/hooks/useElevageData';
 
 interface DashboardProps {
   females: number;
@@ -11,20 +12,23 @@ interface DashboardProps {
   activeLitters: number;
   availableKittens: number;
   soldPending: number;
-  alerts: { text: string; severity: 'urgent' | 'warning' | 'info' }[];
+  alerts: ElevageAlert[];
   stats: {
     totalLitters: number;
     totalKittens: number;
     avgPerLitter: number;
-    survivalRate: number;
     sexRatio: string;
+    transferRate: number;
+    paradisRate: number;
+    yearLitters: number;
     yearProduction: number;
   };
+  youngLabel: string;
 }
 
 export default function ElevageDashboard({
   females, males, activeGestations, activeLitters,
-  availableKittens, soldPending, alerts, stats,
+  availableKittens, soldPending, alerts, stats, youngLabel,
 }: DashboardProps) {
   return (
     <section className="space-y-4">
@@ -69,14 +73,16 @@ export default function ElevageDashboard({
 
       {/* C) Statistiques globales */}
       <div>
-        <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-2">Statistiques globales</h3>
+        <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-2">Statistiques</h3>
         <div className="grid grid-cols-3 gap-2">
           <StatCard label="Total portées" value={stats.totalLitters} />
-          <StatCard label="Total chatons" value={stats.totalKittens} />
+          <StatCard label={`Total ${youngLabel}`} value={stats.totalKittens} />
           <StatCard label="Moy. / portée" value={stats.avgPerLitter} />
-          <StatCard label="Taux survie" value={`${stats.survivalRate}%`} />
           <StatCard label="Ratio M/F" value={stats.sexRatio} />
-          <StatCard label="Année en cours" value={stats.yearProduction} />
+          <StatCard label="Taux transfert" value={`${stats.transferRate}%`} />
+          <StatCard label="Taux décès" value={`${stats.paradisRate}%`} />
+          <StatCard label="Portées (année)" value={stats.yearLitters} />
+          <StatCard label={`${youngLabel} (année)`} value={stats.yearProduction} />
         </div>
       </div>
     </section>
