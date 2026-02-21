@@ -54,6 +54,16 @@ const URGENCY_LABELS: Record<string, { text: string; className: string }> = {
   soon: { text: 'Bientôt', className: 'bg-secondary text-muted-foreground' },
 };
 
+function getCardUrgency(animal: Animal): string {
+  const urgency = getDepartureUrgency(animal.planned_departure_date);
+  // Only show urgent/imminent badges for reserved/sold
+  const s = animal.commercial_status || 'available';
+  if ((urgency === 'urgent' || urgency === 'imminent') && s !== 'reserved' && s !== 'sold') {
+    return urgency === 'urgent' ? 'soon' : 'none';
+  }
+  return urgency;
+}
+
 interface KanbanBoardProps {
   species: string;
 }
@@ -63,6 +73,7 @@ export default function KanbanBoard({ species }: KanbanBoardProps) {
   const { animaux, updateAnimal, deleteAnimal } = useAnimals();
   const [buyerDialog, setBuyerDialog] = useState<{ animalId: string; targetStatus: CommercialStatus } | null>(null);
   const [buyerName, setBuyerName] = useState('');
+  const [filterNoDate, setFilterNoDate] = useState(false);
 
   const speciesKey = normalizeType(species).toLowerCase();
 
@@ -75,10 +86,30 @@ export default function KanbanBoard({ species }: KanbanBoardProps) {
     });
   }, [animaux, speciesKey]);
 
+  // Summary stats (computed from all relevant, before filter)
+  const summary = useMemo(() => {
+    const total = relevantAnimals.length;
+    const noDate = relevantAnimals.filter(a => !a.planned_departure_date).length;
+    const urgent = relevantAnimals.filter(a => {
+      if (!a.planned_departure_date) return false;
+      const s = a.commercial_status || 'available';
+      if (s !== 'reserved' && s !== 'sold') return false;
+      const days = Math.floor((new Date(a.planned_departure_date).getTime() - Date.now()) / 86400000);
+      return days <= 3;
+    }).length;
+    return { total, noDate, urgent };
+  }, [relevantAnimals]);
+
+  // Apply filter
+  const filteredAnimals = useMemo(() => {
+    if (!filterNoDate) return relevantAnimals;
+    return relevantAnimals.filter(a => !a.planned_departure_date);
+  }, [relevantAnimals, filterNoDate]);
+
   const columnData = useMemo(() => {
     const map: Record<string, Animal[]> = {};
     COLUMNS.forEach(c => { map[c.key] = []; });
-    relevantAnimals.forEach(a => {
+    filteredAnimals.forEach(a => {
       const s = a.commercial_status || 'available';
       if (map[s]) map[s].push(a);
     });
@@ -94,8 +125,7 @@ export default function KanbanBoard({ species }: KanbanBoardProps) {
       });
     });
     return map;
-  }, [relevantAnimals]);
-
+  }, [filteredAnimals]);
   const getMotherName = useCallback((a: Animal) => {
     if (!a.mother_id) return null;
     return animaux.find(m => m.id === a.mother_id)?.nom || null;
@@ -137,6 +167,27 @@ export default function KanbanBoard({ species }: KanbanBoardProps) {
 
   return (
     <>
+      {/* Summary bar + filter */}
+      <div className="px-4 pb-3 flex items-center gap-3 flex-wrap">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground bg-card rounded-lg border border-border px-3 py-1.5">
+          <span>Total: <strong className="text-foreground">{summary.total}</strong></span>
+          <span className="text-border">|</span>
+          <span>Sans date: <strong className="text-foreground">{summary.noDate}</strong></span>
+          <span className="text-border">|</span>
+          <span>Urgents: <strong className={summary.urgent > 0 ? 'text-destructive' : 'text-foreground'}>{summary.urgent}</strong></span>
+        </div>
+        <button
+          onClick={() => setFilterNoDate(v => !v)}
+          className={`text-[11px] font-semibold px-2.5 py-1 rounded-lg border transition-colors ${
+            filterNoDate
+              ? 'bg-primary text-primary-foreground border-primary'
+              : 'bg-card text-muted-foreground border-border hover:text-foreground'
+          }`}
+        >
+          Sans date uniquement
+        </button>
+      </div>
+
       <ScrollArea className="w-full">
         <div className="flex gap-3 px-4 pb-4 min-w-max">
           {COLUMNS.map(col => (
@@ -157,7 +208,7 @@ export default function KanbanBoard({ species }: KanbanBoardProps) {
               <div className="space-y-2 min-h-[100px] bg-muted/30 rounded-xl p-2 border border-border/50">
                 {(columnData[col.key] || []).map(animal => {
                   const { done, total } = getChecklistCompletion(animal);
-                  const urgency = getDepartureUrgency(animal.planned_departure_date);
+                  const urgency = getCardUrgency(animal);
                   const urgencyInfo = URGENCY_LABELS[urgency];
                   const motherName = getMotherName(animal);
 
