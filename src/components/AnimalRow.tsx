@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { ChevronRight, Camera, MoreVertical, Trash2 } from 'lucide-react';
+import { ChevronRight, Camera, MoreVertical, Trash2, Bird } from 'lucide-react';
 import type { Animal } from '@/types/animal';
 import { displayBreed } from '@/utils/breeds';
 import { getAgeText } from '@/utils/date';
@@ -27,9 +27,10 @@ interface AnimalRowProps {
   onPickPhoto?: (id: string) => void;
   onOpenProfile?: (id: string) => void;
   onDelete?: (id: string) => void;
+  onParadis?: (id: string) => void;
 }
 
-export default function AnimalRow({ item, onPickPhoto, onOpenProfile, onDelete }: AnimalRowProps) {
+export default function AnimalRow({ item, onPickPhoto, onOpenProfile, onDelete, onParadis }: AnimalRowProps) {
   const poids = lastPoidsKg(item);
   const isFemale = (item.sexe || '').toLowerCase().startsWith('f');
   const sexeSymbol = isFemale ? '♀' : '♂';
@@ -143,6 +144,13 @@ export default function AnimalRow({ item, onPickPhoto, onOpenProfile, onDelete }
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                onClick={() => onParadis?.(item.id)}
+                className="text-muted-foreground"
+              >
+                <Bird className="w-4 h-4 mr-2" />
+                S'envoler au paradis
+              </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => onDelete?.(item.id)}
                 className="text-destructive focus:text-destructive"

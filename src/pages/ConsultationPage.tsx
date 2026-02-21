@@ -200,9 +200,9 @@ export default function ConsultationPage() {
                 <DateField value={rdvDate} onChange={setRdvDate} maximumDate={new Date(2099, 11, 31)} onValidityChange={setRdvDateValid} />
               </div>
               <div>
-                <Label>Heure (HH:MM)</Label>
-                <Input value={rdvHeure} onChange={(e) => setRdvHeure(maskHHMM(e.target.value))} placeholder="ex: 14:30" maxLength={5} className={!rdvHeureValid ? 'border-destructive' : ''} />
-                {!rdvHeureValid && <p className="text-xs text-destructive mt-1">Format attendu : HH:MM</p>}
+                <Label>Heure</Label>
+                <Input type="time" value={rdvHeure} onChange={(e) => setRdvHeure(e.target.value)} className={!rdvHeureValid ? 'border-destructive' : ''} />
+                {!rdvHeureValid && <p className="text-xs text-destructive mt-1">Veuillez sélectionner une heure</p>}
               </div>
               <div>
                 <Label>Objet</Label>
