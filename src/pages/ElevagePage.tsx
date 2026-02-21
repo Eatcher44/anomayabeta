@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { CalendarCheck } from 'lucide-react';
 import { BarChart3, Cat, Dog } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -82,6 +83,14 @@ export default function ElevagePage() {
             );
           })}
         </div>
+      </div>
+
+      {/* Quick access */}
+      <div className="px-4 pb-1">
+        <Button variant="outline" className="w-full justify-start gap-2 text-sm font-semibold" onClick={() => navigate('/departs-reservations')}>
+          <CalendarCheck className="w-4 h-4 text-primary" />
+          Départs & Réservations
+        </Button>
       </div>
 
       <div className="px-4 space-y-6">

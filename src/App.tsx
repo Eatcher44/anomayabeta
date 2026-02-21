@@ -29,6 +29,8 @@ import LitterDetailPage from "./pages/LitterDetailPage";
 import TransferesPage from "./pages/TransferesPage";
 import BreederProfilePage from "./pages/BreederProfilePage";
 import ElevagePage from "./pages/ElevagePage";
+import DepartsReservationsPage from "./pages/DepartsReservationsPage";
+import PreparerDepartPage from "./pages/PreparerDepartPage";
 import BreederBottomNav from "./components/BreederBottomNav";
 
 const queryClient = new QueryClient();
@@ -245,6 +247,22 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <ElevagePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/departs-reservations"
+        element={
+          <ProtectedRoute>
+            <DepartsReservationsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/depart/:id"
+        element={
+          <ProtectedRoute>
+            <PreparerDepartPage />
           </ProtectedRoute>
         }
       />
