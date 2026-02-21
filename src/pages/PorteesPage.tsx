@@ -1,12 +1,19 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Plus, Baby, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Plus, Baby, ChevronRight, MoreVertical, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
@@ -33,7 +40,7 @@ export default function PorteesPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useAuth();
-  const { animaux, addAnimal } = useAnimals();
+  const { animaux, addAnimal, setAnimaux } = useAnimals();
   const [litters, setLitters] = useState<Litter[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -48,6 +55,9 @@ export default function PorteesPage() {
   const [nbNewborns, setNbNewborns] = useState(1);
   const [saving, setSaving] = useState(false);
   const [reproductionId, setReproductionId] = useState<string | null>(null);
+
+  // Delete litter
+  const [deleteLitterId, setDeleteLitterId] = useState<string | null>(null);
 
   const females = animaux.filter((a) =>
     a.sexe?.toLowerCase().startsWith('f') && !a.paradis && isBreederEligible(a.type)
@@ -90,14 +100,14 @@ export default function PorteesPage() {
     setReproductionId(fromRepro);
     setMotherId(searchParams.get('mother_id') || '');
 
-    const fatherId = searchParams.get('father_animal_id');
-    const fatherName = searchParams.get('father_external_name');
-    if (fatherId) {
+    const fId = searchParams.get('father_animal_id');
+    const fName = searchParams.get('father_external_name');
+    if (fId) {
       setFatherMode('existing');
-      setFatherId(fatherId);
-    } else if (fatherName) {
+      setFatherId(fId);
+    } else if (fName) {
       setFatherMode('manual');
-      setFatherManualName(fatherName);
+      setFatherManualName(fName);
     } else {
       setFatherMode('none');
     }
@@ -107,7 +117,6 @@ export default function PorteesPage() {
 
     setNbNewborns(1);
     setModalOpen(true);
-    // Clear search params
     setSearchParams({}, { replace: true });
   }, [searchParams, setSearchParams]);
 
@@ -146,41 +155,31 @@ export default function PorteesPage() {
           .eq('id', reproductionId);
       }
 
-      // Create newborn animal profiles with breeder_visible=false
+      const litterId = (litterData as any).id;
+
+      // Create newborn animal profiles directly with breeder_visible=false, litter_id, mother_id
       for (let i = 0; i < nbNewborns; i++) {
-        await addAnimal({
-          nom: `${mother.nom} - Bébé ${i + 1}`,
-          type: mother.type,
-          sexe: 'Femelle',
-          race: mother.race,
-          naissance: birthDate.toISOString(),
-          sterilise: false,
-          poids: [],
-          soins: [],
-          consultations: [],
-        });
-      }
+        const { data: newborn, error: nbError } = await supabase
+          .from('animals')
+          .insert({
+            user_id: user.id,
+            nom: `${mother.nom} - Bébé ${i + 1}`,
+            type: mother.type,
+            sexe: 'Femelle',
+            race: mother.race || null,
+            naissance: birthDate.toISOString().split('T')[0],
+            sterilise: false,
+            poids: '[]',
+            soins: '[]',
+            consultations: '[]',
+            breeder_visible: false,
+            litter_id: litterId,
+            mother_id: motherId,
+          } as any)
+          .select()
+          .single();
 
-      // Link newborns to litter and set breeder_visible=false
-      const { data: newAnimals } = await supabase
-        .from('animals')
-        .select('id')
-        .eq('user_id', user.id)
-        .is('litter_id', null)
-        .order('created_at', { ascending: false })
-        .limit(nbNewborns);
-
-      if (newAnimals) {
-        for (const na of newAnimals) {
-          await supabase
-            .from('animals')
-            .update({
-              litter_id: (litterData as any).id,
-              mother_id: motherId,
-              breeder_visible: false,
-            })
-            .eq('id', na.id);
-        }
+        if (nbError) console.error('Error creating newborn:', nbError);
       }
 
       setModalOpen(false);
@@ -192,6 +191,34 @@ export default function PorteesPage() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleDeleteLitter = async () => {
+    if (!deleteLitterId) return;
+    try {
+      // 1. Find all newborn animal IDs linked to this litter
+      const { data: newborns } = await supabase
+        .from('animals')
+        .select('id')
+        .eq('litter_id', deleteLitterId);
+
+      if (newborns && newborns.length > 0) {
+        const ids = newborns.map((n) => n.id);
+        // 2. Delete newborn animals (cascade will clean up notifications, heat_cycles, reproductions, transfer_codes)
+        await supabase.from('animals').delete().in('id', ids);
+        // Remove from local state
+        setAnimaux((prev) => prev.filter((a) => !ids.includes(a.id)));
+      }
+
+      // 3. Delete the litter record
+      await supabase.from('litters').delete().eq('id', deleteLitterId);
+
+      setLitters((prev) => prev.filter((l) => l.id !== deleteLitterId));
+      toast({ title: 'Portée supprimée', description: 'Tous les profils associés ont été supprimés.' });
+    } catch {
+      toast({ title: 'Erreur', variant: 'destructive' });
+    }
+    setDeleteLitterId(null);
   };
 
   const fmt = (d: string) => new Date(d).toLocaleDateString('fr-FR');
@@ -233,26 +260,68 @@ export default function PorteesPage() {
         ) : (
           <div className="space-y-3">
             {litters.map((l) => (
-              <button
+              <div
                 key={l.id}
-                onClick={() => navigate(`/portee/${l.id}`)}
-                className="w-full text-left bg-card rounded-xl border border-border p-4 shadow-sm hover:shadow-md transition-shadow"
+                className="bg-card rounded-xl border border-border p-4 shadow-sm hover:shadow-md transition-shadow"
               >
                 <div className="flex items-center justify-between">
-                  <div>
+                  <button
+                    onClick={() => navigate(`/portee/${l.id}`)}
+                    className="flex-1 text-left"
+                  >
                     <p className="font-bold">{getMotherName(l.mother_id)}</p>
                     <p className="text-sm text-muted-foreground">
                       Née le {fmt(l.birth_date)} • {l.newborn_count || 0} petit(s)
                     </p>
+                  </button>
+                  <div className="flex items-center gap-1">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <MoreVertical className="w-4 h-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          className="text-destructive focus:text-destructive"
+                          onClick={() => setDeleteLitterId(l.id)}
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Supprimer la portée
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                    <ChevronRight className="w-5 h-5 text-muted-foreground" />
                   </div>
-                  <ChevronRight className="w-5 h-5 text-muted-foreground" />
                 </div>
-              </button>
+              </div>
             ))}
           </div>
         )}
       </div>
 
+      {/* Delete confirmation */}
+      <AlertDialog open={!!deleteLitterId} onOpenChange={(open) => !open && setDeleteLitterId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer cette portée ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Cette action supprimera définitivement la portée et tous les profils de nouveau-nés associés, ainsi que leurs données (poids, vaccins, traitements, rendez-vous, notifications).
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteLitter}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Create modal */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>

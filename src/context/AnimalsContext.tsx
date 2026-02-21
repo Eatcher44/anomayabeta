@@ -110,22 +110,26 @@ export function AnimalsProvider({ children }: { children: React.ReactNode }) {
     if (!user) return;
 
     try {
+      const insertPayload: any = {
+        user_id: user.id,
+        nom: animal.nom,
+        type: normalizeType(animal.type),
+        sexe: animal.sexe,
+        race: animal.race || null,
+        photo: animal.photo || null,
+        naissance: animal.naissance ? new Date(animal.naissance).toISOString().split('T')[0] : null,
+        sterilise: animal.sterilise || false,
+        puce: animal.puce || null,
+        poids: (animal.poids || []) as unknown as Json,
+        soins: (animal.soins || []) as unknown as Json,
+        consultations: (animal.consultations || []) as unknown as Json,
+      };
+      if ('breeder_visible' in animal && animal.breeder_visible === false) {
+        insertPayload.breeder_visible = false;
+      }
       const { data, error } = await supabase
         .from('animals')
-        .insert({
-          user_id: user.id,
-          nom: animal.nom,
-          type: normalizeType(animal.type),
-          sexe: animal.sexe,
-          race: animal.race || null,
-          photo: animal.photo || null,
-          naissance: animal.naissance ? new Date(animal.naissance).toISOString().split('T')[0] : null,
-          sterilise: animal.sterilise || false,
-          puce: animal.puce || null,
-          poids: (animal.poids || []) as unknown as Json,
-          soins: (animal.soins || []) as unknown as Json,
-          consultations: (animal.consultations || []) as unknown as Json,
-        } as any)
+        .insert(insertPayload)
         .select()
         .single();
 
@@ -143,6 +147,7 @@ export function AnimalsProvider({ children }: { children: React.ReactNode }) {
           sterilise: data.sterilise || false,
           puce: data.puce || undefined,
           couleur: (data as any).couleur || null,
+          breeder_visible: (data as any).breeder_visible ?? true,
           poids: parseJsonArray<WeightEntry>(data.poids, []),
           soins: parseJsonArray<SoinEntry>(data.soins, []),
           consultations: parseJsonArray<ConsultationEntry>(data.consultations, []),
