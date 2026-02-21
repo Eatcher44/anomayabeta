@@ -24,14 +24,11 @@ interface Reproduction {
   created_at: string;
 }
 
-// Default gestation periods in days
-const GESTATION_DAYS: Record<string, number> = {
-  chat: 65,
-  chien: 63,
-};
+// Gestation duration: 63 days for both cats and dogs
+const GESTATION_DAYS = 63;
 
-function getGestationDays(type: string): number {
-  return GESTATION_DAYS[type.toLowerCase()] || 63;
+function getGestationDays(_type: string): number {
+  return GESTATION_DAYS;
 }
 
 export default function ReproductionPage() {

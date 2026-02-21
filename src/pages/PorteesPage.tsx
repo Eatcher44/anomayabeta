@@ -11,6 +11,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import { useAnimals } from '@/context/AnimalsContext';
+import { isBreederEligible } from '@/utils/breederUtils';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import DateField from '@/components/DateField';
@@ -41,7 +42,7 @@ export default function PorteesPage() {
   const [saving, setSaving] = useState(false);
 
   const females = animaux.filter((a) =>
-    a.sexe?.toLowerCase().startsWith('f') && !a.paradis
+    a.sexe?.toLowerCase().startsWith('f') && !a.paradis && isBreederEligible(a.type)
   );
 
   const fetchLitters = useCallback(async () => {

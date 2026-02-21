@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React from 'react';
 import { ChevronRight, Camera, MoreVertical, Trash2, Bird } from 'lucide-react';
 import type { Animal } from '@/types/animal';
 import { displayBreed } from '@/utils/breeds';
@@ -37,63 +37,13 @@ export default function AnimalRow({ item, onPickPhoto, onOpenProfile, onDelete, 
   const bgClass = isFemale ? 'bg-female' : 'bg-male';
   const textClass = isFemale ? 'text-female' : 'text-male';
 
-  // Swipe state using pointer events (works on touch AND mouse)
-  const [swiped, setSwiped] = useState(false);
-  const pointerStartX = useRef(0);
-  const pointerCurrentX = useRef(0);
-  const isPointerDown = useRef(false);
-
-  const handlePointerDown = (e: React.PointerEvent) => {
-    pointerStartX.current = e.clientX;
-    pointerCurrentX.current = e.clientX;
-    isPointerDown.current = true;
-  };
-
-  const handlePointerMove = (e: React.PointerEvent) => {
-    if (!isPointerDown.current) return;
-    pointerCurrentX.current = e.clientX;
-  };
-
-  const handlePointerUp = () => {
-    if (!isPointerDown.current) return;
-    isPointerDown.current = false;
-    const diff = pointerStartX.current - pointerCurrentX.current;
-    if (diff > 60) {
-      setSwiped(true);
-    } else if (diff < -40) {
-      setSwiped(false);
-    }
-  };
-
   const accentStyle = item.couleur ? { borderColor: item.couleur, borderWidth: '2px' } : {};
 
   return (
-    <div className="relative mb-3 overflow-hidden rounded-xl">
-      {/* Delete button behind */}
+    <div className="mb-3 rounded-xl">
       <div
-        className={`absolute right-0 top-0 bottom-0 w-16 flex items-center justify-center bg-destructive transition-opacity ${
-          swiped ? 'opacity-100' : 'opacity-0 pointer-events-none'
-        }`}
-      >
-        <button
-          onClick={() => onDelete?.(item.id)}
-          className="w-12 h-12 rounded-full bg-destructive-foreground/20 flex items-center justify-center"
-        >
-          <Trash2 className="w-6 h-6 text-destructive-foreground" />
-        </button>
-      </div>
-
-      {/* Card */}
-      <div
-        className={`flex items-center rounded-xl p-3 border border-border ${bgClass} shadow-sm transition-transform duration-200 touch-pan-y ${
-          swiped ? '-translate-x-16' : 'translate-x-0'
-        }`}
-        style={{ ...accentStyle, touchAction: 'pan-y' }}
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-        onPointerCancel={handlePointerUp}
-        onClick={() => swiped && setSwiped(false)}
+        className={`flex items-center rounded-xl p-3 border border-border ${bgClass} shadow-sm`}
+        style={accentStyle}
       >
         {/* Photo */}
         <button
@@ -133,7 +83,7 @@ export default function AnimalRow({ item, onPickPhoto, onOpenProfile, onDelete, 
             </p>
           </div>
 
-          {/* Desktop delete menu fallback */}
+          {/* Three-dot menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
@@ -156,7 +106,7 @@ export default function AnimalRow({ item, onPickPhoto, onOpenProfile, onDelete, 
                 className="text-destructive focus:text-destructive"
               >
                 <Trash2 className="w-4 h-4 mr-2" />
-                Supprimer
+                Supprimer définitivement
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
