@@ -172,7 +172,7 @@ export default function PorteesPage() {
             user_id: user.id,
             nom: `Petit ${i + 1}`,
             type: mother.type,
-            sexe: 'Femelle',
+            sexe: 'unknown',
             race: mother.race || null,
             naissance: birthDateStr,
             sterilise: false,
