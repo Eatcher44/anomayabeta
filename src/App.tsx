@@ -27,6 +27,7 @@ import ChaleursPage from "./pages/ChaleursPage";
 import StatsElevagePage from "./pages/StatsElevagePage";
 import LitterDetailPage from "./pages/LitterDetailPage";
 import TransferesPage from "./pages/TransferesPage";
+import BreederProfilePage from "./pages/BreederProfilePage";
 
 const queryClient = new QueryClient();
 
@@ -226,6 +227,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <TransferesPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/profil-eleveur"
+        element={
+          <ProtectedRoute>
+            <BreederProfilePage />
           </ProtectedRoute>
         }
       />
