@@ -36,6 +36,8 @@ export interface ConsultationEntry {
   veterinaire?: string;
 }
 
+export type CommercialStatus = 'available' | 'option' | 'reserved' | 'sold' | 'kept';
+
 export interface Animal {
   id: string;
   nom: string;
@@ -51,6 +53,14 @@ export interface Animal {
   mother_id?: string | null;
   litter_id?: string | null;
   breeder_visible?: boolean;
+  // Commercial fields (newborns)
+  commercial_status?: CommercialStatus;
+  buyer_name?: string | null;
+  buyer_phone?: string | null;
+  buyer_email?: string | null;
+  deposit_received?: boolean;
+  planned_departure_date?: string | null;
+  commercial_notes?: string | null;
   poids: WeightEntry[];
   soins: SoinEntry[];
   consultations: ConsultationEntry[];
