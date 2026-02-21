@@ -28,6 +28,8 @@ import StatsElevagePage from "./pages/StatsElevagePage";
 import LitterDetailPage from "./pages/LitterDetailPage";
 import TransferesPage from "./pages/TransferesPage";
 import BreederProfilePage from "./pages/BreederProfilePage";
+import ElevagePage from "./pages/ElevagePage";
+import BreederBottomNav from "./components/BreederBottomNav";
 
 const queryClient = new QueryClient();
 
@@ -238,6 +240,14 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/elevage"
+        element={
+          <ProtectedRoute>
+            <ElevagePage />
+          </ProtectedRoute>
+        }
+      />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
@@ -254,6 +264,7 @@ const App = () => (
             <Sonner />
             <BrowserRouter>
               <AppRoutes />
+              <BreederBottomNav />
             </BrowserRouter>
           </TooltipProvider>
         </BreederProvider>

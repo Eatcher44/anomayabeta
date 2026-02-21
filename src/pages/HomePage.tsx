@@ -652,25 +652,7 @@ export default function HomePage() {
         </button>
       )}
 
-      {/* Breeder shortcuts */}
-      {isBreeder && (
-        <>
-          <button
-            onClick={() => navigate('/portees')}
-            className="fixed bottom-6 left-20 z-30 w-12 h-12 rounded-full bg-primary border border-primary shadow-lg flex items-center justify-center hover:bg-primary/90 transition-colors"
-            title="Portées"
-          >
-            <Baby className="w-5 h-5 text-primary-foreground" />
-          </button>
-          <button
-            onClick={() => navigate('/stats-elevage')}
-            className="fixed bottom-6 left-36 z-30 w-12 h-12 rounded-full bg-primary border border-primary shadow-lg flex items-center justify-center hover:bg-primary/90 transition-colors"
-            title="Statistiques élevage"
-          >
-            <BarChart3 className="w-5 h-5 text-primary-foreground" />
-          </button>
-        </>
-      )}
+      {/* Breeder navigation is now in bottom tab bar */}
 
       {/* FAB RDV */}
       <button onClick={() => setRdvOpen(true)} className="fab" title="Nouveau rendez-vous">
