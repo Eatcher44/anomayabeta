@@ -11,14 +11,16 @@ export default function BreederBottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Hide on full-screen / paywall routes
+  const HIDDEN_ROUTES = ['/abonnement', '/reset-password'];
+  if (HIDDEN_ROUTES.some(r => location.pathname.startsWith(r))) return null;
+
   const tabs = [
     { path: '/', label: 'Ma famille', icon: PawPrint },
     ...(isBreeder
       ? [{ path: '/elevage', label: 'Élevage', icon: Stethoscope }]
       : []),
   ];
-
-  // If only one tab, still show nav for consistent layout
   return (
     <nav
       className="fixed bottom-0 left-0 right-0 z-40 bg-card border-t border-border"
