@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Cat, Dog, CalendarDays, ChevronRight, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Cat, Dog, CalendarDays, ChevronRight, AlertCircle, List, LayoutGrid } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAnimals } from '@/context/AnimalsContext';
 import { normalizeType } from '@/utils/normalize';
 import { getChecklistCompletion, getDepartureUrgency } from '@/utils/departureChecklist';
+import KanbanBoard from '@/components/elevage/KanbanBoard';
 import type { Animal } from '@/types/animal';
 
 const SPECIES_TABS = [
@@ -14,6 +15,7 @@ const SPECIES_TABS = [
 ] as const;
 
 const STORAGE_KEY = 'elevage-species-tab';
+const VIEW_STORAGE_KEY = 'departs-view-mode';
 
 const STATUS_LABELS: Record<string, string> = {
   option: 'Option',
@@ -35,14 +37,21 @@ export default function DepartsReservationsPage() {
   const [species, setSpecies] = useState<string>(() => {
     try { return localStorage.getItem(STORAGE_KEY) || 'chat'; } catch { return 'chat'; }
   });
+  const [viewMode, setViewMode] = useState<'list' | 'kanban'>(() => {
+    try { return (localStorage.getItem(VIEW_STORAGE_KEY) as 'list' | 'kanban') || 'kanban'; } catch { return 'kanban'; }
+  });
 
   useEffect(() => {
     try { localStorage.setItem(STORAGE_KEY, species); } catch {}
   }, [species]);
 
+  useEffect(() => {
+    try { localStorage.setItem(VIEW_STORAGE_KEY, viewMode); } catch {}
+  }, [viewMode]);
+
   const speciesKey = normalizeType(species).toLowerCase();
 
-  // Filter newborns of this species with relevant statuses
+  // Filter newborns of this species with relevant statuses (for list view)
   const relevantAnimals = useMemo(() => {
     return animaux.filter(a => {
       if (a.paradis) return false;
@@ -137,7 +146,24 @@ export default function DepartsReservationsPage() {
           <Button variant="ghost" size="icon" className="shrink-0" onClick={() => navigate('/elevage')}>
             <ArrowLeft className="w-5 h-5" />
           </Button>
-          <h1 className="text-xl font-extrabold text-primary">Départs & Réservations</h1>
+          <h1 className="text-xl font-extrabold text-primary flex-1">Départs & Réservations</h1>
+          {/* View toggle */}
+          <div className="flex bg-muted/60 rounded-lg p-0.5 gap-0.5">
+            <button
+              onClick={() => setViewMode('list')}
+              className={`p-1.5 rounded-md transition-all ${viewMode === 'list' ? 'bg-card shadow-sm text-primary' : 'text-muted-foreground'}`}
+              title="Vue liste"
+            >
+              <List className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setViewMode('kanban')}
+              className={`p-1.5 rounded-md transition-all ${viewMode === 'kanban' ? 'bg-card shadow-sm text-primary' : 'text-muted-foreground'}`}
+              title="Vue Kanban"
+            >
+              <LayoutGrid className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -165,33 +191,36 @@ export default function DepartsReservationsPage() {
         </div>
       </div>
 
-      <div className="px-4 space-y-4">
-        {/* Dated departures */}
-        {dated.length > 0 && (
-          <section>
-            <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-2">
-              Départs planifiés ({dated.length})
-            </h2>
-            <div className="space-y-2">{dated.map(renderRow)}</div>
-          </section>
-        )}
+      {/* Content based on view mode */}
+      {viewMode === 'kanban' ? (
+        <KanbanBoard species={species} />
+      ) : (
+        <div className="px-4 space-y-4">
+          {dated.length > 0 && (
+            <section>
+              <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-2">
+                Départs planifiés ({dated.length})
+              </h2>
+              <div className="space-y-2">{dated.map(renderRow)}</div>
+            </section>
+          )}
 
-        {/* Undated */}
-        {undated.length > 0 && (
-          <section>
-            <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-2">
-              Sans date de départ ({undated.length})
-            </h2>
-            <div className="space-y-2">{undated.map(renderRow)}</div>
-          </section>
-        )}
+          {undated.length > 0 && (
+            <section>
+              <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-2">
+                Sans date de départ ({undated.length})
+              </h2>
+              <div className="space-y-2">{undated.map(renderRow)}</div>
+            </section>
+          )}
 
-        {dated.length === 0 && undated.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-sm text-muted-foreground">Aucun départ ou réservation en cours.</p>
-          </div>
-        )}
-      </div>
+          {dated.length === 0 && undated.length === 0 && (
+            <div className="text-center py-12">
+              <p className="text-sm text-muted-foreground">Aucun départ ou réservation en cours.</p>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
