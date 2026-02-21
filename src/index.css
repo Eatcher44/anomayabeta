@@ -165,9 +165,11 @@
     @apply border-primary bg-accent text-primary;
   }
 
-  /* FAB button */
+  /* FAB button — positioned above bottom nav */
   .fab {
-    @apply fixed right-4 bottom-16 w-14 h-14 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg hover:shadow-xl transition-shadow;
+    @apply fixed right-4 w-14 h-14 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg hover:shadow-xl transition-shadow;
+    bottom: calc(64px + env(safe-area-inset-bottom, 0px) + 16px);
+    z-index: 35;
   }
 
   /* Safe area for bottom nav */
