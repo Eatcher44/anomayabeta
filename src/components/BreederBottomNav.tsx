@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { PawPrint, Stethoscope, Lock } from 'lucide-react';
 import { useBreeder } from '@/context/BreederContext';
+import { toast } from '@/hooks/use-toast';
 
 /** Fixed height of the bottom nav (excluding safe-area). Use for offset calculations. */
 export const BOTTOM_NAV_HEIGHT = 64;
@@ -10,6 +11,7 @@ export default function BreederBottomNav() {
   const { isBreeder } = useBreeder();
   const navigate = useNavigate();
   const location = useLocation();
+  const gateRef = useRef(false);
 
   // Hide on full-screen / paywall routes
   const HIDDEN_ROUTES = ['/abonnement', '/reset-password'];
@@ -19,8 +21,13 @@ export default function BreederBottomNav() {
     if (isBreeder) {
       navigate('/elevage');
     } else {
-      // Redirect to subscription page, pre-selecting the Breeder plan
-      navigate('/abonnement?plan=breeder');
+      if (gateRef.current) return;
+      gateRef.current = true;
+      toast({ title: '🔒 Fonction Pack Éleveur', description: 'Accédez à toutes les fonctionnalités éleveur' });
+      setTimeout(() => {
+        navigate('/abonnement?plan=breeder');
+        gateRef.current = false;
+      }, 1500);
     }
   };
 
