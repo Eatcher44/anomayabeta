@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Calendar, LogOut, GripVertical, Bell, Activity, Crown, Bird, Baby, BarChart3, ArrowRightLeft } from 'lucide-react';
+import { Plus, Calendar, LogOut, GripVertical, Bell, Activity, Crown, Bird, Baby, BarChart3, ArrowRightLeft, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -36,6 +36,7 @@ import { toast } from '@/hooks/use-toast';
 import type { Animal, RendezVous } from '@/types/animal';
 import { useBreeder } from '@/context/BreederContext';
 import { BOTTOM_NAV_HEIGHT } from '@/components/BreederBottomNav';
+
 
 type SortKey = 'alpha' | 'alpha-desc' | 'age-asc' | 'age-desc' | 'poids-asc' | 'poids-desc';
 
@@ -477,7 +478,7 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[hsl(33,60%,95%)] to-[hsl(30,40%,92%)] dark:from-background dark:to-background">
+    <div className="bg-gradient-to-b from-[hsl(33,60%,95%)] to-[hsl(30,40%,92%)] dark:from-background dark:to-background">
       {/* Header */}
       <div className="px-4 pt-6 pb-4">
         <div className="flex justify-between items-start mb-4">
@@ -586,7 +587,7 @@ export default function HomePage() {
       )}
 
       {/* Grouped list — padding accounts for bottom nav + safe area */}
-      <div className="px-4" style={{ paddingBottom: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom, 0px) + 80px)` }}>
+      <div className="px-4 pb-24">
         {groupedAnimals.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">
             <p>Aucun animal pour le moment.</p>
@@ -633,27 +634,41 @@ export default function HomePage() {
         )}
       </div>
 
-      {/* Paradis button — above bottom nav */}
-      <button
-        onClick={() => navigate('/paradis')}
-        className="fixed left-4 z-30 w-12 h-12 rounded-full bg-muted border border-border shadow-lg flex items-center justify-center hover:bg-accent transition-colors"
+      {/* Quick access buttons row — above bottom nav */}
+      <div
+        className="fixed left-4 z-30 flex flex-col gap-2"
         style={{ bottom: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom, 0px) + 16px)` }}
-        title="Paradis"
       >
-        <Bird className="w-5 h-5 text-muted-foreground" />
-      </button>
-
-      {/* Transférés button — above Paradis button */}
-      {isBreeder && (
+        {/* Portées — breeder only or lock */}
         <button
-          onClick={() => navigate('/transferes')}
-          className="fixed left-4 z-30 w-12 h-12 rounded-full bg-muted border border-border shadow-lg flex items-center justify-center hover:bg-accent transition-colors"
-          style={{ bottom: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom, 0px) + ${16 + 12 + 48}px)` }}
-          title="Transférés"
+          onClick={() => isBreeder ? navigate('/portees') : navigate('/abonnement?plan=breeder')}
+          className="w-12 h-12 rounded-full bg-muted border border-border shadow-lg flex items-center justify-center hover:bg-accent transition-colors relative"
+          title="Portées"
         >
-          <ArrowRightLeft className="w-5 h-5 text-muted-foreground" />
+          <Baby className="w-5 h-5 text-muted-foreground" />
+          {!isBreeder && <Lock className="absolute -top-1 -right-1 w-3.5 h-3.5 text-primary" />}
         </button>
-      )}
+
+        {/* Transférés — breeder only */}
+        {isBreeder && (
+          <button
+            onClick={() => navigate('/transferes')}
+            className="w-12 h-12 rounded-full bg-muted border border-border shadow-lg flex items-center justify-center hover:bg-accent transition-colors"
+            title="Transférés"
+          >
+            <ArrowRightLeft className="w-5 h-5 text-muted-foreground" />
+          </button>
+        )}
+
+        {/* Paradis */}
+        <button
+          onClick={() => navigate('/paradis')}
+          className="w-12 h-12 rounded-full bg-muted border border-border shadow-lg flex items-center justify-center hover:bg-accent transition-colors"
+          title="Paradis"
+        >
+          <Bird className="w-5 h-5 text-muted-foreground" />
+        </button>
+      </div>
 
       {/* FAB RDV — uses .fab class which is already positioned above nav */}
       <button onClick={() => setRdvOpen(true)} className="fab" title="Nouveau rendez-vous">
