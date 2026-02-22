@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { AnimalsProvider } from "@/context/AnimalsContext";
 import { BreederProvider } from "@/context/BreederContext";
+import AppLayout from "@/components/AppLayout";
 import HomePage from "./pages/HomePage";
 import AuthPage from "./pages/AuthPage";
 import ProfilPage from "./pages/ProfilPage";
@@ -35,7 +36,7 @@ import BreederBottomNav from "./components/BreederBottomNav";
 
 const queryClient = new QueryClient();
 
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
+function ProtectedRoute({ children, noLayout }: { children: React.ReactNode; noLayout?: boolean }) {
   const { user, loading } = useAuth();
 
   if (loading) {
@@ -50,7 +51,9 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     return <Navigate to="/auth" replace />;
   }
 
-  return <>{children}</>;
+  if (noLayout) return <>{children}</>;
+
+  return <AppLayout>{children}</AppLayout>;
 }
 
 function PublicRoute({ children }: { children: React.ReactNode }) {
@@ -157,7 +160,7 @@ function AppRoutes() {
       <Route
         path="/abonnement"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute noLayout>
             <AbonnementPage />
           </ProtectedRoute>
         }
