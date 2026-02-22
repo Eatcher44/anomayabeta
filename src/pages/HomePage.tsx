@@ -634,39 +634,38 @@ export default function HomePage() {
         )}
       </div>
 
-      {/* Quick access buttons row — above bottom nav */}
+      {/* Raccourcis dock — above bottom nav */}
       <div
-        className="fixed left-4 z-30 flex flex-col gap-2"
-        style={{ bottom: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom, 0px) + 16px)` }}
+        className="fixed left-3 right-20 z-30 flex items-center gap-1.5 px-2 py-1.5 bg-card/90 backdrop-blur border border-border rounded-2xl shadow-md max-w-[280px]"
+        style={{ bottom: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom, 0px) + 12px)` }}
       >
-        {/* Portées — breeder only or lock */}
-        <button
-          onClick={() => isBreeder ? navigate('/portees') : navigate('/abonnement?plan=breeder')}
-          className="w-12 h-12 rounded-full bg-muted border border-border shadow-lg flex items-center justify-center hover:bg-accent transition-colors relative"
-          title="Portées"
-        >
-          <Baby className="w-5 h-5 text-muted-foreground" />
-          {!isBreeder && <Lock className="absolute -top-1 -right-1 w-3.5 h-3.5 text-primary" />}
-        </button>
-
-        {/* Transférés — breeder only */}
-        {isBreeder && (
-          <button
-            onClick={() => navigate('/transferes')}
-            className="w-12 h-12 rounded-full bg-muted border border-border shadow-lg flex items-center justify-center hover:bg-accent transition-colors"
-            title="Transférés"
-          >
-            <ArrowRightLeft className="w-5 h-5 text-muted-foreground" />
-          </button>
-        )}
-
-        {/* Paradis */}
         <button
           onClick={() => navigate('/paradis')}
-          className="w-12 h-12 rounded-full bg-muted border border-border shadow-lg flex items-center justify-center hover:bg-accent transition-colors"
-          title="Paradis"
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl hover:bg-muted transition-colors"
         >
-          <Bird className="w-5 h-5 text-muted-foreground" />
+          <Bird className="w-4 h-4 text-muted-foreground" />
+          <span className="text-[11px] font-semibold text-muted-foreground">Paradis</span>
+        </button>
+
+        <div className="w-px h-5 bg-border" />
+
+        <button
+          onClick={() => navigate('/transferes')}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl hover:bg-muted transition-colors"
+        >
+          <ArrowRightLeft className="w-4 h-4 text-muted-foreground" />
+          <span className="text-[11px] font-semibold text-muted-foreground">Transférés</span>
+        </button>
+
+        <div className="w-px h-5 bg-border" />
+
+        <button
+          onClick={() => isBreeder ? navigate('/portees') : navigate('/abonnement?plan=breeder')}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl hover:bg-muted transition-colors relative"
+        >
+          <Baby className="w-4 h-4 text-muted-foreground" />
+          <span className="text-[11px] font-semibold text-muted-foreground">Portées</span>
+          {!isBreeder && <Lock className="w-3 h-3 text-primary ml-0.5" />}
         </button>
       </div>
 
