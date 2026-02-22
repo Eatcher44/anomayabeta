@@ -1,6 +1,6 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Calendar, LogOut, GripVertical, Bell, Activity, Crown, Bird, Baby, BarChart3, ArrowRightLeft, Lock } from 'lucide-react';
+import { Plus, Calendar, LogOut, GripVertical, Bell, Activity, Crown, Bird, Baby, BarChart3, ArrowRightLeft, Lock, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -122,6 +122,21 @@ export default function HomePage() {
 
   const { dark, toggle: toggleDark } = useDarkMode();
   const { isBreeder } = useBreeder();
+  const premiumGateRef = useRef(false);
+
+  const handlePremiumGate = useCallback((targetRoute: string) => {
+    if (isBreeder) {
+      navigate(targetRoute);
+      return;
+    }
+    if (premiumGateRef.current) return; // debounce
+    premiumGateRef.current = true;
+    toast({ title: '🔒 Fonction Pack Éleveur', description: 'Accédez à toutes les fonctionnalités éleveur' });
+    setTimeout(() => {
+      navigate('/abonnement?plan=breeder');
+      premiumGateRef.current = false;
+    }, 1500);
+  }, [isBreeder, navigate]);
 
   // Sort
   const [triSelected, setTriSelected] = useState<SortKey>('alpha');
@@ -482,11 +497,16 @@ export default function HomePage() {
       {/* Header */}
       <div className="px-4 pt-6 pb-4">
         <div className="flex justify-between items-start mb-4">
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5">
             <DarkModeToggle dark={dark} onToggle={toggleDark} />
-            <Button variant="ghost" size="icon" onClick={() => navigate('/abonnement')} title="Anomaya+">
-              <Crown className="w-5 h-5 text-amber-500" />
-            </Button>
+            <button
+              onClick={() => navigate('/abonnement')}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-full border border-amber-400/40 bg-amber-50/80 dark:bg-amber-900/20 dark:border-amber-500/30 hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors"
+              title="Anomaya+"
+            >
+              <Crown className="w-4 h-4 text-amber-500" />
+              <span className="text-[11px] font-bold text-amber-700 dark:text-amber-400">Anomaya+</span>
+            </button>
           </div>
           <div className="text-center flex-1">
             <div className="text-3xl mb-2">🐾🐾</div>
@@ -636,36 +656,43 @@ export default function HomePage() {
 
       {/* Raccourcis dock — above bottom nav */}
       <div
-        className="fixed left-3 right-20 z-30 flex items-center gap-1.5 px-2 py-1.5 bg-card/90 backdrop-blur border border-border rounded-2xl shadow-md max-w-[280px]"
+        className="fixed left-3 z-30 flex items-center gap-0.5 px-1.5 py-1 bg-card/95 backdrop-blur-md border border-border/60 rounded-2xl shadow-sm"
         style={{ bottom: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom, 0px) + 12px)` }}
       >
         <button
           onClick={() => navigate('/paradis')}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-xl hover:bg-muted transition-colors"
+          className="flex items-center gap-1.5 h-8 px-3 rounded-xl hover:bg-muted/80 active:bg-muted transition-colors"
         >
-          <Bird className="w-4 h-4 text-muted-foreground" />
+          <Bird className="w-3.5 h-3.5 text-muted-foreground" />
           <span className="text-[11px] font-semibold text-muted-foreground">Paradis</span>
         </button>
 
-        <div className="w-px h-5 bg-border" />
+        <div className="w-px h-4 bg-border/50" />
 
         <button
           onClick={() => navigate('/transferes')}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-xl hover:bg-muted transition-colors"
+          className="flex items-center gap-1.5 h-8 px-3 rounded-xl hover:bg-muted/80 active:bg-muted transition-colors"
         >
-          <ArrowRightLeft className="w-4 h-4 text-muted-foreground" />
+          <ArrowRightLeft className="w-3.5 h-3.5 text-muted-foreground" />
           <span className="text-[11px] font-semibold text-muted-foreground">Transférés</span>
         </button>
 
-        <div className="w-px h-5 bg-border" />
+        <div className="w-px h-4 bg-border/50" />
 
         <button
-          onClick={() => isBreeder ? navigate('/portees') : navigate('/abonnement?plan=breeder')}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-xl hover:bg-muted transition-colors relative"
+          onClick={() => handlePremiumGate('/portees')}
+          className={`flex items-center gap-1.5 h-8 px-3 rounded-xl transition-colors ${
+            isBreeder ? 'hover:bg-muted/80 active:bg-muted' : 'opacity-70 hover:opacity-90'
+          }`}
         >
-          <Baby className="w-4 h-4 text-muted-foreground" />
+          <Baby className="w-3.5 h-3.5 text-muted-foreground" />
           <span className="text-[11px] font-semibold text-muted-foreground">Portées</span>
-          {!isBreeder && <Lock className="w-3 h-3 text-primary ml-0.5" />}
+          {!isBreeder && (
+            <span className="flex items-center gap-0.5 ml-0.5 px-1 py-px rounded text-[9px] font-bold bg-primary/10 text-primary">
+              <Lock className="w-2.5 h-2.5" />
+              Pro
+            </span>
+          )}
         </button>
       </div>
 
