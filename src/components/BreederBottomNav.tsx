@@ -3,6 +3,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { PawPrint, Stethoscope, Lock } from 'lucide-react';
 import { useBreeder } from '@/context/BreederContext';
 import { toast } from '@/hooks/use-toast';
+import { isBeta } from '@/config/appVariant';
+import { Badge } from '@/components/ui/badge';
 
 /** Fixed height of the bottom nav (excluding safe-area). Use for offset calculations. */
 export const BOTTOM_NAV_HEIGHT = 64;
@@ -14,10 +16,14 @@ export default function BreederBottomNav() {
   const gateRef = useRef(false);
 
   // Hide on full-screen / paywall routes
-  const HIDDEN_ROUTES = ['/abonnement', '/reset-password'];
+  const HIDDEN_ROUTES = ['/abonnement', '/reset-password', '/feedback'];
   if (HIDDEN_ROUTES.some(r => location.pathname.startsWith(r))) return null;
 
   const handleElevageClick = () => {
+    if (isBeta) {
+      navigate('/elevage-beta');
+      return;
+    }
     if (isBreeder) {
       navigate('/elevage');
     } else {
@@ -31,9 +37,11 @@ export default function BreederBottomNav() {
     }
   };
 
+  const isElevageLocked = isBeta || !isBreeder;
+
   const tabs = [
     { path: '/', label: 'Ma famille', icon: PawPrint, onClick: () => navigate('/') },
-    { path: '/elevage', label: 'Élevage', icon: Stethoscope, onClick: handleElevageClick, locked: !isBreeder },
+    { path: '/elevage', label: 'Élevage', icon: Stethoscope, onClick: handleElevageClick, locked: isElevageLocked, betaBadge: isBeta },
   ];
 
   return (
@@ -60,11 +68,16 @@ export default function BreederBottomNav() {
               )}
               <div className="relative">
                 <tab.icon className="w-5 h-5" />
-                {tab.locked && (
+                {tab.locked && !tab.betaBadge && (
                   <Lock className="absolute -top-1 -right-2.5 w-3 h-3 text-primary" />
                 )}
               </div>
-              <span className="text-[10px] font-semibold">{tab.label}</span>
+              <div className="flex items-center gap-1">
+                <span className="text-[10px] font-semibold">{tab.label}</span>
+                {tab.betaBadge && (
+                  <Badge variant="secondary" className="text-[8px] px-1 py-0 h-3.5 leading-none">Bêta</Badge>
+                )}
+              </div>
             </button>
           );
         })}

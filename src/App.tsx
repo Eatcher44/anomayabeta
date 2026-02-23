@@ -33,6 +33,8 @@ import ElevagePage from "./pages/ElevagePage";
 import DepartsReservationsPage from "./pages/DepartsReservationsPage";
 import PreparerDepartPage from "./pages/PreparerDepartPage";
 import BreederBottomNav from "./components/BreederBottomNav";
+import FeedbackPage from "./pages/FeedbackPage";
+import ElevageBetaPage from "./pages/ElevageBetaPage";
 
 const queryClient = new QueryClient();
 
@@ -266,6 +268,22 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <PreparerDepartPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/feedback"
+        element={
+          <ProtectedRoute>
+            <FeedbackPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/elevage-beta"
+        element={
+          <ProtectedRoute>
+            <ElevageBetaPage />
           </ProtectedRoute>
         }
       />
