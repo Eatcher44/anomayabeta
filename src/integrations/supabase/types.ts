@@ -167,6 +167,48 @@ export type Database = {
         }
         Relationships: []
       }
+      feedback: {
+        Row: {
+          app_variant: string | null
+          created_at: string
+          current_screen: string | null
+          device_info: Json | null
+          id: string
+          message: string
+          screenshot_url: string | null
+          steps_to_reproduce: string | null
+          subject: string | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          app_variant?: string | null
+          created_at?: string
+          current_screen?: string | null
+          device_info?: Json | null
+          id?: string
+          message: string
+          screenshot_url?: string | null
+          steps_to_reproduce?: string | null
+          subject?: string | null
+          type?: string
+          user_id: string
+        }
+        Update: {
+          app_variant?: string | null
+          created_at?: string
+          current_screen?: string | null
+          device_info?: Json | null
+          id?: string
+          message?: string
+          screenshot_url?: string | null
+          steps_to_reproduce?: string | null
+          subject?: string | null
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       heat_cycles: {
         Row: {
           animal_id: string
