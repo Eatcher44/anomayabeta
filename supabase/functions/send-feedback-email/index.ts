@@ -15,6 +15,7 @@ interface FeedbackRequest {
   userId?: string;
   userEmail?: string;
   route?: string;
+  screenshotUrl?: string;
 }
 
 serve(async (req) => {
@@ -24,7 +25,7 @@ serve(async (req) => {
 
   try {
     const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
-    const { type, subject, message, steps, userId, userEmail, route }: FeedbackRequest = await req.json();
+    const { type, subject, message, steps, userId, userEmail, route, screenshotUrl }: FeedbackRequest = await req.json();
 
     const prefix = type === "bug" ? "BUG" : "Feedback";
     const emailSubject = `[ANOMAYA BETA] ${prefix} – ${subject || "Sans sujet"}`;
@@ -41,13 +42,21 @@ Message:
 ${message}
 
 ${steps ? `Steps:\n${steps}` : ""}
+
+${screenshotUrl ? `Screenshot:\n${screenshotUrl}` : ""}
     `.trim();
+
+    const htmlBody = body.replace(/\n/g, "<br>").replace(
+      screenshotUrl || "",
+      screenshotUrl ? `<a href="${screenshotUrl}">${screenshotUrl}</a>` : ""
+    );
 
     const { error } = await resend.emails.send({
       from: "support@anomaya.app",
       to: ["support@anomaya.app"],
       subject: emailSubject,
       text: body,
+      html: htmlBody,
     });
 
     if (error) {
