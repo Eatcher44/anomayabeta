@@ -10,7 +10,7 @@ import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { APP_VARIANT } from '@/config/appVariant';
-import { pickPhotoFile, uploadAnimalPhoto } from '@/utils/photo';
+import { pickPhotoFile } from '@/utils/photo';
 
 interface FeedbackFormProps {
   type: 'feedback' | 'bug';
@@ -28,14 +28,29 @@ function FeedbackForm({ type }: FeedbackFormProps) {
 
   const handleScreenshot = async () => {
     if (!user) return;
-    const file = await pickPhotoFile('image/*');
+    const file = await pickPhotoFile('image/png,image/jpeg,image/jpg');
     if (!file) return;
+
+    const validTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+    if (!validTypes.includes(file.type)) {
+      toast({ title: 'Format non supporté', description: 'PNG ou JPG uniquement.', variant: 'destructive' });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: 'Fichier trop volumineux', description: '5 Mo maximum.', variant: 'destructive' });
+      return;
+    }
+
     try {
-      const url = await uploadAnimalPhoto(user.id, `feedback-${Date.now()}`, file);
-      setScreenshotUrl(url);
+      const ext = file.name.split('.').pop() || 'png';
+      const path = `${user.id}/bug_${Date.now()}_${user.id}.${ext}`;
+      const { error } = await supabase.storage.from('bug-screenshots').upload(path, file, { upsert: true });
+      if (error) throw error;
+      const { data } = supabase.storage.from('bug-screenshots').getPublicUrl(path);
+      setScreenshotUrl(data.publicUrl);
       toast({ title: 'Capture ajoutée' });
     } catch {
-      toast({ title: 'Erreur', variant: 'destructive' });
+      toast({ title: "Impossible d'envoyer la capture. Réessayez.", variant: 'destructive' });
     }
   };
 
@@ -52,6 +67,7 @@ function FeedbackForm({ type }: FeedbackFormProps) {
           userId: user.id,
           userEmail: user.email,
           route: window.location.pathname,
+          screenshotUrl: screenshotUrl || undefined,
         },
       });
 
