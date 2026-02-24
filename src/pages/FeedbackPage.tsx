@@ -43,31 +43,22 @@ function FeedbackForm({ type }: FeedbackFormProps) {
     if (!message.trim() || !user) return;
     setSending(true);
     try {
-      const deviceInfo = {
-        userAgent: navigator.userAgent,
-        platform: navigator.platform,
-        language: navigator.language,
-        screenWidth: window.screen.width,
-        screenHeight: window.screen.height,
-        timestamp: new Date().toISOString(),
-      };
-
-      const { error } = await supabase.from('feedback').insert({
-        user_id: user.id,
-        type,
-        subject: subject.trim() || null,
-        message: message.trim(),
-        steps_to_reproduce: type === 'bug' ? steps.trim() || null : null,
-        current_screen: window.location.pathname,
-        screenshot_url: screenshotUrl,
-        app_variant: APP_VARIANT,
-        device_info: deviceInfo,
+      const { data, error } = await supabase.functions.invoke('send-feedback-email', {
+        body: {
+          type,
+          subject: subject.trim() || undefined,
+          message: message.trim(),
+          steps: type === 'bug' ? steps.trim() || undefined : undefined,
+          userId: user.id,
+          userEmail: user.email,
+          route: window.location.pathname,
+        },
       });
 
       if (error) throw error;
       setSent(true);
     } catch {
-      toast({ title: 'Erreur', description: "Impossible d'envoyer", variant: 'destructive' });
+      toast({ title: 'Échec d\'envoi', description: 'Réessayez.', variant: 'destructive' });
     } finally {
       setSending(false);
     }
