@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Plus, Calendar, LogOut, GripVertical, Bell, Activity, Crown, Bird, Baby, BarChart3, ArrowRightLeft, Lock, Sparkles, MessageSquare, ArrowDownToLine } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -290,14 +291,18 @@ export default function HomePage() {
 
   const startTransfer = () => {
     setAddChoiceVisible(false);
-    if (isBeta || !isBreeder) {
+    if (!isBreeder) {
       if (premiumGateRef.current) return;
       premiumGateRef.current = true;
       toast({ title: '🔒 Fonction Pack Éleveur', description: 'Le transfert est réservé au Pack Éleveur' });
-      setTimeout(() => {
-        navigate('/abonnement?plan=breeder');
-        premiumGateRef.current = false;
-      }, 1500);
+      if (!isBeta) {
+        setTimeout(() => {
+          navigate('/abonnement?plan=breeder');
+          premiumGateRef.current = false;
+        }, 1500);
+      } else {
+        setTimeout(() => { premiumGateRef.current = false; }, 1500);
+      }
       return;
     }
     setTransferCode('');
@@ -707,35 +712,49 @@ export default function HomePage() {
         <div className="w-px h-4 bg-border/50" />
 
         <button
-          onClick={() => navigate('/transferes')}
+          onClick={() => {
+            if (isBeta) {
+              navigate('/elevage-beta');
+            } else if (isBreeder) {
+              navigate('/transferes');
+            } else {
+              handlePremiumGate('/transferes');
+            }
+          }}
           className="flex items-center gap-1.5 h-8 px-3 rounded-xl hover:bg-muted/80 active:bg-muted transition-colors"
         >
           <ArrowRightLeft className="w-3.5 h-3.5 text-muted-foreground" />
           <span className="text-[11px] font-semibold text-muted-foreground">Transférés</span>
+          {isBeta && (
+            <Badge variant="secondary" className="text-[8px] px-1 py-0 h-3.5 leading-none ml-0.5">Bêta</Badge>
+          )}
         </button>
 
         <div className="w-px h-4 bg-border/50" />
 
-        {!isBeta && (
-          <>
-            <div className="w-px h-4 bg-border/50" />
-            <button
-              onClick={() => handlePremiumGate('/portees')}
-              className={`flex items-center gap-1.5 h-8 px-3 rounded-xl transition-colors ${
-                isBreeder ? 'hover:bg-muted/80 active:bg-muted' : 'opacity-70 hover:opacity-90'
-              }`}
-            >
-              <Baby className="w-3.5 h-3.5 text-muted-foreground" />
-              <span className="text-[11px] font-semibold text-muted-foreground">Portées</span>
-              {!isBreeder && (
-                <span className="flex items-center gap-0.5 ml-0.5 px-1 py-px rounded text-[9px] font-bold bg-primary/10 text-primary">
-                  <Lock className="w-2.5 h-2.5" />
-                  Pro
-                </span>
-              )}
-            </button>
-          </>
-        )}
+        <button
+          onClick={() => {
+            if (isBeta) {
+              navigate('/elevage-beta');
+            } else {
+              handlePremiumGate('/portees');
+            }
+          }}
+          className={`flex items-center gap-1.5 h-8 px-3 rounded-xl transition-colors ${
+            isBreeder && !isBeta ? 'hover:bg-muted/80 active:bg-muted' : 'opacity-70 hover:opacity-90'
+          }`}
+        >
+          <Baby className="w-3.5 h-3.5 text-muted-foreground" />
+          <span className="text-[11px] font-semibold text-muted-foreground">Portées</span>
+          {isBeta ? (
+            <Badge variant="secondary" className="text-[8px] px-1 py-0 h-3.5 leading-none ml-0.5">Bêta</Badge>
+          ) : !isBreeder && (
+            <span className="flex items-center gap-0.5 ml-0.5 px-1 py-px rounded text-[9px] font-bold bg-primary/10 text-primary">
+              <Lock className="w-2.5 h-2.5" />
+              Pro
+            </span>
+          )}
+        </button>
       </div>
 
       {/* Floating feedback button — beta only */}
@@ -773,7 +792,7 @@ export default function HomePage() {
                 <h3 className="font-bold text-foreground text-sm">Transférer d'un éleveur</h3>
                 <p className="text-xs text-muted-foreground">Importer un profil via un code</p>
               </div>
-              {(isBeta || !isBreeder) && (
+              {!isBreeder && (
                 <span className="ml-auto flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-bold bg-primary/10 text-primary">
                   <Lock className="w-2.5 h-2.5" />
                   Pro

@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useMemo, useState, useEffect } from 'react';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, CalendarPlus, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,6 +19,7 @@ import { toast } from '@/hooks/use-toast';
 
 export default function ConsultationPage() {
   const { id } = useParams<{ id: string }>();
+  const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const { animaux, rendezvous, addRendezVous } = useAnimals();
 
@@ -38,6 +39,14 @@ export default function ConsultationPage() {
     () => [...animaux].sort((a, b) => (a.nom || '').localeCompare(b.nom || '')),
     [animaux]
   );
+
+  // Auto-open new RDV modal if ?new=1
+  useEffect(() => {
+    if (searchParams.get('new') === '1' && animal) {
+      openNewRdv();
+      setSearchParams({}, { replace: true });
+    }
+  }, [animal?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const { futurs, passes } = useMemo(() => {
     if (!animal) return { futurs: [], passes: [] };
