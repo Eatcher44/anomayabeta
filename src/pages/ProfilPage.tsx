@@ -36,6 +36,7 @@ import { useBreeder } from '@/context/BreederContext';
 import { isBreederEligible } from '@/utils/breederUtils';
 import type { Animal, CommercialStatus } from '@/types/animal';
 import { generateCarnetDepart, downloadPdf, sharePdf, type BreederProfileData } from '@/utils/carnetDepart';
+import { isBeta } from '@/config/appVariant';
 
 const fmt = (d: string | Date) => new Date(d).toLocaleDateString('fr-FR');
 const isFemale = (a: { sexe?: string }) => (a.sexe || '').toLowerCase().startsWith('f');
@@ -147,7 +148,7 @@ function CommercialSection({ animal, updateAnimal, navigate }: {
             <span>Aucun nom d&apos;acheteur renseigné.</span>
           </div>
         )}
-        {status === 'sold' && (
+        {status === 'sold' && !isBeta && (
           <Button variant="outline" className="w-full" onClick={() => navigate(`/transfer/${animal.id}`)}>
             <QrCode className="w-4 h-4 mr-2" />
             Transférer au propriétaire
@@ -485,7 +486,7 @@ export default function ProfilPage() {
           )}
 
           {/* Transfer */}
-          {!isParadis && !isNewborn && isBreeder && isBreederEligible(animal.type) && (
+          {!isParadis && !isNewborn && isBreeder && !isBeta && isBreederEligible(animal.type) && (
             <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
               <h2 className="font-extrabold mb-3">Transfert de profil</h2>
               <Button variant="outline" onClick={() => navigate(`/transfer/${animal.id}`)}><QrCode className="w-4 h-4 mr-2" />Transférer ce profil</Button>
@@ -555,7 +556,12 @@ export default function ProfilPage() {
           <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
             <h2 className="font-extrabold mb-3">Rendez-vous</h2>
             <p className="text-muted-foreground mb-3">{rdvsFuturs.length} rendez-vous à venir</p>
-            <Button onClick={() => navigate(`/consultation/${animal.id}`)}><Calendar className="w-4 h-4 mr-2" />Voir les consultations</Button>
+            <div className="flex gap-2">
+              <Button variant="outline" className="flex-1" onClick={() => navigate(`/consultation/${animal.id}`)}><Calendar className="w-4 h-4 mr-2" />Voir les consultations</Button>
+              {!isParadis && (
+                <Button className="flex-1" onClick={() => navigate(`/consultation/${animal.id}?new=1`)}><Calendar className="w-4 h-4 mr-2" />Prendre rendez-vous</Button>
+              )}
+            </div>
           </div>
 
           {/* Poids */}
