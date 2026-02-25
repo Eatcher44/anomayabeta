@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -15,21 +15,37 @@ export default function AuthPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const timer = setInterval(() => setCooldown(c => c - 1), 1000);
+    return () => clearInterval(timer);
+  }, [cooldown]);
 
   const handleForgotPassword = async () => {
     if (!email) {
       toast({ title: 'Erreur', description: 'Veuillez entrer votre email', variant: 'destructive' });
       return;
     }
+    if (cooldown > 0) return;
     setLoading(true);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`,
       });
       if (error) throw error;
+      setCooldown(60);
       toast({ title: 'Email envoyé', description: 'Vérifiez votre boîte mail pour réinitialiser votre mot de passe.' });
     } catch (error: any) {
-      toast({ title: 'Erreur', description: error.message, variant: 'destructive' });
+      const msg = (error?.status === 429 || error.message?.includes('rate limit'))
+        ? 'Trop de demandes. Réessayez dans quelques minutes.'
+        : error.message;
+      if (error?.status === 429 || error.message?.includes('rate limit')) {
+        setCooldown(60);
+        console.warn('[Auth] Reset rate limit hit', { email });
+      }
+      toast({ title: 'Erreur', description: msg, variant: 'destructive' });
     } finally {
       setLoading(false);
     }
@@ -69,6 +85,7 @@ export default function AuthPage() {
           },
         });
         if (error) throw error;
+        setCooldown(60);
         toast({
           title: 'Inscription réussie !',
           description: 'Vérifiez votre boîte mail pour confirmer votre compte.',
@@ -76,7 +93,12 @@ export default function AuthPage() {
       }
     } catch (error: any) {
       let message = error.message;
-      if (message.includes('Invalid login credentials')) {
+      const status = error?.status;
+      if (status === 429 || message?.includes('rate limit') || message?.includes('email rate limit')) {
+        message = 'Trop de demandes. Réessayez dans quelques minutes.';
+        setCooldown(60);
+        console.warn('[Auth] Rate limit hit', { email, status, originalMessage: error.message });
+      } else if (message.includes('Invalid login credentials')) {
         message = 'Email ou mot de passe incorrect';
       } else if (message.includes('Email not confirmed')) {
         message = 'Veuillez confirmer votre email avant de vous connecter';
@@ -169,8 +191,8 @@ export default function AuthPage() {
                 </button>
               </div>
             )}
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Chargement...' : isLogin ? 'Se connecter' : "S'inscrire"}
+            <Button type="submit" className="w-full" disabled={loading || cooldown > 0}>
+              {loading ? 'Chargement...' : cooldown > 0 ? `Réessayer dans ${cooldown}s` : isLogin ? 'Se connecter' : "S'inscrire"}
             </Button>
           </form>
           <div className="mt-6 text-center">
