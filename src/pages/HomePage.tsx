@@ -757,22 +757,27 @@ export default function HomePage() {
         </button>
       </div>
 
-      {/* Floating feedback button — beta only */}
+      {/* FAB RDV — positioned above dock */}
+      <button
+        onClick={() => setRdvOpen(true)}
+        className="fixed right-4 w-14 h-14 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg hover:shadow-xl transition-shadow z-35"
+        style={{ bottom: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom, 0px) + 60px)` }}
+        title="Nouveau rendez-vous"
+      >
+        <Calendar className="w-6 h-6" />
+      </button>
+
+      {/* Floating feedback button — beta only, above FAB */}
       {isBeta && (
         <button
           onClick={() => navigate('/feedback')}
           className="fixed right-4 z-30 flex items-center gap-1.5 px-3 py-2 bg-card/95 backdrop-blur-md border border-border/60 rounded-full shadow-sm hover:bg-muted/80 active:bg-muted transition-colors"
-          style={{ bottom: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom, 0px) + 80px)` }}
+          style={{ bottom: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom, 0px) + 130px)` }}
         >
           <MessageSquare className="w-4 h-4 text-muted-foreground" />
           <span className="text-[11px] font-semibold text-muted-foreground">Avis</span>
         </button>
       )}
-
-      {/* FAB RDV — uses .fab class which is already positioned above nav */}
-      <button onClick={() => setRdvOpen(true)} className="fab" title="Nouveau rendez-vous">
-        <Calendar className="w-6 h-6" />
-      </button>
 
       {/* Add animal choice modal */}
       <Dialog open={addChoiceVisible} onOpenChange={setAddChoiceVisible}>

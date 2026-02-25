@@ -335,11 +335,11 @@ export default function ProfilPage() {
       </div>
 
       <ScrollArea className="flex-1">
-        <div className="p-4 space-y-4">
+        <div className="p-3 space-y-3">
           {/* Header Profil */}
-          <div className={`${bgClass} rounded-2xl p-4 border border-border relative shadow-sm`} style={headerStyle}>
+          <div className={`${bgClass} rounded-2xl p-3 border border-border relative shadow-sm`} style={headerStyle}>
             <div className="flex items-center">
-              <div onClick={isParadis ? undefined : handleChangePhoto} className={`w-[72px] h-[72px] rounded-full bg-muted flex items-center justify-center overflow-hidden mr-3 transition-opacity ${isParadis ? 'cursor-default' : 'hover:opacity-80 cursor-pointer'}`}>
+              <div onClick={isParadis ? undefined : handleChangePhoto} className={`w-[60px] h-[60px] rounded-full bg-muted flex items-center justify-center overflow-hidden mr-3 transition-opacity ${isParadis ? 'cursor-default' : 'hover:opacity-80 cursor-pointer'}`}>
                 {animal.photo ? (
                   <img src={animal.photo} alt={animal.nom} className="w-full h-full object-cover" />
                 ) : (
@@ -378,19 +378,19 @@ export default function ProfilPage() {
           )}
 
           {/* Fiche */}
-          <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="font-extrabold">Fiche</h2>
+          <div className="bg-card rounded-xl p-3 border border-border shadow-sm">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="font-extrabold text-sm">Fiche</h2>
               {!isParadis && (
                 <Button variant="outline" size="sm" onClick={openEditModal}><Edit className="w-4 h-4 mr-1.5" />Modifier</Button>
               )}
             </div>
-            <div className="space-y-3">
-              <div className="flex justify-between py-1.5"><span className="text-muted-foreground">Date de naissance</span><span className="font-bold">{animal.naissance ? fmt(animal.naissance) : 'Non définie'}</span></div>
-              <div className="flex justify-between py-1.5"><span className="text-muted-foreground">Race</span><span className="font-bold">{animal.race && animal.race !== '—' ? displayBreed(animal.race) : 'Non définie'}</span></div>
-              <div className="flex justify-between py-1.5"><span className="text-muted-foreground">Sexe</span><span className="font-bold">{animal.sexe}</span></div>
-              <div className="flex justify-between py-1.5"><span className="text-muted-foreground">{isFemale(animal) ? 'Stérilisée' : 'Castré'}</span><span className="font-bold">{animal.sterilise ? 'Oui' : 'Non'}</span></div>
-              <div className="flex items-center justify-between py-1.5">
+            <div className="space-y-1">
+              <div className="flex justify-between py-1 text-sm"><span className="text-muted-foreground">Date de naissance</span><span className="font-bold">{animal.naissance ? fmt(animal.naissance) : 'Non définie'}</span></div>
+              <div className="flex justify-between py-1 text-sm"><span className="text-muted-foreground">Race</span><span className="font-bold">{animal.race && animal.race !== '—' ? displayBreed(animal.race) : 'Non définie'}</span></div>
+              <div className="flex justify-between py-1 text-sm"><span className="text-muted-foreground">Sexe</span><span className="font-bold">{animal.sexe}</span></div>
+              <div className="flex justify-between py-1 text-sm"><span className="text-muted-foreground">{isFemale(animal) ? 'Stérilisée' : 'Castré'}</span><span className="font-bold">{animal.sterilise ? 'Oui' : 'Non'}</span></div>
+              <div className="flex items-center justify-between py-1 text-sm">
                 <span className="text-muted-foreground">Numéro de puce</span>
                 <div className="flex-shrink-0">
                   {!animal.puce ? (
@@ -406,19 +406,19 @@ export default function ProfilPage() {
                 </div>
               </div>
               {motherAnimal && (
-                <div className="flex justify-between py-1.5"><span className="text-muted-foreground">Mère</span>
+                <div className="flex justify-between py-1 text-sm"><span className="text-muted-foreground">Mère</span>
                   <button onClick={() => navigate(`/profil/${motherAnimal.id}`)} className="font-bold text-primary hover:underline text-sm">{motherAnimal.nom}</button>
                 </div>
               )}
               {fatherInfo && (
-                <div className="flex justify-between py-1.5"><span className="text-muted-foreground">Père</span><span className="font-bold">{fatherInfo.name}</span></div>
+                <div className="flex justify-between py-1 text-sm"><span className="text-muted-foreground">Père</span><span className="font-bold">{fatherInfo.name}</span></div>
               )}
             </div>
           </div>
 
           {/* Soins */}
-          <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
-            <h2 className="font-extrabold mb-3">Soins</h2>
+          <div className="bg-card rounded-xl p-3 border border-border shadow-sm">
+            <h2 className="font-extrabold text-sm mb-2">Soins</h2>
             <div className="flex gap-2 mb-3">
               <button onClick={() => navigate(`/vaccins/${animal.id}`)} className="flex-1 flex items-center justify-center gap-2 py-3 px-3 rounded-xl font-semibold bg-[hsl(211,100%,95%)] text-[hsl(211,72%,31%)] border border-[hsl(211,72%,31%,0.2)] hover:bg-[hsl(211,100%,90%)] transition-colors dark:bg-[hsl(211,40%,20%)] dark:text-[hsl(211,100%,75%)] dark:border-[hsl(211,40%,30%)]">
                 <Syringe className="w-4 h-4" />Vaccins
@@ -553,9 +553,9 @@ export default function ProfilPage() {
           )}
 
           {/* RDV */}
-          <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
-            <h2 className="font-extrabold mb-3">Rendez-vous</h2>
-            <p className="text-muted-foreground mb-3">{rdvsFuturs.length} rendez-vous à venir</p>
+          <div className="bg-card rounded-xl p-3 border border-border shadow-sm">
+            <h2 className="font-extrabold text-sm mb-2">Rendez-vous</h2>
+            <p className="text-muted-foreground text-sm mb-2">{rdvsFuturs.length} rendez-vous à venir</p>
             <div className="flex gap-2">
               <Button variant="outline" className="flex-1" onClick={() => navigate(`/consultation/${animal.id}`)}><Calendar className="w-4 h-4 mr-2" />Voir les consultations</Button>
               {!isParadis && (
@@ -565,8 +565,8 @@ export default function ProfilPage() {
           </div>
 
           {/* Poids */}
-          <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
-            <h2 className="font-extrabold mb-3">Suivi du poids</h2>
+          <div className="bg-card rounded-xl p-3 border border-border shadow-sm">
+            <h2 className="font-extrabold text-sm mb-2">Suivi du poids</h2>
             <p className="text-sm text-muted-foreground mb-3">
               {(() => {
                 if (!animal.poids || animal.poids.length === 0) return 'Poids non renseigné';

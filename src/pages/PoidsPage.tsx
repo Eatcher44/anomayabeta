@@ -134,7 +134,7 @@ export default function PoidsPage() {
   const canSave = valid && poids.trim() !== '' && !isNaN(parseFloat(poids.replace(',', '.')));
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[hsl(33,60%,95%)] to-[hsl(30,40%,92%)]">
+    <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-card/90 backdrop-blur border-b border-border px-4 py-3 flex items-center gap-3">
         <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
