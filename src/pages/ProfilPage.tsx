@@ -107,7 +107,7 @@ function CommercialSection({ animal, updateAnimal, navigate }: {
           <Label className="text-xs text-muted-foreground">Nom futur propriétaire</Label>
           <Input value={buyerName} onChange={(e) => { setBuyerName(e.target.value); markDirty(); }} placeholder="Nom du futur propriétaire" className="mt-1" />
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <Label className="text-xs text-muted-foreground">Téléphone</Label>
             <Input value={buyerPhone} onChange={(e) => { setBuyerPhone(e.target.value); markDirty(); }} placeholder="Téléphone" className="mt-1" />
@@ -322,7 +322,7 @@ export default function ProfilPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[hsl(33,60%,95%)] to-[hsl(30,40%,92%)] dark:from-background dark:to-background">
+    <div className="min-h-screen bg-gradient-to-b from-[hsl(33,60%,95%)] to-[hsl(30,40%,92%)] dark:from-background dark:to-background max-w-full overflow-x-hidden">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-card/90 backdrop-blur border-b border-border px-4 py-3 flex items-center gap-3">
         <Button variant="ghost" size="icon" onClick={handleBackNav}><ArrowLeft className="w-5 h-5" /></Button>
@@ -386,32 +386,32 @@ export default function ProfilPage() {
               )}
             </div>
             <div className="space-y-1">
-              <div className="flex justify-between py-1 text-sm"><span className="text-muted-foreground">Date de naissance</span><span className="font-bold">{animal.naissance ? fmt(animal.naissance) : 'Non définie'}</span></div>
-              <div className="flex justify-between py-1 text-sm"><span className="text-muted-foreground">Race</span><span className="font-bold">{animal.race && animal.race !== '—' ? displayBreed(animal.race) : 'Non définie'}</span></div>
-              <div className="flex justify-between py-1 text-sm"><span className="text-muted-foreground">Sexe</span><span className="font-bold">{animal.sexe}</span></div>
-              <div className="flex justify-between py-1 text-sm"><span className="text-muted-foreground">{isFemale(animal) ? 'Stérilisée' : 'Castré'}</span><span className="font-bold">{animal.sterilise ? 'Oui' : 'Non'}</span></div>
-              <div className="flex items-center justify-between py-1 text-sm">
-                <span className="text-muted-foreground">Numéro de puce</span>
-                <div className="flex-shrink-0">
+              <div className="flex flex-wrap justify-between gap-x-3 py-1 text-sm"><span className="text-muted-foreground shrink-0">Date de naissance</span><span className="font-bold text-right break-words" style={{ overflowWrap: 'anywhere' }}>{animal.naissance ? fmt(animal.naissance) : 'Non définie'}</span></div>
+              <div className="flex flex-wrap justify-between gap-x-3 py-1 text-sm"><span className="text-muted-foreground shrink-0">Race</span><span className="font-bold text-right break-words" style={{ overflowWrap: 'anywhere' }}>{animal.race && animal.race !== '—' ? displayBreed(animal.race) : 'Non définie'}</span></div>
+              <div className="flex flex-wrap justify-between gap-x-3 py-1 text-sm"><span className="text-muted-foreground shrink-0">Sexe</span><span className="font-bold">{animal.sexe}</span></div>
+              <div className="flex flex-wrap justify-between gap-x-3 py-1 text-sm"><span className="text-muted-foreground shrink-0">{isFemale(animal) ? 'Stérilisée' : 'Castré'}</span><span className="font-bold">{animal.sterilise ? 'Oui' : 'Non'}</span></div>
+              <div className="flex flex-wrap items-center justify-between gap-x-3 py-1 text-sm">
+                <span className="text-muted-foreground shrink-0">Numéro de puce</span>
+                <div className="min-w-0">
                   {!animal.puce ? (
                     !isParadis && puceInlineEdit ? (
-                      <Input value={puceDraft} onChange={(e) => setPuceDraft(e.target.value.replace(/\D/g, '').slice(0, 15))} maxLength={15} placeholder="15 chiffres" className="w-40" autoFocus
+                      <Input value={puceDraft} onChange={(e) => setPuceDraft(e.target.value.replace(/\D/g, '').slice(0, 15))} maxLength={15} placeholder="15 chiffres" className="w-36 max-w-full" autoFocus
                         onBlur={() => { if (puceDraft.trim()) updateAnimal(animal.id, { puce: puceDraft.trim() }); setPuceInlineEdit(false); }}
                         onKeyDown={(e) => { if (e.key === 'Enter') { if (puceDraft.trim()) updateAnimal(animal.id, { puce: puceDraft.trim() }); setPuceInlineEdit(false); } }}
                       />
                     ) : !isParadis ? (
                       <button onClick={() => { setPuceDraft(''); setPuceInlineEdit(true); }} className="font-bold text-primary hover:underline text-sm">Ajouter le numéro</button>
                     ) : <span className="font-bold text-muted-foreground">—</span>
-                  ) : <span className="font-bold">{animal.puce}</span>}
+                  ) : <span className="font-bold break-all">{animal.puce}</span>}
                 </div>
               </div>
               {motherAnimal && (
-                <div className="flex justify-between py-1 text-sm"><span className="text-muted-foreground">Mère</span>
+                <div className="flex flex-wrap justify-between gap-x-3 py-1 text-sm"><span className="text-muted-foreground shrink-0">Mère</span>
                   <button onClick={() => navigate(`/profil/${motherAnimal.id}`)} className="font-bold text-primary hover:underline text-sm">{motherAnimal.nom}</button>
                 </div>
               )}
               {fatherInfo && (
-                <div className="flex justify-between py-1 text-sm"><span className="text-muted-foreground">Père</span><span className="font-bold">{fatherInfo.name}</span></div>
+                <div className="flex flex-wrap justify-between gap-x-3 py-1 text-sm"><span className="text-muted-foreground shrink-0">Père</span><span className="font-bold">{fatherInfo.name}</span></div>
               )}
             </div>
           </div>
@@ -419,12 +419,12 @@ export default function ProfilPage() {
           {/* Soins */}
           <div className="bg-card rounded-xl p-3 border border-border shadow-sm">
             <h2 className="font-extrabold text-sm mb-2">Soins</h2>
-            <div className="flex gap-2 mb-3">
-              <button onClick={() => navigate(`/vaccins/${animal.id}`)} className="flex-1 flex items-center justify-center gap-2 py-3 px-3 rounded-xl font-semibold bg-[hsl(211,100%,95%)] text-[hsl(211,72%,31%)] border border-[hsl(211,72%,31%,0.2)] hover:bg-[hsl(211,100%,90%)] transition-colors dark:bg-[hsl(211,40%,20%)] dark:text-[hsl(211,100%,75%)] dark:border-[hsl(211,40%,30%)]">
-                <Syringe className="w-4 h-4" />Vaccins
+            <div className="flex flex-wrap gap-2 mb-3">
+              <button onClick={() => navigate(`/vaccins/${animal.id}`)} className="flex-1 min-w-[120px] flex items-center justify-center gap-2 py-3 px-3 rounded-xl font-semibold text-sm bg-[hsl(211,100%,95%)] text-[hsl(211,72%,31%)] border border-[hsl(211,72%,31%,0.2)] hover:bg-[hsl(211,100%,90%)] transition-colors dark:bg-[hsl(211,40%,20%)] dark:text-[hsl(211,100%,75%)] dark:border-[hsl(211,40%,30%)]">
+                <Syringe className="w-4 h-4 shrink-0" />Vaccins
               </button>
-              <button onClick={() => navigate(`/vermifuge/${animal.id}`)} className="flex-1 flex items-center justify-center gap-2 py-3 px-3 rounded-xl font-semibold bg-[hsl(145,50%,93%)] text-[hsl(145,50%,30%)] border border-[hsl(145,50%,30%,0.2)] hover:bg-[hsl(145,50%,88%)] transition-colors dark:bg-[hsl(145,30%,15%)] dark:text-[hsl(145,60%,65%)] dark:border-[hsl(145,30%,25%)]">
-                <Bug className="w-4 h-4" />Anti-puce & Vermifuge
+              <button onClick={() => navigate(`/vermifuge/${animal.id}`)} className="flex-1 min-w-[120px] flex items-center justify-center gap-2 py-3 px-3 rounded-xl font-semibold text-sm bg-[hsl(145,50%,93%)] text-[hsl(145,50%,30%)] border border-[hsl(145,50%,30%,0.2)] hover:bg-[hsl(145,50%,88%)] transition-colors dark:bg-[hsl(145,30%,15%)] dark:text-[hsl(145,60%,65%)] dark:border-[hsl(145,30%,25%)]">
+                <Bug className="w-4 h-4 shrink-0" />Anti-puce & Vermifuge
               </button>
             </div>
             <Button onClick={() => navigate(`/autres-soins/${animal.id}`)} className="w-full"><Pill className="w-4 h-4 mr-2" />Autres soins / traitements</Button>
@@ -556,10 +556,10 @@ export default function ProfilPage() {
           <div className="bg-card rounded-xl p-3 border border-border shadow-sm">
             <h2 className="font-extrabold text-sm mb-2">Rendez-vous</h2>
             <p className="text-muted-foreground text-sm mb-2">{rdvsFuturs.length} rendez-vous à venir</p>
-            <div className="flex gap-2">
-              <Button variant="outline" className="flex-1" onClick={() => navigate(`/consultation/${animal.id}`)}><Calendar className="w-4 h-4 mr-2" />Voir les consultations</Button>
+            <div className="flex flex-wrap gap-2">
+              <Button variant="outline" className="flex-1 min-w-[140px] text-sm" onClick={() => navigate(`/consultation/${animal.id}`)}><Calendar className="w-4 h-4 mr-2 shrink-0" />Voir les consultations</Button>
               {!isParadis && (
-                <Button className="flex-1" onClick={() => navigate(`/consultation/${animal.id}?new=1`)}><Calendar className="w-4 h-4 mr-2" />Prendre rendez-vous</Button>
+                <Button className="flex-1 min-w-[140px] text-sm" onClick={() => navigate(`/consultation/${animal.id}?new=1`)}><Calendar className="w-4 h-4 mr-2 shrink-0" />Prendre rendez-vous</Button>
               )}
             </div>
           </div>
