@@ -32,6 +32,7 @@ export type Database = {
           naissance: string | null
           nom: string
           paradis: boolean
+          particularite: string | null
           photo: string | null
           planned_departure_date: string | null
           poids: Json | null
@@ -61,6 +62,7 @@ export type Database = {
           naissance?: string | null
           nom: string
           paradis?: boolean
+          particularite?: string | null
           photo?: string | null
           planned_departure_date?: string | null
           poids?: Json | null
@@ -90,6 +92,7 @@ export type Database = {
           naissance?: string | null
           nom?: string
           paradis?: boolean
+          particularite?: string | null
           photo?: string | null
           planned_departure_date?: string | null
           poids?: Json | null

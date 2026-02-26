@@ -53,6 +53,7 @@ export function AnimalsProvider({ children }: { children: React.ReactNode }) {
         sterilise: a.sterilise || false,
         puce: a.puce || undefined,
         couleur: (a as any).couleur || null,
+        particularite: (a as any).particularite || null,
         paradis: (a as any).paradis || false,
         breeder_visible: (a as any).breeder_visible ?? true,
         commercial_status: (a as any).commercial_status || 'available',
@@ -153,8 +154,9 @@ export function AnimalsProvider({ children }: { children: React.ReactNode }) {
           naissance: data.naissance ? new Date(data.naissance).toISOString() : undefined,
           sterilise: data.sterilise || false,
           puce: data.puce || undefined,
-          couleur: (data as any).couleur || null,
-          breeder_visible: (data as any).breeder_visible ?? true,
+           couleur: (data as any).couleur || null,
+           particularite: (data as any).particularite || null,
+           breeder_visible: (data as any).breeder_visible ?? true,
           poids: parseJsonArray<WeightEntry>(data.poids, []),
           soins: parseJsonArray<SoinEntry>(data.soins, []),
           consultations: parseJsonArray<ConsultationEntry>(data.consultations, []),
@@ -197,6 +199,9 @@ export function AnimalsProvider({ children }: { children: React.ReactNode }) {
       }
       if ('couleur' in patch) {
         updatePayload.couleur = (patch as any).couleur;
+      }
+      if ('particularite' in patch) {
+        updatePayload.particularite = (patch as any).particularite;
       }
       if ('litter_id' in patch) {
         updatePayload.litter_id = (patch as any).litter_id;

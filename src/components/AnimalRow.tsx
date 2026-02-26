@@ -70,8 +70,8 @@ export default function AnimalRow({ item, onPickPhoto, onOpenProfile, onDelete, 
               {item.nom}{' '}
               <span className={textClass}>{sexeSymbol}</span>{' '}
               {item.race && item.race !== '—' && (
-                <span className="font-normal text-muted-foreground text-sm">
-                  ({displayBreed(item.race)})
+                <span className="font-normal text-muted-foreground text-sm truncate max-w-[180px] inline-block align-bottom">
+                  ({displayBreed(item.race)}{item.particularite && item.particularite !== 'Aucune' ? ` ${item.particularite}` : ''})
                 </span>
               )}
             </p>

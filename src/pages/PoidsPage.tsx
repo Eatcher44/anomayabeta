@@ -53,9 +53,18 @@ export default function PoidsPage() {
   }, [animal?.poids]);
 
   const chartData = data.map((d) => ({
-    date: new Date(d.date).toLocaleDateString('fr-FR'),
+    date: new Date(d.date).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: '2-digit' }),
     poids: d.poids,
   }));
+
+  // Adaptive tick: show fewer labels when many points
+  const tickInterval = useMemo(() => {
+    const len = chartData.length;
+    if (len <= 6) return 0;
+    if (len <= 12) return 1;
+    if (len <= 24) return 2;
+    return Math.floor(len / 8);
+  }, [chartData.length]);
 
   if (!animal) {
     return (
@@ -154,8 +163,8 @@ export default function PoidsPage() {
             <ResponsiveContainer width="100%" height={200}>
               <LineChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="date" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => `${v}kg`} />
+                <XAxis dataKey="date" fontSize={11} tickLine={false} axisLine={false} interval={tickInterval} angle={-30} textAnchor="end" height={45} stroke="hsl(var(--muted-foreground))" />
+                <YAxis fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => `${v}kg`} stroke="hsl(var(--muted-foreground))" />
                 <Tooltip
                   contentStyle={{
                     backgroundColor: 'hsl(var(--card))',
