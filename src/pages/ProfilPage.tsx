@@ -168,6 +168,8 @@ export default function ProfilPage() {
   const [editOpen, setEditOpen] = useState(false);
   const [puceInlineEdit, setPuceInlineEdit] = useState(false);
   const [puceDraft, setPuceDraft] = useState('');
+  const [particulariteModalOpen, setParticulariteModalOpen] = useState(false);
+  const [particulariteDraft, setParticulariteDraft] = useState('');
 
   // Edit state
   const [nameDraft, setNameDraft] = useState('');
@@ -179,6 +181,7 @@ export default function ProfilPage() {
   const [sterilDraft, setSterilDraft] = useState(false);
   const [puceEditDraft, setPuceEditDraft] = useState('');
   const [colorDraft, setColorDraft] = useState<string | null>(null);
+  const [particulariteEditDraft, setParticulariteEditDraft] = useState('');
 
   const animal = animaux.find((a) => a.id === id);
 
@@ -276,6 +279,7 @@ export default function ProfilPage() {
     setBirthDraft(animal.naissance ? new Date(animal.naissance) : new Date());
     setBirthValid(true); setSterilDraft(!!animal.sterilise);
     setPuceEditDraft(animal.puce || ''); setColorDraft(animal.couleur || null);
+    setParticulariteEditDraft(animal.particularite || '');
     setEditOpen(true);
   };
 
@@ -287,6 +291,7 @@ export default function ProfilPage() {
         sexe: sexDraft, race: raceDraft.trim() || undefined,
         naissance: birthDraft.toISOString(), sterilise: sterilDraft,
         puce: puceEditDraft.trim() || undefined, couleur: colorDraft,
+        particularite: particulariteEditDraft.trim() || null,
       }));
       setEditOpen(false);
     } catch { toast({ title: 'Erreur', description: "Impossible de sauvegarder", variant: 'destructive' }); }
@@ -405,6 +410,15 @@ export default function ProfilPage() {
                   ) : <span className="font-bold break-all">{animal.puce}</span>}
                 </div>
               </div>
+              {/* Particularité */}
+              {animal.particularite ? (
+                <div className="flex flex-wrap justify-between gap-x-3 py-1 text-sm"><span className="text-muted-foreground shrink-0">Particularité</span><span className="font-bold text-right break-words" style={{ overflowWrap: 'anywhere' }}>{animal.particularite}</span></div>
+              ) : !isParadis ? (
+                <div className="py-1">
+                  <button onClick={() => { setParticulariteDraft(''); setParticulariteModalOpen(true); }} className="text-sm font-semibold text-primary hover:underline">Ajouter une particularité</button>
+                  <p className="text-xs text-muted-foreground mt-0.5">Ex : polydactile, yeux vairons, queue courte…</p>
+                </div>
+              ) : null}
               {motherAnimal && (
                 <div className="flex flex-wrap justify-between gap-x-3 py-1 text-sm"><span className="text-muted-foreground shrink-0">Mère</span>
                   <button onClick={() => navigate(`/profil/${motherAnimal.id}`)} className="font-bold text-primary hover:underline text-sm">{motherAnimal.nom}</button>
@@ -604,10 +618,34 @@ export default function ProfilPage() {
               </div>
             </div>
             <div><Label>Numéro de puce</Label><Input value={puceEditDraft} onChange={(e) => setPuceEditDraft(e.target.value.replace(/\D/g, '').slice(0, 15))} maxLength={15} placeholder="15 chiffres" className="mt-1.5" /></div>
+            <div><Label>Particularité</Label>
+              <div className="flex gap-2 mt-1.5">
+                <Input value={particulariteEditDraft} onChange={(e) => setParticulariteEditDraft(e.target.value)} placeholder="Ex: polydactile" className="flex-1" />
+                <Button type="button" variant="outline" size="sm" onClick={() => setParticulariteEditDraft('Aucune')}>Aucune</Button>
+              </div>
+            </div>
             <div><Label>Couleur d'accent</Label><div className="mt-2"><ColorPicker value={colorDraft} onChange={setColorDraft} /></div></div>
             <div className="flex justify-end gap-3 pt-4">
               <Button variant="outline" onClick={() => setEditOpen(false)}>Annuler</Button>
               <Button onClick={saveEdit} disabled={!birthValid}>Enregistrer</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Particularité add modal */}
+      <Dialog open={particulariteModalOpen} onOpenChange={setParticulariteModalOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader><DialogTitle>Ajouter une particularité</DialogTitle></DialogHeader>
+          <div className="space-y-3 py-2">
+            <Input value={particulariteDraft} onChange={(e) => setParticulariteDraft(e.target.value)} placeholder="Ex: polydactile" autoFocus />
+            <Button variant="outline" className="w-full" onClick={() => { setParticulariteDraft('Aucune'); }}>Aucune</Button>
+            <div className="flex gap-3">
+              <Button variant="outline" className="flex-1" onClick={() => setParticulariteModalOpen(false)}>Annuler</Button>
+              <Button className="flex-1" disabled={!particulariteDraft.trim()} onClick={async () => {
+                await updateAnimal(animal.id, { particularite: particulariteDraft.trim() } as any);
+                setParticulariteModalOpen(false);
+              }}>Enregistrer</Button>
             </div>
           </div>
         </DialogContent>

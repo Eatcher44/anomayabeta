@@ -35,6 +35,7 @@ import PreparerDepartPage from "./pages/PreparerDepartPage";
 import BreederBottomNav from "./components/BreederBottomNav";
 import FeedbackPage from "./pages/FeedbackPage";
 import ElevageBetaPage from "./pages/ElevageBetaPage";
+import WhatsNewModal from "./components/WhatsNewModal";
 
 const queryClient = new QueryClient();
 
@@ -304,6 +305,7 @@ const App = () => (
             <BrowserRouter>
               <AppRoutes />
               <BreederBottomNav />
+              <WhatsNewModal />
             </BrowserRouter>
           </TooltipProvider>
         </BreederProvider>

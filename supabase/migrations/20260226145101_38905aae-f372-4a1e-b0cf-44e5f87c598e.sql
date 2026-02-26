@@ -1,0 +1,1 @@
+ALTER TABLE public.animals ADD COLUMN particularite text DEFAULT NULL;
