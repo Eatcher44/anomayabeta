@@ -52,9 +52,10 @@ export function AnimalsProvider({ children }: { children: React.ReactNode }) {
         naissance: a.naissance ? new Date(a.naissance).toISOString() : undefined,
         sterilise: a.sterilise || false,
         puce: a.puce || undefined,
-        couleur: (a as any).couleur || null,
-        particularite: (a as any).particularite || null,
-        paradis: (a as any).paradis || false,
+         couleur: (a as any).couleur || null,
+            robe: (a as any).robe || null,
+            particularite: (a as any).particularite || null,
+            paradis: (a as any).paradis || false,
         breeder_visible: (a as any).breeder_visible ?? true,
         commercial_status: (a as any).commercial_status || 'available',
         buyer_name: (a as any).buyer_name || null,
@@ -155,8 +156,9 @@ export function AnimalsProvider({ children }: { children: React.ReactNode }) {
           sterilise: data.sterilise || false,
           puce: data.puce || undefined,
            couleur: (data as any).couleur || null,
-           particularite: (data as any).particularite || null,
-           breeder_visible: (data as any).breeder_visible ?? true,
+            robe: (data as any).robe || null,
+            particularite: (data as any).particularite || null,
+            breeder_visible: (data as any).breeder_visible ?? true,
           poids: parseJsonArray<WeightEntry>(data.poids, []),
           soins: parseJsonArray<SoinEntry>(data.soins, []),
           consultations: parseJsonArray<ConsultationEntry>(data.consultations, []),
@@ -200,9 +202,12 @@ export function AnimalsProvider({ children }: { children: React.ReactNode }) {
       if ('couleur' in patch) {
         updatePayload.couleur = (patch as any).couleur;
       }
-      if ('particularite' in patch) {
-        updatePayload.particularite = (patch as any).particularite;
-      }
+       if ('particularite' in patch) {
+         updatePayload.particularite = (patch as any).particularite;
+       }
+       if ('robe' in patch) {
+         updatePayload.robe = (patch as any).robe;
+       }
       if ('litter_id' in patch) {
         updatePayload.litter_id = (patch as any).litter_id;
       }
