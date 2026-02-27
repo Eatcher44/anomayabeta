@@ -170,6 +170,9 @@ export default function ProfilPage() {
   const [puceDraft, setPuceDraft] = useState('');
   const [particulariteModalOpen, setParticulariteModalOpen] = useState(false);
   const [particulariteDraft, setParticulariteDraft] = useState('');
+  const [robeModalOpen, setRobeModalOpen] = useState(false);
+  const [robeDraft, setRobeDraft] = useState('');
+  const [robeCustom, setRobeCustom] = useState(false);
 
   // Edit state
   const [nameDraft, setNameDraft] = useState('');
@@ -182,6 +185,7 @@ export default function ProfilPage() {
   const [puceEditDraft, setPuceEditDraft] = useState('');
   const [colorDraft, setColorDraft] = useState<string | null>(null);
   const [particulariteEditDraft, setParticulariteEditDraft] = useState('');
+  const [robeEditDraft, setRobeEditDraft] = useState('');
 
   const animal = animaux.find((a) => a.id === id);
 
@@ -278,9 +282,10 @@ export default function ProfilPage() {
     setRaceDraft(animal.race || '');
     setBirthDraft(animal.naissance ? new Date(animal.naissance) : new Date());
     setBirthValid(true); setSterilDraft(!!animal.sterilise);
-    setPuceEditDraft(animal.puce || ''); setColorDraft(animal.couleur || null);
-    setParticulariteEditDraft(animal.particularite || '');
-    setEditOpen(true);
+     setPuceEditDraft(animal.puce || ''); setColorDraft(animal.couleur || null);
+     setParticulariteEditDraft(animal.particularite || '');
+     setRobeEditDraft(animal.robe || '');
+     setEditOpen(true);
   };
 
   const saveEdit = async () => {
@@ -290,8 +295,9 @@ export default function ProfilPage() {
         ...a, nom: nameDraft.trim() || a.nom, type: typeDraft.trim() || a.type,
         sexe: sexDraft, race: raceDraft.trim() || undefined,
         naissance: birthDraft.toISOString(), sterilise: sterilDraft,
-        puce: puceEditDraft.trim() || undefined, couleur: colorDraft,
-        particularite: particulariteEditDraft.trim() || null,
+         puce: puceEditDraft.trim() || undefined, couleur: colorDraft,
+         particularite: particulariteEditDraft.trim() || null,
+         robe: robeEditDraft.trim() || null,
       }));
       setEditOpen(false);
     } catch { toast({ title: 'Erreur', description: "Impossible de sauvegarder", variant: 'destructive' }); }
@@ -418,7 +424,15 @@ export default function ProfilPage() {
                   <button onClick={() => { setParticulariteDraft(''); setParticulariteModalOpen(true); }} className="text-sm font-semibold text-primary hover:underline">Ajouter une particularité</button>
                   <p className="text-xs text-muted-foreground mt-0.5">Ex : polydactile, yeux vairons, queue courte…</p>
                 </div>
-              ) : null}
+               ) : null}
+               {/* Couleur (robe) */}
+               {animal.robe ? (
+                 <div className="flex flex-wrap justify-between gap-x-3 py-1 text-sm"><span className="text-muted-foreground shrink-0">Couleur</span><span className="font-bold text-right break-words" style={{ overflowWrap: 'anywhere' }}>{animal.robe}</span></div>
+               ) : !isParadis ? (
+                 <div className="py-1">
+                   <button onClick={() => { setRobeDraft(''); setRobeCustom(false); setRobeModalOpen(true); }} className="text-sm font-semibold text-primary hover:underline">Ajouter une couleur</button>
+                 </div>
+               ) : null}
               {motherAnimal && (
                 <div className="flex flex-wrap justify-between gap-x-3 py-1 text-sm"><span className="text-muted-foreground shrink-0">Mère</span>
                   <button onClick={() => navigate(`/profil/${motherAnimal.id}`)} className="font-bold text-primary hover:underline text-sm">{motherAnimal.nom}</button>
@@ -623,8 +637,11 @@ export default function ProfilPage() {
                 <Input value={particulariteEditDraft} onChange={(e) => setParticulariteEditDraft(e.target.value)} placeholder="Ex: polydactile" className="flex-1" />
                 <Button type="button" variant="outline" size="sm" onClick={() => setParticulariteEditDraft('Aucune')}>Aucune</Button>
               </div>
-            </div>
-            <div><Label>Couleur d'accent</Label><div className="mt-2"><ColorPicker value={colorDraft} onChange={setColorDraft} /></div></div>
+             </div>
+             <div><Label>Couleur</Label>
+               <Input value={robeEditDraft} onChange={(e) => setRobeEditDraft(e.target.value)} placeholder="Ex: Noir, Roux..." className="mt-1.5" />
+             </div>
+             <div><Label>Couleur d'accent</Label><div className="mt-2"><ColorPicker value={colorDraft} onChange={setColorDraft} /></div></div>
             <div className="flex justify-end gap-3 pt-4">
               <Button variant="outline" onClick={() => setEditOpen(false)}>Annuler</Button>
               <Button onClick={saveEdit} disabled={!birthValid}>Enregistrer</Button>
@@ -649,7 +666,35 @@ export default function ProfilPage() {
             </div>
           </div>
         </DialogContent>
-      </Dialog>
-    </div>
-  );
-}
+       </Dialog>
+
+       {/* Couleur (robe) add modal */}
+       <Dialog open={robeModalOpen} onOpenChange={setRobeModalOpen}>
+         <DialogContent className="sm:max-w-sm">
+           <DialogHeader><DialogTitle>Ajouter une couleur</DialogTitle></DialogHeader>
+           <div className="space-y-3 py-2">
+             {!robeCustom ? (
+               <>
+                 <div className="grid grid-cols-2 gap-2">
+                   {['Noir', 'Blanc', 'Roux', 'Bleu', 'Crème'].map((c) => (
+                     <Button key={c} variant={robeDraft === c ? 'default' : 'outline'} className="w-full" onClick={() => setRobeDraft(c)}>{c}</Button>
+                   ))}
+                 </div>
+                 <Button variant="ghost" className="w-full text-primary" onClick={() => { setRobeDraft(''); setRobeCustom(true); }}>Autre (écrire manuellement)</Button>
+               </>
+             ) : (
+               <Input value={robeDraft} onChange={(e) => setRobeDraft(e.target.value)} placeholder="Ex: Écaille de tortue" autoFocus />
+             )}
+             <div className="flex gap-3">
+               <Button variant="outline" className="flex-1" onClick={() => setRobeModalOpen(false)}>Annuler</Button>
+               <Button className="flex-1" disabled={!robeDraft.trim()} onClick={async () => {
+                 await updateAnimal(animal.id, { robe: robeDraft.trim() } as any);
+                 setRobeModalOpen(false);
+               }}>Enregistrer</Button>
+             </div>
+           </div>
+         </DialogContent>
+       </Dialog>
+     </div>
+   );
+ }

@@ -49,6 +49,7 @@ export interface Animal {
   sterilise?: boolean;
   puce?: string;
   couleur?: string | null;
+  robe?: string | null;
   particularite?: string | null;
   paradis?: boolean;
   mother_id?: string | null;

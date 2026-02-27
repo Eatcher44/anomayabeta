@@ -38,6 +38,7 @@ export type Database = {
           poids: Json | null
           puce: string | null
           race: string | null
+          robe: string | null
           sexe: string
           soins: Json | null
           sterilise: boolean | null
@@ -68,6 +69,7 @@ export type Database = {
           poids?: Json | null
           puce?: string | null
           race?: string | null
+          robe?: string | null
           sexe: string
           soins?: Json | null
           sterilise?: boolean | null
@@ -98,6 +100,7 @@ export type Database = {
           poids?: Json | null
           puce?: string | null
           race?: string | null
+          robe?: string | null
           sexe?: string
           soins?: Json | null
           sterilise?: boolean | null
