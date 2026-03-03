@@ -36,7 +36,7 @@ import { useBreeder } from '@/context/BreederContext';
 import { isBreederEligible } from '@/utils/breederUtils';
 import type { Animal, CommercialStatus } from '@/types/animal';
 import { generateCarnetDepart, downloadPdf, sharePdf, type BreederProfileData } from '@/utils/carnetDepart';
-import { isBeta } from '@/config/appVariant';
+
 
 const fmt = (d: string | Date) => new Date(d).toLocaleDateString('fr-FR');
 const isFemale = (a: { sexe?: string }) => (a.sexe || '').toLowerCase().startsWith('f');
@@ -148,7 +148,7 @@ function CommercialSection({ animal, updateAnimal, navigate }: {
             <span>Aucun nom d&apos;acheteur renseigné.</span>
           </div>
         )}
-        {status === 'sold' && !isBeta && (
+        {status === 'sold' && (
           <Button variant="outline" className="w-full" onClick={() => navigate(`/transfer/${animal.id}`)}>
             <QrCode className="w-4 h-4 mr-2" />
             Transférer au propriétaire
@@ -514,7 +514,7 @@ export default function ProfilPage() {
           )}
 
           {/* Transfer */}
-          {!isParadis && !isNewborn && isBreeder && !isBeta && isBreederEligible(animal.type) && (
+          {!isParadis && !isNewborn && isBreeder && isBreederEligible(animal.type) && (
             <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
               <h2 className="font-extrabold mb-3">Transfert de profil</h2>
               <Button variant="outline" onClick={() => navigate(`/transfer/${animal.id}`)}><QrCode className="w-4 h-4 mr-2" />Transférer ce profil</Button>

@@ -295,14 +295,10 @@ export default function HomePage() {
       if (premiumGateRef.current) return;
       premiumGateRef.current = true;
       toast({ title: '🔒 Fonction Pack Éleveur', description: 'Le transfert est réservé au Pack Éleveur' });
-      if (!isBeta) {
-        setTimeout(() => {
-          navigate('/abonnement?plan=breeder');
-          premiumGateRef.current = false;
-        }, 1500);
-      } else {
-        setTimeout(() => { premiumGateRef.current = false; }, 1500);
-      }
+      setTimeout(() => {
+        navigate('/abonnement?plan=breeder');
+        premiumGateRef.current = false;
+      }, 1500);
       return;
     }
     setTransferCode('');
@@ -713,9 +709,7 @@ export default function HomePage() {
 
         <button
           onClick={() => {
-            if (isBeta) {
-              navigate('/elevage-beta');
-            } else if (isBreeder) {
+            if (isBreeder) {
               navigate('/transferes');
             } else {
               handlePremiumGate('/transferes');
@@ -725,30 +719,25 @@ export default function HomePage() {
         >
           <ArrowRightLeft className="w-3.5 h-3.5 text-muted-foreground" />
           <span className="text-[11px] font-semibold text-muted-foreground">Transférés</span>
-          {isBeta && (
-            <Badge variant="secondary" className="text-[8px] px-1 py-0 h-3.5 leading-none ml-0.5">Bêta</Badge>
-          )}
         </button>
 
         <div className="w-px h-4 bg-border/50" />
 
         <button
           onClick={() => {
-            if (isBeta) {
-              navigate('/elevage-beta');
+            if (isBreeder) {
+              navigate('/portees');
             } else {
               handlePremiumGate('/portees');
             }
           }}
           className={`flex items-center gap-1.5 h-8 px-3 rounded-xl transition-colors ${
-            isBreeder && !isBeta ? 'hover:bg-muted/80 active:bg-muted' : 'opacity-70 hover:opacity-90'
+            isBreeder ? 'hover:bg-muted/80 active:bg-muted' : 'opacity-70 hover:opacity-90'
           }`}
         >
           <Baby className="w-3.5 h-3.5 text-muted-foreground" />
           <span className="text-[11px] font-semibold text-muted-foreground">Portées</span>
-          {isBeta ? (
-            <Badge variant="secondary" className="text-[8px] px-1 py-0 h-3.5 leading-none ml-0.5">Bêta</Badge>
-          ) : !isBreeder && (
+          {!isBreeder && (
             <span className="flex items-center gap-0.5 ml-0.5 px-1 py-px rounded text-[9px] font-bold bg-primary/10 text-primary">
               <Lock className="w-2.5 h-2.5" />
               Pro

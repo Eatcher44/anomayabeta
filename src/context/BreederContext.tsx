@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useMemo, useCallback } from 'react';
+import { isBeta } from '@/config/appVariant';
 
 interface BreederContextType {
   isBreeder: boolean;
@@ -10,9 +11,9 @@ interface BreederContextType {
 const BreederContext = createContext<BreederContextType | null>(null);
 
 export function BreederProvider({ children }: { children: React.ReactNode }) {
-  // For now these are local flags. Will be connected to subscription system later.
-  const [isBreeder, setIsBreeder] = useState(false);
-  const [isNoAds, setIsNoAds] = useState(false);
+  // In beta mode, all breeder features are unlocked by default.
+  const [isBreeder, setIsBreeder] = useState(isBeta);
+  const [isNoAds, setIsNoAds] = useState(isBeta);
 
   const setBreeder = useCallback((val: boolean) => {
     setIsBreeder(val);
