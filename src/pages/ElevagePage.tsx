@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CalendarCheck } from 'lucide-react';
-import { BarChart3, Cat, Dog } from 'lucide-react';
+import { CalendarCheck, BarChart3, Cat, Dog, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useElevageData } from '@/hooks/useElevageData';
@@ -9,6 +8,7 @@ import ElevageDashboard from '@/components/elevage/ElevageDashboard';
 import ElevageReproducteurs from '@/components/elevage/ElevageReproducteurs';
 import ElevageGestations from '@/components/elevage/ElevageGestations';
 import ElevagePortees from '@/components/elevage/ElevagePortees';
+import { FUTURE_MODULES } from '@/config/breederFeatures';
 
 const SPECIES_TABS = [
   { key: 'chat', label: 'Chats', icon: Cat, youngLabel: 'chatons' },
@@ -28,7 +28,6 @@ export default function ElevagePage() {
   }, [species]);
 
   const data = useElevageData(species);
-  // Get urgent counts for badges on the other tab
   const otherSpecies = species === 'chat' ? 'chien' : 'chat';
   const otherData = useElevageData(otherSpecies);
 
@@ -94,7 +93,7 @@ export default function ElevagePage() {
       </div>
 
       <div className="px-4 space-y-6">
-        {/* Section 1: Dashboard */}
+        {/* Dashboard */}
         <section>
           <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-wide mb-3">Dashboard</h2>
           <ElevageDashboard
@@ -105,12 +104,11 @@ export default function ElevagePage() {
             availableKittens={data.availableKittens.length}
             soldPending={data.soldPendingKittens.length}
             alerts={data.alerts}
-            stats={data.globalStats}
             youngLabel={currentTab.youngLabel}
           />
         </section>
 
-        {/* Section 2: Reproducteurs */}
+        {/* Reproducteurs */}
         <section>
           <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-wide mb-3">Reproducteurs</h2>
           <ElevageReproducteurs
@@ -120,7 +118,7 @@ export default function ElevagePage() {
           />
         </section>
 
-        {/* Section 3: Gestations */}
+        {/* Gestations */}
         <section>
           <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-wide mb-3">Gestations & Saillies</h2>
           <ElevageGestations
@@ -130,7 +128,7 @@ export default function ElevagePage() {
           />
         </section>
 
-        {/* Section 4: Portées */}
+        {/* Portées */}
         <section>
           <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-wide mb-3">Portées</h2>
           <ElevagePortees
@@ -138,6 +136,25 @@ export default function ElevagePage() {
             archivedLitters={data.archivedLitters}
             getAnimalName={data.getAnimalName}
           />
+        </section>
+
+        {/* Future modules placeholder */}
+        <section className="pb-4">
+          <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-wide mb-3">Modules avancés</h2>
+          <div className="space-y-2">
+            {FUTURE_MODULES.map(m => (
+              <div
+                key={m.key}
+                className="flex items-center gap-3 rounded-xl border border-border/50 bg-muted/30 p-3"
+              >
+                <Lock className="w-4 h-4 text-muted-foreground/50 shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-muted-foreground/70">{m.label}</p>
+                  <p className="text-[10px] text-muted-foreground/50">Bientôt disponible</p>
+                </div>
+              </div>
+            ))}
+          </div>
         </section>
       </div>
     </div>
