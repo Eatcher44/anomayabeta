@@ -954,7 +954,7 @@ export default function HomePage() {
                 variant="outline"
                 size="sm"
                 className="w-full justify-start gap-2"
-                onClick={() => window.open('https://anomayabeta.lovable.app/privacy', '_blank')}
+                onClick={() => navigate('/privacy')}
               >
                 <ExternalLink className="w-3.5 h-3.5" />
                 Politique de confidentialité
