@@ -213,8 +213,8 @@ export function AnimalsProvider({ children }: { children: React.ReactNode }) {
       if ('mother_id' in patch) {
         updatePayload.mother_id = (patch as any).mother_id;
       }
-      // Commercial & breeder fields
-      for (const key of ['commercial_status', 'buyer_name', 'buyer_phone', 'buyer_email', 'deposit_received', 'planned_departure_date', 'commercial_notes', 'particularite', 'robe', 'sale_price', 'deposit_amount', 'payment_status', 'breeder_status', 'reservation_date'] as const) {
+      // Commercial & breeder fields (only columns that exist in DB)
+      for (const key of ['commercial_status', 'buyer_name', 'buyer_phone', 'buyer_email', 'deposit_received', 'planned_departure_date', 'commercial_notes', 'particularite', 'robe'] as const) {
         if (key in patch) {
           updatePayload[key] = (patch as any)[key];
         }
