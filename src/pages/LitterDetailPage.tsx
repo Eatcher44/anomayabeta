@@ -636,6 +636,45 @@ export default function LitterDetailPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Long press action drawer */}
+      <Drawer open={!!longPressAnimal} onOpenChange={(open) => !open && setLongPressAnimal(null)}>
+        <DrawerContent>
+          <DrawerHeader>
+            <DrawerTitle>{longPressAnimal?.nom || 'Actions'}</DrawerTitle>
+          </DrawerHeader>
+          <div className="p-4 pb-8 space-y-2">
+            <Button variant="outline" className="w-full justify-start gap-3" onClick={() => {
+              if (longPressAnimal) navigate(`/profil/${longPressAnimal.id}`);
+              setLongPressAnimal(null);
+            }}>
+              <Edit className="w-4 h-4" /> Modifier
+            </Button>
+            <Button variant="outline" className="w-full justify-start gap-3" onClick={() => {
+              if (longPressAnimal) {
+                const next = COMMERCIAL_STATUSES[(COMMERCIAL_STATUSES.findIndex((s) => s.value === (longPressAnimal.commercial_status || 'available')) + 1) % COMMERCIAL_STATUSES.length];
+                handleSetCommercialStatus(longPressAnimal.id, next.value);
+                toast({ title: `Statut → ${next.label}` });
+              }
+              setLongPressAnimal(null);
+            }}>
+              <Tag className="w-4 h-4" /> Changer statut
+            </Button>
+            <Button variant="outline" className="w-full justify-start gap-3" onClick={() => {
+              if (longPressAnimal) navigate(`/poids/${longPressAnimal.id}`);
+              setLongPressAnimal(null);
+            }}>
+              <Scale className="w-4 h-4" /> Ajouter poids
+            </Button>
+            <Button variant="outline" className="w-full justify-start gap-3" onClick={() => {
+              if (longPressAnimal) navigate(`/profil/${longPressAnimal.id}`);
+              setLongPressAnimal(null);
+            }}>
+              <UtensilsCrossed className="w-4 h-4" /> Ajouter repas
+            </Button>
+          </div>
+        </DrawerContent>
+      </Drawer>
     </div>
   );
 }
