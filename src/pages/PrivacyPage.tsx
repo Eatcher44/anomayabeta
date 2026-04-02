@@ -8,7 +8,7 @@ export default function PrivacyPage() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-background px-4 py-6 max-w-2xl mx-auto">
+    <AppLayout className="bg-background px-4 py-6 max-w-2xl mx-auto">
       <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="mb-4 gap-1">
         <ArrowLeft className="w-4 h-4" /> Retour
       </Button>
