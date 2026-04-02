@@ -939,6 +939,46 @@ export default function HomePage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Settings Sheet */}
+      <Sheet open={settingsOpen} onOpenChange={setSettingsOpen}>
+        <SheetContent side="right" className="w-[300px] sm:w-[340px]">
+          <SheetHeader>
+            <SheetTitle>Paramètres</SheetTitle>
+          </SheetHeader>
+          <div className="mt-6 space-y-6">
+            {/* Privacy Policy */}
+            <div className="space-y-2">
+              <h3 className="text-sm font-semibold text-foreground">Légal</h3>
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full justify-start gap-2"
+                onClick={() => window.open('https://anomayabeta.lovable.app/privacy', '_blank')}
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+                Politique de confidentialité
+              </Button>
+            </div>
+
+            {/* Account Deletion */}
+            <AccountDeletionSection />
+
+            {/* Sign Out */}
+            <div className="space-y-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full justify-start gap-2 text-muted-foreground"
+                onClick={handleSignOut}
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                Déconnexion
+              </Button>
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
