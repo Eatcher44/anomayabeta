@@ -126,6 +126,7 @@ export default function HomePage() {
   const { dark, toggle: toggleDark } = useDarkMode();
   const { isBreeder } = useBreeder();
   const premiumGateRef = useRef(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const handlePremiumGate = useCallback((targetRoute: string) => {
     if (isBreeder) {
