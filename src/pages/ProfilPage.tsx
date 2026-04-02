@@ -444,6 +444,20 @@ export default function ProfilPage() {
             </div>
           </div>
 
+          {/* Poids — above Soins */}
+          <div className="bg-card rounded-xl p-3 border border-border shadow-sm">
+            <h2 className="font-extrabold text-sm mb-2">Suivi du poids</h2>
+            <p className="text-sm text-muted-foreground mb-3">
+              {(() => {
+                if (!animal.poids || animal.poids.length === 0) return 'Poids non renseigné';
+                const sorted = [...animal.poids].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+                const last = sorted[0];
+                return `${formatWeight(last.poids)} le ${new Date(last.date).toLocaleDateString('fr-FR')}`;
+              })()}
+            </p>
+            {!isParadis && <Button variant="secondary" onClick={() => navigate(`/poids/${animal.id}`)}>Gérer le poids</Button>}
+          </div>
+
           {/* Soins */}
           <div className="bg-card rounded-xl p-3 border border-border shadow-sm">
             <h2 className="font-extrabold text-sm mb-2">Soins</h2>
@@ -458,140 +472,6 @@ export default function ProfilPage() {
             <Button onClick={() => navigate(`/autres-soins/${animal.id}`)} className="w-full"><Pill className="w-4 h-4 mr-2" />Autres soins / traitements</Button>
             <p className="text-sm text-muted-foreground mt-3">{actifsAutresSoins.length} soin(s) ou traitement(s) en cours</p>
           </div>
-
-          {/* Chaleurs */}
-          {!isParadis && !isNewborn && isFemale(animal) && !animal.sterilise && isBreederEligible(animal.type) && (
-            <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
-              <h2 className="font-extrabold mb-3">Chaleurs</h2>
-              {isBreeder ? (
-                <Button onClick={() => navigate(`/chaleurs/${animal.id}`)}><Flame className="w-4 h-4 mr-2" />Gérer les chaleurs</Button>
-              ) : (
-                <Button variant="outline" disabled><Flame className="w-4 h-4 mr-2" />À venir (pack Éleveur)</Button>
-              )}
-            </div>
-          )}
-
-          {/* Reproduction (female) */}
-          {!isParadis && !isNewborn && isFemale(animal) && !animal.sterilise && isBreederEligible(animal.type) && (
-            <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
-              <h2 className="font-extrabold mb-3">Reproduction</h2>
-              {isBreeder ? (
-                <Button onClick={() => navigate(`/reproduction/${animal.id}`)}><Baby className="w-4 h-4 mr-2" />Gérer la reproduction</Button>
-              ) : (
-                <Button variant="outline" disabled><Baby className="w-4 h-4 mr-2" />À venir (pack Éleveur)</Button>
-              )}
-            </div>
-          )}
-
-          {/* Reproduction (male) */}
-          {!isParadis && !isNewborn && isMale(animal) && isBreederEligible(animal.type) && isBreeder && (
-            <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
-              <h2 className="font-extrabold mb-3">Reproduction</h2>
-              {maleMatings.length === 0 ? (
-                <p className="text-sm text-muted-foreground">Aucune saillie enregistrée pour ce mâle.</p>
-              ) : (
-                <div className="space-y-3">
-                  {maleMatings.map((m: any) => {
-                    const statusLabel = m.status === 'cancelled' ? 'Annulée' : m.status === 'birth_confirmed' ? 'Mise-bas effectuée' : 'En cours';
-                    const statusColor = m.status === 'cancelled' ? 'text-muted-foreground' : m.status === 'birth_confirmed' ? 'text-green-600 dark:text-green-400' : 'text-primary';
-                    return (
-                      <div key={m.id} className={`rounded-lg border border-border p-3 ${m.status === 'cancelled' ? 'opacity-60' : ''}`}>
-                        <div className="flex justify-between items-start">
-                          <div><p className="font-semibold text-sm">Mère : {m.motherName}</p><p className="text-xs text-muted-foreground">Saillie le {fmt(m.date_saillie)}</p></div>
-                          <span className={`text-xs font-semibold ${statusColor}`}>{statusLabel}</span>
-                        </div>
-                        {m.litter && (
-                          <button onClick={() => navigate(`/portee/${m.litter.id}`)} className="mt-2 text-xs text-primary hover:underline">
-                            Portée du {fmt(m.litter.birth_date)} • {m.litter.newborn_count} petit(s) →
-                          </button>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Transfer */}
-          {!isParadis && !isNewborn && isBreeder && isBreederEligible(animal.type) && (
-            <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
-              <h2 className="font-extrabold mb-3">Transfert de profil</h2>
-              <Button variant="outline" onClick={() => navigate(`/transfer/${animal.id}`)}><QrCode className="w-4 h-4 mr-2" />Transférer ce profil</Button>
-            </div>
-          )}
-
-          {/* Commercialisation (newborns only) */}
-          {!isParadis && isNewborn && isBreeder && (
-            <CommercialSection animal={animal} updateAnimal={updateAnimal} navigate={navigate} />
-          )}
-
-          {/* Carnet de Départ (sold/kept newborns only) */}
-          {!isParadis && isNewborn && isBreeder && (animal.commercial_status === 'sold' || animal.commercial_status === 'kept') && (
-            <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
-              <div className="flex items-center gap-2 mb-3">
-                <FileText className="w-4 h-4 text-primary" />
-                <h2 className="font-extrabold">Carnet de départ</h2>
-              </div>
-              {!breederProfile?.nom ? (
-                <div className="space-y-3">
-                  <p className="text-xs text-muted-foreground">Complétez votre profil éleveur avant de générer le carnet.</p>
-                  <Button variant="outline" className="w-full" onClick={() => navigate('/profil-eleveur')}>
-                    Compléter mon profil éleveur
-                  </Button>
-                </div>
-              ) : (
-                <>
-                  <p className="text-xs text-muted-foreground mb-3">Générez un carnet PDF professionnel avec l'identité, le suivi de poids, les vaccins et les notes.</p>
-                  <Button
-                    className="w-full"
-                    onClick={async () => {
-                      try {
-                        toast({ title: 'Génération en cours...' });
-                        const doc = await generateCarnetDepart({
-                          animal,
-                          motherName: motherAnimal?.nom,
-                          fatherName: fatherInfo?.name,
-                          breederProfile,
-                        });
-                        const filename = `carnet-depart-${animal.nom.toLowerCase().replace(/\s+/g, '-')}.pdf`;
-                        const shared = await sharePdf(doc, filename);
-                        if (!shared) downloadPdf(doc, filename);
-                        toast({ title: 'Carnet généré !' });
-                      } catch {
-                        toast({ title: 'Erreur', description: 'Impossible de générer le carnet', variant: 'destructive' });
-                      }
-                    }}
-                  >
-                    <FileText className="w-4 h-4 mr-2" />
-                    Générer carnet de départ
-                  </Button>
-                </>
-              )}
-            </div>
-          )}
-
-          {/* Ajouter à Ma famille (newborns — kept or default) */}
-          {!isParadis && isNewborn && isBreeder && (animal.commercial_status === 'kept' || !animal.commercial_status) && (
-            <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
-              <h2 className="font-extrabold mb-3">Gestion du profil</h2>
-              <Button onClick={handlePromoteToFamily} className="w-full">Ajouter à Ma famille</Button>
-              <p className="text-xs text-muted-foreground mt-2">Le nouveau-né sera visible dans « Ma famille » et aura accès aux modules adultes.</p>
-            </div>
-          )}
-
-          {/* RDV */}
-          <div className="bg-card rounded-xl p-3 border border-border shadow-sm">
-            <h2 className="font-extrabold text-sm mb-2">Rendez-vous</h2>
-            <p className="text-muted-foreground text-sm mb-2">{rdvsFuturs.length} rendez-vous à venir</p>
-            <div className="flex flex-wrap gap-2">
-              <Button variant="outline" className="flex-1 min-w-[140px] text-sm" onClick={() => navigate(`/consultation/${animal.id}`)}><Calendar className="w-4 h-4 mr-2 shrink-0" />Voir les consultations</Button>
-              {!isParadis && (
-                <Button className="flex-1 min-w-[140px] text-sm" onClick={() => navigate(`/consultation/${animal.id}?new=1`)}><Calendar className="w-4 h-4 mr-2 shrink-0" />Prendre rendez-vous</Button>
-              )}
-            </div>
-          </div>
-
           {/* Poids */}
           <div className="bg-card rounded-xl p-3 border border-border shadow-sm">
             <h2 className="font-extrabold text-sm mb-2">Suivi du poids</h2>
