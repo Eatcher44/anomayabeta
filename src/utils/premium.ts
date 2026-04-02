@@ -85,6 +85,11 @@ const FEATURES: Record<AppMode, FeatureAccess> = {
   },
 };
 
+import { isBeta } from '@/config/appVariant';
+
+/** True when the app is in beta mode — unlocks all features */
+export const IS_BETA_MODE = isBeta;
+
 // For now, grant free plan until subscription is implemented
 const CURRENT_MODE: AppMode = 'free';
 

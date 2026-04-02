@@ -69,11 +69,18 @@ export default function AnimalRow({ item, onPickPhoto, onOpenProfile, onDelete, 
             <p className="text-lg font-extrabold text-foreground">
               {item.nom}{' '}
               <span className={textClass}>{sexeSymbol}</span>{' '}
-              {item.race && item.race !== '—' && (
-                <span className="font-normal text-muted-foreground text-sm truncate max-w-[180px] inline-block align-bottom">
-                  ({displayBreed(item.race)}{item.particularite && item.particularite !== 'Aucune' ? ` ${item.particularite}` : ''})
-                </span>
-              )}
+              {(() => {
+                const parts: string[] = [];
+                if (item.race && item.race !== '—') parts.push(displayBreed(item.race));
+                if (item.couleur) parts.push(item.couleur.toLowerCase());
+                else if (item.robe) parts.push(item.robe.toLowerCase());
+                if (item.particularite && item.particularite.toLowerCase() !== 'aucune') parts.push(item.particularite.toLowerCase());
+                return parts.length > 0 ? (
+                  <span className="font-normal text-muted-foreground text-sm">
+                    ({parts.join(' ')})
+                  </span>
+                ) : null;
+              })()}
             </p>
             <p className="text-sm text-muted-foreground mt-0.5">
               {item.naissance ? getAgeText(item.naissance) : 'Âge inconnu'}
