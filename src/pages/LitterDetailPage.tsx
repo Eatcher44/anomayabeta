@@ -486,12 +486,6 @@ export default function LitterDetailPage() {
                         </div>
                         <div>
                           <div className="flex items-center gap-2 flex-wrap">
-                            {nb.couleur && (
-                              <span
-                                className="w-3.5 h-3.5 rounded-full border border-border flex-shrink-0"
-                                style={{ backgroundColor: nb.couleur }}
-                              />
-                            )}
                             <p className="font-bold">{nb.nom}</p>
                             {isSexUnset(nb) && (
                               <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 bg-[hsl(145,40%,88%)] dark:bg-[hsl(145,25%,22%)] border-[hsl(145,30%,70%)] text-[hsl(145,40%,30%)] dark:text-[hsl(145,50%,65%)]">

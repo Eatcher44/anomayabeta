@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Calendar, LogOut, GripVertical, Bell, Activity, Crown, Bird, Baby, BarChart3, ArrowRightLeft, Lock, Sparkles, MessageSquare, ArrowDownToLine, BookOpen } from 'lucide-react';
+import { Plus, Calendar, LogOut, GripVertical, Bell, Activity, Crown, Bird, Baby, BarChart3, ArrowRightLeft, Lock, Sparkles, MessageSquare, ArrowDownToLine, BookOpen, Settings, ExternalLink, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -38,6 +38,7 @@ import type { Animal, RendezVous } from '@/types/animal';
 import { useBreeder } from '@/context/BreederContext';
 import { BOTTOM_NAV_HEIGHT } from '@/components/BreederBottomNav';
 import { isBeta } from '@/config/appVariant';
+import AccountDeletionSection from '@/components/AccountDeletionSection';
 
 
 type SortKey = 'alpha' | 'alpha-desc' | 'age-asc' | 'age-desc' | 'poids-asc' | 'poids-desc';
@@ -125,6 +126,7 @@ export default function HomePage() {
   const { dark, toggle: toggleDark } = useDarkMode();
   const { isBreeder } = useBreeder();
   const premiumGateRef = useRef(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const handlePremiumGate = useCallback((targetRoute: string) => {
     if (isBreeder) {
@@ -523,6 +525,8 @@ export default function HomePage() {
     navigate('/auth');
   };
 
+
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -568,8 +572,8 @@ export default function HomePage() {
             <Button variant="ghost" size="icon" onClick={() => navigate('/notifications')} title="Notifications">
               <Bell className="w-5 h-5" />
             </Button>
-            <Button variant="ghost" size="icon" onClick={handleSignOut} title="Déconnexion">
-              <LogOut className="w-5 h-5" />
+            <Button variant="ghost" size="icon" onClick={() => setSettingsOpen(true)} title="Paramètres">
+              <Settings className="w-5 h-5" />
             </Button>
           </div>
         </div>
@@ -935,6 +939,46 @@ export default function HomePage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Settings Sheet */}
+      <Sheet open={settingsOpen} onOpenChange={setSettingsOpen}>
+        <SheetContent side="right" className="w-[300px] sm:w-[340px]">
+          <SheetHeader>
+            <SheetTitle>Paramètres</SheetTitle>
+          </SheetHeader>
+          <div className="mt-6 space-y-6">
+            {/* Privacy Policy */}
+            <div className="space-y-2">
+              <h3 className="text-sm font-semibold text-foreground">Légal</h3>
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full justify-start gap-2"
+                onClick={() => navigate('/privacy')}
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+                Politique de confidentialité
+              </Button>
+            </div>
+
+            {/* Account Deletion */}
+            <AccountDeletionSection />
+
+            {/* Sign Out */}
+            <div className="space-y-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full justify-start gap-2 text-muted-foreground"
+                onClick={handleSignOut}
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                Déconnexion
+              </Button>
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

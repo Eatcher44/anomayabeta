@@ -36,6 +36,7 @@ import BreederBottomNav from "./components/BreederBottomNav";
 import FeedbackPage from "./pages/FeedbackPage";
 import ElevageBetaPage from "./pages/ElevageBetaPage";
 import GuidePage from "./pages/GuidePage";
+import PrivacyPage from "./pages/PrivacyPage";
 import ScrollToTop from "./components/ScrollToTop";
 import DevBadge from "./components/DevBadge";
 import BetaWelcomePopup from "./components/BetaWelcomePopup";
@@ -111,6 +112,7 @@ function AppRoutes() {
       <Route path="/elevage-beta" element={<ProtectedRoute><ElevageBetaPage /></ProtectedRoute>} />
       <Route path="/guide" element={<ProtectedRoute><GuidePage /></ProtectedRoute>} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
+      <Route path="/privacy" element={<PrivacyPage />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
