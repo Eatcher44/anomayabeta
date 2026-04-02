@@ -10,6 +10,8 @@ export interface SoinEntry {
   nom?: string;
   date?: string; // ISO string
   produit?: string | null;
+  veterinaire?: string | null;
+  forced?: boolean;
   
   // For vaccines
   rappelMois?: number;
@@ -26,6 +28,14 @@ export interface SoinEntry {
   notifIds?: string[];
   notes?: string;
   dureeValide?: number;
+}
+
+export interface RepasEntry {
+  id: string;
+  date: string; // ISO string
+  time: string; // HH:MM
+  quantity: number; // mL
+  note?: string;
 }
 
 export interface ConsultationEntry {
@@ -49,8 +59,8 @@ export interface Animal {
   sterilise?: boolean;
   puce?: string;
   couleur?: string | null;
-  robe?: string | null;
   particularite?: string | null;
+  robe?: string | null;
   paradis?: boolean;
   mother_id?: string | null;
   litter_id?: string | null;
@@ -63,9 +73,15 @@ export interface Animal {
   deposit_received?: boolean;
   planned_departure_date?: string | null;
   commercial_notes?: string | null;
+  deposit_amount?: number | null;
+  sale_price?: number | null;
+  payment_status?: string | null;
+  breeder_status?: string | null;
+  reservation_date?: string | null;
   poids: WeightEntry[];
   soins: SoinEntry[];
   consultations: ConsultationEntry[];
+  repas: RepasEntry[];
   createdAt?: string;
 }
 

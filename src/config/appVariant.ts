@@ -1,9 +1,13 @@
 /**
  * App variant configuration.
- * Set to "beta" for testers, "prod" for production.
+ * "dev" = full features unlocked for development/testing
+ * "beta" = restricted beta for testers
+ * "prod" = production
  */
-export type AppVariant = 'prod' | 'beta';
+export type AppVariant = 'dev' | 'prod' | 'beta';
 
 export const APP_VARIANT: AppVariant = 'beta';
 
 export const isBeta = APP_VARIANT === 'beta';
+export const isDev = (APP_VARIANT as string) === 'dev';
+export const isDevOrProd = (APP_VARIANT as string) === 'dev' || (APP_VARIANT as string) === 'prod';

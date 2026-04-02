@@ -1,9 +1,12 @@
 import React, { createContext, useContext, useState, useMemo, useCallback } from 'react';
-import { isBeta } from '@/config/appVariant';
+import { isBeta, isDev } from '@/config/appVariant';
+import { IS_BETA_MODE } from '@/utils/premium';
 
 interface BreederContextType {
   isBreeder: boolean;
   isNoAds: boolean;
+  /** True if breeder access is granted via beta or dev override (not subscription) */
+  isBetaAccess: boolean;
   setBreeder: (val: boolean) => void;
   setNoAds: (val: boolean) => void;
 }
@@ -11,14 +14,17 @@ interface BreederContextType {
 const BreederContext = createContext<BreederContextType | null>(null);
 
 export function BreederProvider({ children }: { children: React.ReactNode }) {
-  // In beta mode, all breeder features are unlocked by default.
-  const [isBreeder, setIsBreeder] = useState(isBeta);
-  const [isNoAds, setIsNoAds] = useState(isBeta);
+  // In dev mode or beta mode, breeder is ON by default
+  const defaultBreeder = isDev || isBeta || IS_BETA_MODE;
+  const [isBreeder, setIsBreeder] = useState<boolean>(defaultBreeder);
+  const [isNoAds, setIsNoAds] = useState<boolean>(defaultBreeder);
+
+  const isBetaAccess = isDev || isBeta || IS_BETA_MODE;
 
   const setBreeder = useCallback((val: boolean) => {
     setIsBreeder(val);
     if (val) {
-      setIsNoAds(true); // Breeder includes no-ads
+      setIsNoAds(true);
     }
   }, []);
 
@@ -29,9 +35,10 @@ export function BreederProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo(() => ({
     isBreeder,
     isNoAds,
+    isBetaAccess,
     setBreeder,
     setNoAds,
-  }), [isBreeder, isNoAds, setBreeder, setNoAds]);
+  }), [isBreeder, isNoAds, isBetaAccess, setBreeder, setNoAds]);
 
   return (
     <BreederContext.Provider value={value}>

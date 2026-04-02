@@ -1,0 +1,1 @@
+ALTER TABLE public.animals ADD COLUMN IF NOT EXISTS repas jsonb DEFAULT '[]'::jsonb;
