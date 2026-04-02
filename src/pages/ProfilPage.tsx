@@ -513,7 +513,11 @@ export default function ProfilPage() {
              <div><Label>Couleur</Label>
                <Input value={robeEditDraft} onChange={(e) => setRobeEditDraft(e.target.value)} placeholder="Ex: Noir, Roux..." className="mt-1.5" />
              </div>
-             <div><Label>Couleur d'accent</Label><div className="mt-2"><ColorPicker value={colorDraft} onChange={setColorDraft} /></div></div>
+             <div>
+               <Label>Distinction couleur</Label>
+               <p className="text-xs text-muted-foreground mt-0.5 mb-2">Permet d'identifier un bébé avec un bracelet ou repère couleur</p>
+               <ColorPicker value={colorDraft} onChange={setColorDraft} />
+             </div>
             <div className="flex justify-end gap-3 pt-4">
               <Button variant="outline" onClick={() => setEditOpen(false)}>Annuler</Button>
               <Button onClick={saveEdit} disabled={!birthValid}>Enregistrer</Button>
