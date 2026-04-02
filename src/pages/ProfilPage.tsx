@@ -389,6 +389,18 @@ export default function ProfilPage() {
               )}
             </div>
             <div className="space-y-1">
+              {/* Distinction couleur */}
+              {animal.couleur ? (
+                <div className="flex items-center justify-between py-1.5 text-sm">
+                  <span className="text-muted-foreground shrink-0">Distinction couleur</span>
+                  <span className="w-4 h-4 rounded-full border border-border flex-shrink-0" style={{ backgroundColor: animal.couleur }} />
+                </div>
+              ) : !isParadis ? (
+                <div className="py-1.5">
+                  <button onClick={openEditModal} className="text-sm font-semibold text-primary hover:underline">Ajouter une distinction couleur</button>
+                  <p className="text-xs text-muted-foreground mt-0.5">Permet d'identifier un bébé avec un bracelet ou repère couleur</p>
+                </div>
+              ) : null}
               <div className="flex flex-wrap justify-between gap-x-3 py-1 text-sm"><span className="text-muted-foreground shrink-0">Date de naissance</span><span className="font-bold text-right break-words" style={{ overflowWrap: 'anywhere' }}>{animal.naissance ? fmt(animal.naissance) : 'Non définie'}</span></div>
               <div className="flex flex-wrap justify-between gap-x-3 py-1 text-sm"><span className="text-muted-foreground shrink-0">Race</span><span className="font-bold text-right break-words" style={{ overflowWrap: 'anywhere' }}>{animal.race && animal.race !== '—' ? displayBreed(animal.race) : 'Non définie'}</span></div>
               <div className="flex flex-wrap justify-between gap-x-3 py-1 text-sm"><span className="text-muted-foreground shrink-0">Sexe</span><span className="font-bold">{animal.sexe}</span></div>
