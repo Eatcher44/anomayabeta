@@ -548,11 +548,16 @@ export default function HomePage() {
             </button>
             <button
               onClick={() => navigate('/guide')}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-full border border-primary/40 bg-primary/10 dark:bg-primary/20 dark:border-primary/30 hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors"
+              className="relative flex items-center gap-1 px-2.5 py-1.5 rounded-full border border-primary/40 bg-primary/10 dark:bg-primary/20 dark:border-primary/30 hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors"
               title="Guide"
             >
               <BookOpen className="w-4 h-4 text-primary" />
               <span className="text-[11px] font-bold text-primary">Guide</span>
+              {isBeta && (
+                <span className="absolute -top-2 -right-2 px-1.5 py-px rounded-full text-[8px] font-bold bg-primary text-primary-foreground leading-tight">
+                  Nouveau
+                </span>
+              )}
             </button>
           </div>
           <div className="text-center flex-1">
