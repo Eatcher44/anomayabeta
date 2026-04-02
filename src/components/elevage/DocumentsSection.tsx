@@ -50,8 +50,8 @@ export default function DocumentsSection({ animalId }: Props) {
   const fetchDocs = useCallback(async () => {
     if (!user) return;
     try {
-      const { data } = await supabase
-        .from('animal_documents' as any)
+      const { data } = await (supabase as any)
+        .from('animal_documents')
         .select('*')
         .eq('animal_id', animalId)
         .eq('user_id', user.id)
