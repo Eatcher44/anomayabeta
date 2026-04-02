@@ -1,0 +1,16 @@
+{
+  "name": "Anomaya",
+  "short_name": "Anomaya",
+  "start_url": "https://anomayabeta.lovable.app",
+  "display": "standalone",
+  "background_color": "#0B0F1A",
+  "theme_color": "#3B82F6",
+  "description": "Suivi d’élevage chiens et chats : portées, soins, poids, gestion complète.",
+  "icons": [
+    {
+      "src": "https://raw.githubusercontent.com/Eatcher44/anomayabeta/main/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
