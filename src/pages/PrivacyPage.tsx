@@ -54,7 +54,7 @@ export default function PrivacyPage() {
           Pour toute question relative à vos données personnelles, vous pouvez nous contacter
           via la fonctionnalité "Avis / Bug" intégrée à l'application.
         </p>
-      </div>
+    </AppLayout>
     </div>
   );
 }
