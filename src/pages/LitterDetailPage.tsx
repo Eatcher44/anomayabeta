@@ -340,6 +340,44 @@ export default function LitterDetailPage() {
           </div>
         </div>
 
+        {/* Litter Summary */}
+        {activeNewborns.length > 0 && (() => {
+          const summaryItems: string[] = [];
+          const total = activeNewborns.length;
+          const label = total > 1 ? 'petits' : 'petit';
+          // Weight check
+          const noWeight = activeNewborns.filter((a) => !a.poids || a.poids.length === 0).length;
+          if (noWeight > 0) summaryItems.push(`${noWeight} ${label} → poids à renseigner`);
+          // Recent feeding
+          const fed24h = activeNewborns.filter((a) => {
+            if (!a.repas || a.repas.length === 0) return false;
+            const last = [...a.repas].sort((b, c) => new Date(`${c.date}T${c.time}`).getTime() - new Date(`${b.date}T${b.time}`).getTime())[0];
+            return last && (Date.now() - new Date(`${last.date}T${last.time}`).getTime()) < 24 * 60 * 60 * 1000;
+          }).length;
+          if (fed24h === total && total > 0) summaryItems.push(`${total} ${label} → repas récents OK`);
+          else if (fed24h < total) {
+            const notFed = total - fed24h;
+            summaryItems.push(`${notFed} ${label} → pas de repas récent`);
+          }
+          // Status counts
+          const sold = activeNewborns.filter((a) => a.commercial_status === 'sold').length;
+          const reserved = activeNewborns.filter((a) => a.commercial_status === 'reserved').length;
+          if (sold > 0) summaryItems.push(`${sold} vendu${sold > 1 ? 's' : ''}`);
+          if (reserved > 0) summaryItems.push(`${reserved} réservé${reserved > 1 ? 's' : ''}`);
+          return summaryItems.length > 0 ? (
+            <div className="bg-card rounded-xl border border-border p-3 shadow-sm">
+              <div className="flex items-start gap-2">
+                <AlertTriangle className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                <div className="space-y-0.5">
+                  {summaryItems.map((item, i) => (
+                    <p key={i} className="text-xs text-muted-foreground">{item}</p>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ) : null;
+        })()}
+
         {/* Add newborn button */}
         <Button onClick={handleAddNewborn} disabled={adding} variant="outline" className="w-full">
           <Plus className="w-4 h-4 mr-2" />
