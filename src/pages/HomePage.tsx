@@ -772,8 +772,8 @@ export default function HomePage() {
           className="fixed left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 px-4 py-2 bg-card/95 backdrop-blur-md border border-border/60 rounded-full shadow-sm hover:bg-muted/80 active:bg-muted transition-colors"
           style={{ bottom: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom, 0px) + 56px)` }}
         >
-          <MessageSquare className="w-4 h-4 text-muted-foreground" />
-          <span className="text-[11px] font-semibold text-muted-foreground">Avis</span>
+          <MessageSquare className="w-4 h-4 text-amber-500" />
+          <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400">Avis</span>
         </button>
       )}
 
