@@ -35,7 +35,7 @@ import { toast } from '@/hooks/use-toast';
 import { useBreeder } from '@/context/BreederContext';
 import { isBreederEligible } from '@/utils/breederUtils';
 import type { Animal, CommercialStatus } from '@/types/animal';
-import { generateCarnetDepart, downloadPdf, sharePdf, type BreederProfileData } from '@/utils/carnetDepart';
+import type { BreederProfileData } from '@/utils/carnetDepart';
 
 
 const fmt = (d: string | Date) => new Date(d).toLocaleDateString('fr-FR');
