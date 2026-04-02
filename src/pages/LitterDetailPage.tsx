@@ -1,6 +1,6 @@
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Baby, ChevronRight, Plus, MoreVertical, Trash2, Bird, RefreshCw, Clock, Tag } from 'lucide-react';
+import { ArrowLeft, Baby, ChevronRight, Plus, MoreVertical, Trash2, Bird, RefreshCw, Clock, Tag, Edit, Scale, UtensilsCrossed, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -17,10 +17,14 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  Drawer, DrawerContent, DrawerHeader, DrawerTitle,
+} from '@/components/ui/drawer';
 import { useAnimals } from '@/context/AnimalsContext';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { formatWeight } from '@/components/AnimalRow';
 import type { Animal, CommercialStatus } from '@/types/animal';
 
 function isSexUnsetStatic(a: Animal) {
@@ -31,9 +35,9 @@ function isSexUnsetStatic(a: Animal) {
 const COMMERCIAL_STATUSES: { value: CommercialStatus; label: string; color: string; darkColor: string; textColor: string; darkTextColor: string }[] = [
   { value: 'available', label: 'Disponible', color: 'bg-[hsl(145,50%,88%)]', darkColor: 'dark:bg-[hsl(145,30%,20%)]', textColor: 'text-[hsl(145,50%,25%)]', darkTextColor: 'dark:text-[hsl(145,50%,65%)]' },
   { value: 'option', label: 'Option', color: 'bg-[hsl(45,80%,88%)]', darkColor: 'dark:bg-[hsl(45,40%,18%)]', textColor: 'text-[hsl(45,70%,25%)]', darkTextColor: 'dark:text-[hsl(45,70%,65%)]' },
-  { value: 'reserved', label: 'Réservé', color: 'bg-[hsl(211,60%,90%)]', darkColor: 'dark:bg-[hsl(211,30%,20%)]', textColor: 'text-[hsl(211,60%,30%)]', darkTextColor: 'dark:text-[hsl(211,60%,70%)]' },
-  { value: 'sold', label: 'Vendu', color: 'bg-[hsl(0,0%,88%)]', darkColor: 'dark:bg-[hsl(0,0%,22%)]', textColor: 'text-[hsl(0,0%,30%)]', darkTextColor: 'dark:text-[hsl(0,0%,70%)]' },
-  { value: 'kept', label: 'Gardé', color: 'bg-[hsl(270,50%,90%)]', darkColor: 'dark:bg-[hsl(270,30%,20%)]', textColor: 'text-[hsl(270,50%,30%)]', darkTextColor: 'dark:text-[hsl(270,50%,70%)]' },
+  { value: 'reserved', label: 'Réservé', color: 'bg-[hsl(30,80%,90%)]', darkColor: 'dark:bg-[hsl(30,40%,18%)]', textColor: 'text-[hsl(30,70%,30%)]', darkTextColor: 'dark:text-[hsl(30,70%,65%)]' },
+  { value: 'sold', label: 'Vendu', color: 'bg-[hsl(0,60%,92%)]', darkColor: 'dark:bg-[hsl(0,30%,20%)]', textColor: 'text-[hsl(0,60%,35%)]', darkTextColor: 'dark:text-[hsl(0,50%,65%)]' },
+  { value: 'kept', label: 'Gardé', color: 'bg-[hsl(211,60%,90%)]', darkColor: 'dark:bg-[hsl(211,30%,20%)]', textColor: 'text-[hsl(211,60%,30%)]', darkTextColor: 'dark:text-[hsl(211,60%,70%)]' },
 ];
 
 function getStatusConfig(status: CommercialStatus | undefined) {
@@ -41,6 +45,20 @@ function getStatusConfig(status: CommercialStatus | undefined) {
 }
 
 type FilterKey = 'all' | CommercialStatus;
+
+// Helper: get last weight
+function getLastWeight(a: Animal): number | null {
+  if (!Array.isArray(a?.poids) || a.poids.length === 0) return null;
+  const sorted = [...a.poids].sort((b, c) => new Date(c.date).getTime() - new Date(b.date).getTime());
+  return typeof sorted[0]?.poids === 'number' ? sorted[0].poids : null;
+}
+
+// Helper: get last feeding
+function getLastRepas(a: Animal): { quantity: number; time: string } | null {
+  if (!Array.isArray(a?.repas) || a.repas.length === 0) return null;
+  const sorted = [...a.repas].sort((b, c) => new Date(`${c.date}T${c.time}`).getTime() - new Date(`${b.date}T${b.time}`).getTime());
+  return sorted[0] ? { quantity: sorted[0].quantity, time: sorted[0].time } : null;
+}
 
 export default function LitterDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -53,6 +71,19 @@ export default function LitterDetailPage() {
   const [adding, setAdding] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [paradisId, setParadisId] = useState<string | null>(null);
+
+  // Long press
+  const [longPressAnimal, setLongPressAnimal] = useState<Animal | null>(null);
+  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleTouchStart = (animal: Animal) => {
+    longPressTimer.current = setTimeout(() => {
+      setLongPressAnimal(animal);
+    }, 500);
+  };
+  const handleTouchEnd = () => {
+    if (longPressTimer.current) clearTimeout(longPressTimer.current);
+  };
 
   // Recovery modal
   const [recoveryOpen, setRecoveryOpen] = useState(false);
@@ -309,6 +340,44 @@ export default function LitterDetailPage() {
           </div>
         </div>
 
+        {/* Litter Summary */}
+        {activeNewborns.length > 0 && (() => {
+          const summaryItems: string[] = [];
+          const total = activeNewborns.length;
+          const label = total > 1 ? 'petits' : 'petit';
+          // Weight check
+          const noWeight = activeNewborns.filter((a) => !a.poids || a.poids.length === 0).length;
+          if (noWeight > 0) summaryItems.push(`${noWeight} ${label} → poids à renseigner`);
+          // Recent feeding
+          const fed24h = activeNewborns.filter((a) => {
+            if (!a.repas || a.repas.length === 0) return false;
+            const last = [...a.repas].sort((b, c) => new Date(`${c.date}T${c.time}`).getTime() - new Date(`${b.date}T${b.time}`).getTime())[0];
+            return last && (Date.now() - new Date(`${last.date}T${last.time}`).getTime()) < 24 * 60 * 60 * 1000;
+          }).length;
+          if (fed24h === total && total > 0) summaryItems.push(`${total} ${label} → repas récents OK`);
+          else if (fed24h < total) {
+            const notFed = total - fed24h;
+            summaryItems.push(`${notFed} ${label} → pas de repas récent`);
+          }
+          // Status counts
+          const sold = activeNewborns.filter((a) => a.commercial_status === 'sold').length;
+          const reserved = activeNewborns.filter((a) => a.commercial_status === 'reserved').length;
+          if (sold > 0) summaryItems.push(`${sold} vendu${sold > 1 ? 's' : ''}`);
+          if (reserved > 0) summaryItems.push(`${reserved} réservé${reserved > 1 ? 's' : ''}`);
+          return summaryItems.length > 0 ? (
+            <div className="bg-card rounded-xl border border-border p-3 shadow-sm">
+              <div className="flex items-start gap-2">
+                <AlertTriangle className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                <div className="space-y-0.5">
+                  {summaryItems.map((item, i) => (
+                    <p key={i} className="text-xs text-muted-foreground">{item}</p>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ) : null;
+        })()}
+
         {/* Add newborn button */}
         <Button onClick={handleAddNewborn} disabled={adding} variant="outline" className="w-full">
           <Plus className="w-4 h-4 mr-2" />
@@ -382,11 +451,29 @@ export default function LitterDetailPage() {
           <div className="space-y-2">
             {newborns.map((nb) => {
               const statusCfg = getStatusConfig(nb.commercial_status);
+              const nbWeight = getLastWeight(nb);
+              const nbRepas = getLastRepas(nb);
+              const borderStyle = nb.couleur ? { borderColor: nb.couleur, borderWidth: '2px' } : {};
               return (
                 <div
                   key={nb.id}
-                  className={`rounded-xl border p-4 shadow-sm transition-shadow ${getSexBgClass(nb)}`}
+                  className={`rounded-xl border p-4 shadow-sm transition-shadow relative ${getSexBgClass(nb)}`}
+                  style={borderStyle}
+                  onTouchStart={() => handleTouchStart(nb)}
+                  onTouchEnd={handleTouchEnd}
+                  onTouchMove={handleTouchEnd}
+                  onContextMenu={(e) => { e.preventDefault(); setLongPressAnimal(nb); }}
                 >
+                  {/* Status badge top-right */}
+                  <div className="absolute top-2 right-2">
+                    <Badge
+                      variant="outline"
+                      className={`text-[10px] px-1.5 py-0 h-4 border ${statusCfg.color} ${statusCfg.darkColor} ${statusCfg.textColor} ${statusCfg.darkTextColor}`}
+                    >
+                      {statusCfg.label}
+                    </Badge>
+                  </div>
+
                   <div className="flex items-center justify-between">
                     <button onClick={() => navigate(`/profil/${nb.id}`)} className="flex-1 text-left">
                       <div className="flex items-center gap-3">
@@ -399,22 +486,13 @@ export default function LitterDetailPage() {
                         </div>
                         <div>
                           <div className="flex items-center gap-2 flex-wrap">
-                            {/* Distinction color dot */}
                             {nb.couleur && (
                               <span
-                                className="w-4 h-4 rounded-full border border-border flex-shrink-0"
+                                className="w-3.5 h-3.5 rounded-full border border-border flex-shrink-0"
                                 style={{ backgroundColor: nb.couleur }}
-                                title={`Distinction: ${nb.couleur}`}
                               />
                             )}
                             <p className="font-bold">{nb.nom}</p>
-                            {/* Commercial status badge */}
-                            <Badge
-                              variant="outline"
-                              className={`text-[10px] px-1.5 py-0 h-4 border ${statusCfg.color} ${statusCfg.darkColor} ${statusCfg.textColor} ${statusCfg.darkTextColor}`}
-                            >
-                              {statusCfg.label}
-                            </Badge>
                             {isSexUnset(nb) && (
                               <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 bg-[hsl(145,40%,88%)] dark:bg-[hsl(145,25%,22%)] border-[hsl(145,30%,70%)] text-[hsl(145,40%,30%)] dark:text-[hsl(145,50%,65%)]">
                                 Sexe à définir
@@ -425,6 +503,14 @@ export default function LitterDetailPage() {
                             {isSexUnset(nb) ? 'Non défini' : nb.sexe}
                             {nb.race ? ` • ${nb.race}` : ''}
                           </p>
+                          {/* Mini summary */}
+                          {(nbWeight !== null || nbRepas) && (
+                            <div className="flex items-center gap-3 mt-1 text-[11px] text-muted-foreground">
+                              {nbWeight !== null && <span>⚖️ {formatWeight(nbWeight)}</span>}
+                              {nbRepas && <span>🍼 {nbRepas.quantity} mL</span>}
+                              {nbRepas && <span>🕒 {nbRepas.time}</span>}
+                            </div>
+                          )}
                         </div>
                       </div>
                     </button>
@@ -550,6 +636,45 @@ export default function LitterDetailPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Long press action drawer */}
+      <Drawer open={!!longPressAnimal} onOpenChange={(open) => !open && setLongPressAnimal(null)}>
+        <DrawerContent>
+          <DrawerHeader>
+            <DrawerTitle>{longPressAnimal?.nom || 'Actions'}</DrawerTitle>
+          </DrawerHeader>
+          <div className="p-4 pb-8 space-y-2">
+            <Button variant="outline" className="w-full justify-start gap-3" onClick={() => {
+              if (longPressAnimal) navigate(`/profil/${longPressAnimal.id}`);
+              setLongPressAnimal(null);
+            }}>
+              <Edit className="w-4 h-4" /> Modifier
+            </Button>
+            <Button variant="outline" className="w-full justify-start gap-3" onClick={() => {
+              if (longPressAnimal) {
+                const next = COMMERCIAL_STATUSES[(COMMERCIAL_STATUSES.findIndex((s) => s.value === (longPressAnimal.commercial_status || 'available')) + 1) % COMMERCIAL_STATUSES.length];
+                handleSetCommercialStatus(longPressAnimal.id, next.value);
+                toast({ title: `Statut → ${next.label}` });
+              }
+              setLongPressAnimal(null);
+            }}>
+              <Tag className="w-4 h-4" /> Changer statut
+            </Button>
+            <Button variant="outline" className="w-full justify-start gap-3" onClick={() => {
+              if (longPressAnimal) navigate(`/poids/${longPressAnimal.id}`);
+              setLongPressAnimal(null);
+            }}>
+              <Scale className="w-4 h-4" /> Ajouter poids
+            </Button>
+            <Button variant="outline" className="w-full justify-start gap-3" onClick={() => {
+              if (longPressAnimal) navigate(`/profil/${longPressAnimal.id}`);
+              setLongPressAnimal(null);
+            }}>
+              <UtensilsCrossed className="w-4 h-4" /> Ajouter repas
+            </Button>
+          </div>
+        </DrawerContent>
+      </Drawer>
     </div>
   );
 }
