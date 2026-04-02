@@ -1,7 +1,7 @@
 {
   "name": "Anomaya",
   "short_name": "Anomaya",
-  "start_url": "https://anomayabeta.lovable.app",
+  "start_url": "https://anomayabeta.lovable.app/",
   "display": "standalone",
   "background_color": "#0B0F1A",
   "theme_color": "#3B82F6",
