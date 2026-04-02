@@ -525,7 +525,7 @@ export default function HomePage() {
     navigate('/auth');
   };
 
-  const [settingsOpen, setSettingsOpen] = useState(false);
+
 
   if (loading) {
     return (
