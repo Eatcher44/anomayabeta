@@ -36,6 +36,7 @@ import BreederBottomNav from "./components/BreederBottomNav";
 import FeedbackPage from "./pages/FeedbackPage";
 import ElevageBetaPage from "./pages/ElevageBetaPage";
 import GuidePage from "./pages/GuidePage";
+import PrivacyPage from "./pages/PrivacyPage";
 import ScrollToTop from "./components/ScrollToTop";
 import DevBadge from "./components/DevBadge";
 import BetaWelcomePopup from "./components/BetaWelcomePopup";
