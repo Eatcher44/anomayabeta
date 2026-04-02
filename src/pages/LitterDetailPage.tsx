@@ -85,6 +85,15 @@ export default function LitterDetailPage() {
     if (longPressTimer.current) clearTimeout(longPressTimer.current);
   };
 
+  // Recovery modal
+  const [recoveryOpen, setRecoveryOpen] = useState(false);
+  const [recoveryCount, setRecoveryCount] = useState(1);
+  const [recovering, setRecovering] = useState(false);
+
+  // Filters
+  const [sexFilter, setSexFilter] = useState<'all' | 'unset'>('all');
+  const [commercialFilter, setCommercialFilter] = useState<FilterKey>('all');
+
   const fetchLitter = useCallback(async () => {
     if (!user || !id) return;
     const { data } = await supabase.from('litters').select('*').eq('id', id).single();
