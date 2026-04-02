@@ -34,8 +34,11 @@ import DepartsReservationsPage from "./pages/DepartsReservationsPage";
 import PreparerDepartPage from "./pages/PreparerDepartPage";
 import BreederBottomNav from "./components/BreederBottomNav";
 import FeedbackPage from "./pages/FeedbackPage";
-
-import WhatsNewModal from "./components/WhatsNewModal";
+import ElevageBetaPage from "./pages/ElevageBetaPage";
+import GuidePage from "./pages/GuidePage";
+import ScrollToTop from "./components/ScrollToTop";
+import DevBadge from "./components/DevBadge";
+import BetaWelcomePopup from "./components/BetaWelcomePopup";
 
 const queryClient = new QueryClient();
 
@@ -80,206 +83,33 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
 function AppRoutes() {
   return (
     <Routes>
-      <Route
-        path="/auth"
-        element={
-          <PublicRoute>
-            <AuthPage />
-          </PublicRoute>
-        }
-      />
-      <Route
-        path="/"
-        element={
-          <ProtectedRoute>
-            <HomePage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/profil/:id"
-        element={
-          <ProtectedRoute>
-            <ProfilPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/poids/:id"
-        element={
-          <ProtectedRoute>
-            <PoidsPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/vaccins/:id"
-        element={
-          <ProtectedRoute>
-            <VaccinsPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/vermifuge/:id"
-        element={
-          <ProtectedRoute>
-            <VermifugePage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/autres-soins/:id"
-        element={
-          <ProtectedRoute>
-            <AutresSoinsPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/consultation/:id"
-        element={
-          <ProtectedRoute>
-            <ConsultationPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/dashboard-sante"
-        element={
-          <ProtectedRoute>
-            <HealthDashboardPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/notifications"
-        element={
-          <ProtectedRoute>
-            <NotificationsPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/abonnement"
-        element={
-          <ProtectedRoute noLayout>
-            <AbonnementPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/paradis"
-        element={
-          <ProtectedRoute>
-            <ParadisPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/reproduction/:id"
-        element={
-          <ProtectedRoute>
-            <ReproductionPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/chaleurs/:id"
-        element={
-          <ProtectedRoute>
-            <ChaleursPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/portees"
-        element={
-          <ProtectedRoute>
-            <PorteesPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/portee/:id"
-        element={
-          <ProtectedRoute>
-            <LitterDetailPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/stats-elevage"
-        element={
-          <ProtectedRoute>
-            <StatsElevagePage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/transfer/:id"
-        element={
-          <ProtectedRoute>
-            <TransferPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/claim"
-        element={
-          <ProtectedRoute>
-            <TransferPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/transferes"
-        element={
-          <ProtectedRoute>
-            <TransferesPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/profil-eleveur"
-        element={
-          <ProtectedRoute>
-            <BreederProfilePage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/elevage"
-        element={
-          <ProtectedRoute>
-            <ElevagePage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/departs-reservations"
-        element={
-          <ProtectedRoute>
-            <DepartsReservationsPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/depart/:id"
-        element={
-          <ProtectedRoute>
-            <PreparerDepartPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/feedback"
-        element={
-          <ProtectedRoute>
-            <FeedbackPage />
-          </ProtectedRoute>
-        }
-      />
+      <Route path="/auth" element={<PublicRoute><AuthPage /></PublicRoute>} />
+      <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
+      <Route path="/profil/:id" element={<ProtectedRoute><ProfilPage /></ProtectedRoute>} />
+      <Route path="/poids/:id" element={<ProtectedRoute><PoidsPage /></ProtectedRoute>} />
+      <Route path="/vaccins/:id" element={<ProtectedRoute><VaccinsPage /></ProtectedRoute>} />
+      <Route path="/vermifuge/:id" element={<ProtectedRoute><VermifugePage /></ProtectedRoute>} />
+      <Route path="/autres-soins/:id" element={<ProtectedRoute><AutresSoinsPage /></ProtectedRoute>} />
+      <Route path="/consultation/:id" element={<ProtectedRoute><ConsultationPage /></ProtectedRoute>} />
+      <Route path="/dashboard-sante" element={<ProtectedRoute><HealthDashboardPage /></ProtectedRoute>} />
+      <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
+      <Route path="/abonnement" element={<ProtectedRoute noLayout><AbonnementPage /></ProtectedRoute>} />
+      <Route path="/paradis" element={<ProtectedRoute><ParadisPage /></ProtectedRoute>} />
+      <Route path="/reproduction/:id" element={<ProtectedRoute><ReproductionPage /></ProtectedRoute>} />
+      <Route path="/chaleurs/:id" element={<ProtectedRoute><ChaleursPage /></ProtectedRoute>} />
+      <Route path="/portees" element={<ProtectedRoute><PorteesPage /></ProtectedRoute>} />
+      <Route path="/portee/:id" element={<ProtectedRoute><LitterDetailPage /></ProtectedRoute>} />
+      <Route path="/stats-elevage" element={<ProtectedRoute><StatsElevagePage /></ProtectedRoute>} />
+      <Route path="/transfer/:id" element={<ProtectedRoute><TransferPage /></ProtectedRoute>} />
+      <Route path="/claim" element={<ProtectedRoute><TransferPage /></ProtectedRoute>} />
+      <Route path="/transferes" element={<ProtectedRoute><TransferesPage /></ProtectedRoute>} />
+      <Route path="/profil-eleveur" element={<ProtectedRoute><BreederProfilePage /></ProtectedRoute>} />
+      <Route path="/elevage" element={<ProtectedRoute><ElevagePage /></ProtectedRoute>} />
+      <Route path="/departs-reservations" element={<ProtectedRoute><DepartsReservationsPage /></ProtectedRoute>} />
+      <Route path="/depart/:id" element={<ProtectedRoute><PreparerDepartPage /></ProtectedRoute>} />
+      <Route path="/feedback" element={<ProtectedRoute><FeedbackPage /></ProtectedRoute>} />
+      <Route path="/elevage-beta" element={<ProtectedRoute><ElevageBetaPage /></ProtectedRoute>} />
+      <Route path="/guide" element={<ProtectedRoute><GuidePage /></ProtectedRoute>} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
@@ -295,9 +125,11 @@ const App = () => (
             <Toaster />
             <Sonner />
             <BrowserRouter>
+              <ScrollToTop />
+              <DevBadge />
+              <BetaWelcomePopup />
               <AppRoutes />
               <BreederBottomNav />
-              <WhatsNewModal />
             </BrowserRouter>
           </TooltipProvider>
         </BreederProvider>
