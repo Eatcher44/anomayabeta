@@ -209,14 +209,6 @@ export default function ProfilPage() {
     })();
   }, [animal?.litter_id, animaux]);
 
-  // Fetch breeder profile
-  useEffect(() => {
-    if (!user) return;
-    (async () => {
-      const { data } = await supabase.from('breeder_profiles').select('*').eq('user_id', user.id).maybeSingle();
-      if (data) setBreederProfile(data as BreederProfileData);
-    })();
-  }, [user]);
 
   useEffect(() => {
     if (!animal || !isMale(animal) || !isBreederEligible(animal.type)) return;
