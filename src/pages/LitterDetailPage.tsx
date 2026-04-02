@@ -451,11 +451,29 @@ export default function LitterDetailPage() {
           <div className="space-y-2">
             {newborns.map((nb) => {
               const statusCfg = getStatusConfig(nb.commercial_status);
+              const nbWeight = getLastWeight(nb);
+              const nbRepas = getLastRepas(nb);
+              const borderStyle = nb.couleur ? { borderColor: nb.couleur, borderWidth: '2px' } : {};
               return (
                 <div
                   key={nb.id}
-                  className={`rounded-xl border p-4 shadow-sm transition-shadow ${getSexBgClass(nb)}`}
+                  className={`rounded-xl border p-4 shadow-sm transition-shadow relative ${getSexBgClass(nb)}`}
+                  style={borderStyle}
+                  onTouchStart={() => handleTouchStart(nb)}
+                  onTouchEnd={handleTouchEnd}
+                  onTouchMove={handleTouchEnd}
+                  onContextMenu={(e) => { e.preventDefault(); setLongPressAnimal(nb); }}
                 >
+                  {/* Status badge top-right */}
+                  <div className="absolute top-2 right-2">
+                    <Badge
+                      variant="outline"
+                      className={`text-[10px] px-1.5 py-0 h-4 border ${statusCfg.color} ${statusCfg.darkColor} ${statusCfg.textColor} ${statusCfg.darkTextColor}`}
+                    >
+                      {statusCfg.label}
+                    </Badge>
+                  </div>
+
                   <div className="flex items-center justify-between">
                     <button onClick={() => navigate(`/profil/${nb.id}`)} className="flex-1 text-left">
                       <div className="flex items-center gap-3">
@@ -468,22 +486,13 @@ export default function LitterDetailPage() {
                         </div>
                         <div>
                           <div className="flex items-center gap-2 flex-wrap">
-                            {/* Distinction color dot */}
                             {nb.couleur && (
                               <span
-                                className="w-4 h-4 rounded-full border border-border flex-shrink-0"
+                                className="w-3.5 h-3.5 rounded-full border border-border flex-shrink-0"
                                 style={{ backgroundColor: nb.couleur }}
-                                title={`Distinction: ${nb.couleur}`}
                               />
                             )}
                             <p className="font-bold">{nb.nom}</p>
-                            {/* Commercial status badge */}
-                            <Badge
-                              variant="outline"
-                              className={`text-[10px] px-1.5 py-0 h-4 border ${statusCfg.color} ${statusCfg.darkColor} ${statusCfg.textColor} ${statusCfg.darkTextColor}`}
-                            >
-                              {statusCfg.label}
-                            </Badge>
                             {isSexUnset(nb) && (
                               <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 bg-[hsl(145,40%,88%)] dark:bg-[hsl(145,25%,22%)] border-[hsl(145,30%,70%)] text-[hsl(145,40%,30%)] dark:text-[hsl(145,50%,65%)]">
                                 Sexe à définir
@@ -494,6 +503,14 @@ export default function LitterDetailPage() {
                             {isSexUnset(nb) ? 'Non défini' : nb.sexe}
                             {nb.race ? ` • ${nb.race}` : ''}
                           </p>
+                          {/* Mini summary */}
+                          {(nbWeight !== null || nbRepas) && (
+                            <div className="flex items-center gap-3 mt-1 text-[11px] text-muted-foreground">
+                              {nbWeight !== null && <span>⚖️ {formatWeight(nbWeight)}</span>}
+                              {nbRepas && <span>🍼 {nbRepas.quantity} mL</span>}
+                              {nbRepas && <span>🕒 {nbRepas.time}</span>}
+                            </div>
+                          )}
                         </div>
                       </div>
                     </button>
