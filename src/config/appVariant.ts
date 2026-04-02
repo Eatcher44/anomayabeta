@@ -8,6 +8,6 @@ export type AppVariant = 'dev' | 'prod' | 'beta';
 
 export const APP_VARIANT: AppVariant = 'beta';
 
-export const isBeta = (APP_VARIANT as string) === 'beta';
-export const isDev = APP_VARIANT === 'dev';
-export const isDevOrProd = APP_VARIANT === 'dev' || APP_VARIANT === 'prod';
+export const isBeta = APP_VARIANT === 'beta';
+export const isDev = (APP_VARIANT as string) === 'dev';
+export const isDevOrProd = (APP_VARIANT as string) === 'dev' || (APP_VARIANT as string) === 'prod';

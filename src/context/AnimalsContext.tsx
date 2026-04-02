@@ -8,7 +8,7 @@ import React, {
 } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './AuthContext';
-import type { Animal, RendezVous, AnimalsContextType, WeightEntry, SoinEntry, ConsultationEntry } from '@/types/animal';
+import type { Animal, RendezVous, AnimalsContextType, WeightEntry, SoinEntry, ConsultationEntry, RepasEntry } from '@/types/animal';
 import type { Json } from '@/integrations/supabase/types';
 import { normalizeType } from '@/utils/normalize';
 
@@ -26,7 +26,6 @@ export function AnimalsProvider({ children }: { children: React.ReactNode }) {
   const [rendezvous, setRendezvous] = useState<RendezVous[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch animals from database
   const fetchAnimals = useCallback(async () => {
     if (!user) {
       setAnimaux([]);
@@ -52,10 +51,12 @@ export function AnimalsProvider({ children }: { children: React.ReactNode }) {
         naissance: a.naissance ? new Date(a.naissance).toISOString() : undefined,
         sterilise: a.sterilise || false,
         puce: a.puce || undefined,
-         couleur: (a as any).couleur || null,
-            robe: (a as any).robe || null,
-            particularite: (a as any).particularite || null,
-            paradis: (a as any).paradis || false,
+        couleur: (a as any).couleur || null,
+        particularite: (a as any).particularite || null,
+        robe: (a as any).robe || null,
+        paradis: (a as any).paradis || false,
+        mother_id: (a as any).mother_id || null,
+        litter_id: (a as any).litter_id || null,
         breeder_visible: (a as any).breeder_visible ?? true,
         commercial_status: (a as any).commercial_status || 'available',
         buyer_name: (a as any).buyer_name || null,
@@ -64,9 +65,15 @@ export function AnimalsProvider({ children }: { children: React.ReactNode }) {
         deposit_received: (a as any).deposit_received || false,
         planned_departure_date: (a as any).planned_departure_date || null,
         commercial_notes: (a as any).commercial_notes || null,
+        deposit_amount: (a as any).deposit_amount ?? null,
+        sale_price: (a as any).sale_price ?? null,
+        payment_status: (a as any).payment_status || null,
+        breeder_status: (a as any).breeder_status || null,
+        reservation_date: (a as any).reservation_date || null,
         poids: parseJsonArray<WeightEntry>(a.poids, []),
         soins: parseJsonArray<SoinEntry>(a.soins, []),
         consultations: parseJsonArray<ConsultationEntry>(a.consultations, []),
+        repas: parseJsonArray<RepasEntry>((a as any).repas, []),
         createdAt: a.created_at,
       }));
 
@@ -78,7 +85,6 @@ export function AnimalsProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user]);
 
-  // Fetch rendezvous from database
   const fetchRendezvous = useCallback(async () => {
     if (!user) {
       setRendezvous([]);
@@ -114,7 +120,6 @@ export function AnimalsProvider({ children }: { children: React.ReactNode }) {
     fetchRendezvous();
   }, [fetchAnimals, fetchRendezvous]);
 
-  // Add a new animal
   const addAnimal = useCallback(async (animal: Omit<Animal, 'id' | 'createdAt'>) => {
     if (!user) return;
 
@@ -132,6 +137,7 @@ export function AnimalsProvider({ children }: { children: React.ReactNode }) {
         poids: (animal.poids || []) as unknown as Json,
         soins: (animal.soins || []) as unknown as Json,
         consultations: (animal.consultations || []) as unknown as Json,
+        repas: (animal.repas || []) as unknown as Json,
       };
       if ('breeder_visible' in animal && animal.breeder_visible === false) {
         insertPayload.breeder_visible = false;
@@ -155,13 +161,12 @@ export function AnimalsProvider({ children }: { children: React.ReactNode }) {
           naissance: data.naissance ? new Date(data.naissance).toISOString() : undefined,
           sterilise: data.sterilise || false,
           puce: data.puce || undefined,
-           couleur: (data as any).couleur || null,
-            robe: (data as any).robe || null,
-            particularite: (data as any).particularite || null,
-            breeder_visible: (data as any).breeder_visible ?? true,
+          couleur: (data as any).couleur || null,
+          breeder_visible: (data as any).breeder_visible ?? true,
           poids: parseJsonArray<WeightEntry>(data.poids, []),
           soins: parseJsonArray<SoinEntry>(data.soins, []),
           consultations: parseJsonArray<ConsultationEntry>(data.consultations, []),
+          repas: parseJsonArray<RepasEntry>((data as any).repas, []),
           createdAt: data.created_at,
         };
         setAnimaux((prev) => [newAnimal, ...prev]);
@@ -172,7 +177,6 @@ export function AnimalsProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user]);
 
-  // Update an animal
   const updateAnimal = useCallback(async (id: string, patchOrFn: Partial<Animal> | ((a: Animal) => Animal)) => {
     const currentAnimal = animaux.find((a) => a.id === id);
     if (!currentAnimal) return;
@@ -192,6 +196,7 @@ export function AnimalsProvider({ children }: { children: React.ReactNode }) {
         poids: (patch.poids || []) as unknown as Json,
         soins: (patch.soins || []) as unknown as Json,
         consultations: (patch.consultations || []) as unknown as Json,
+        repas: (patch.repas || []) as unknown as Json,
       };
       if ('paradis' in patch) {
         updatePayload.paradis = (patch as any).paradis;
@@ -202,20 +207,14 @@ export function AnimalsProvider({ children }: { children: React.ReactNode }) {
       if ('couleur' in patch) {
         updatePayload.couleur = (patch as any).couleur;
       }
-       if ('particularite' in patch) {
-         updatePayload.particularite = (patch as any).particularite;
-       }
-       if ('robe' in patch) {
-         updatePayload.robe = (patch as any).robe;
-       }
       if ('litter_id' in patch) {
         updatePayload.litter_id = (patch as any).litter_id;
       }
       if ('mother_id' in patch) {
         updatePayload.mother_id = (patch as any).mother_id;
       }
-      // Commercial fields
-      for (const key of ['commercial_status', 'buyer_name', 'buyer_phone', 'buyer_email', 'deposit_received', 'planned_departure_date', 'commercial_notes'] as const) {
+      // Commercial & breeder fields
+      for (const key of ['commercial_status', 'buyer_name', 'buyer_phone', 'buyer_email', 'deposit_received', 'planned_departure_date', 'commercial_notes', 'particularite', 'robe', 'sale_price', 'deposit_amount', 'payment_status', 'breeder_status', 'reservation_date'] as const) {
         if (key in patch) {
           updatePayload[key] = (patch as any)[key];
         }
@@ -236,7 +235,6 @@ export function AnimalsProvider({ children }: { children: React.ReactNode }) {
     }
   }, [animaux]);
 
-  // Delete an animal
   const deleteAnimal = useCallback(async (id: string) => {
     try {
       const { error } = await supabase
@@ -259,7 +257,6 @@ export function AnimalsProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  // Add a rendezvous
   const addRendezVous = useCallback(async (entry: Omit<RendezVous, 'id' | 'createdAt'>) => {
     if (!user) return;
 
@@ -297,7 +294,6 @@ export function AnimalsProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user]);
 
-  // Update a rendezvous
   const updateRdv = useCallback(async (id: string, patchOrFn: Partial<RendezVous> | ((r: RendezVous) => RendezVous)) => {
     const currentRdv = rendezvous.find((r) => r.id === id);
     if (!currentRdv) return;
@@ -327,7 +323,6 @@ export function AnimalsProvider({ children }: { children: React.ReactNode }) {
     }
   }, [rendezvous]);
 
-  // Remove a rendezvous
   const removeRendezVous = useCallback(async (id: string) => {
     try {
       const { error } = await supabase
