@@ -546,6 +546,14 @@ export default function HomePage() {
               <Crown className="w-4 h-4 text-amber-500" />
               <span className="text-[11px] font-bold text-amber-700 dark:text-amber-400">Anomaya+</span>
             </button>
+            <button
+              onClick={() => navigate('/guide')}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-full border border-primary/40 bg-primary/10 dark:bg-primary/20 dark:border-primary/30 hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors"
+              title="Guide"
+            >
+              <BookOpen className="w-4 h-4 text-primary" />
+              <span className="text-[11px] font-bold text-primary">Guide</span>
+            </button>
           </div>
           <div className="text-center flex-1">
             <div className="text-3xl mb-2">🐾🐾</div>
