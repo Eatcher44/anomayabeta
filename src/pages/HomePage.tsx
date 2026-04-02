@@ -38,6 +38,7 @@ import type { Animal, RendezVous } from '@/types/animal';
 import { useBreeder } from '@/context/BreederContext';
 import { BOTTOM_NAV_HEIGHT } from '@/components/BreederBottomNav';
 import { isBeta } from '@/config/appVariant';
+import AccountDeletionSection from '@/components/AccountDeletionSection';
 
 
 type SortKey = 'alpha' | 'alpha-desc' | 'age-asc' | 'age-desc' | 'poids-asc' | 'poids-desc';
