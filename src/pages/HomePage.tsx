@@ -546,6 +546,14 @@ export default function HomePage() {
               <Crown className="w-4 h-4 text-amber-500" />
               <span className="text-[11px] font-bold text-amber-700 dark:text-amber-400">Anomaya+</span>
             </button>
+            <button
+              onClick={() => navigate('/guide')}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-full border border-primary/40 bg-primary/10 dark:bg-primary/20 dark:border-primary/30 hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors"
+              title="Guide"
+            >
+              <BookOpen className="w-4 h-4 text-primary" />
+              <span className="text-[11px] font-bold text-primary">Guide</span>
+            </button>
           </div>
           <div className="text-center flex-1">
             <div className="text-3xl mb-2">🐾🐾</div>
@@ -704,15 +712,7 @@ export default function HomePage() {
         >
           <Bird className="w-3.5 h-3.5 text-muted-foreground" />
           <span className="text-[11px] font-semibold text-muted-foreground">Paradis</span>
-            </button>
-            <button
-              onClick={() => navigate('/guide')}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-full border border-primary/30 bg-primary/5 dark:bg-primary/10 dark:border-primary/20 hover:bg-primary/10 dark:hover:bg-primary/20 transition-colors"
-              title="Guide"
-            >
-              <BookOpen className="w-4 h-4 text-primary" />
-              <span className="text-[11px] font-bold text-primary">Guide</span>
-            </button>
+        </button>
 
         <div className="w-px h-4 bg-border/50" />
 
@@ -769,11 +769,11 @@ export default function HomePage() {
       {isBeta && (
         <button
           onClick={() => navigate('/feedback')}
-          className="fixed left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 px-4 py-2 bg-card/95 backdrop-blur-md border border-border/60 rounded-full shadow-sm hover:bg-muted/80 active:bg-muted transition-colors"
+          className="fixed left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 px-4 py-2 bg-amber-50/95 dark:bg-amber-900/30 backdrop-blur-md border border-amber-300/60 dark:border-amber-500/30 rounded-full shadow-md hover:bg-amber-100 dark:hover:bg-amber-900/40 active:bg-amber-200 dark:active:bg-amber-900/50 transition-colors"
           style={{ bottom: `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom, 0px) + 56px)` }}
         >
-          <MessageSquare className="w-4 h-4 text-muted-foreground" />
-          <span className="text-[11px] font-semibold text-muted-foreground">Avis</span>
+          <MessageSquare className="w-4 h-4 text-amber-500" />
+          <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400">Avis</span>
         </button>
       )}
 

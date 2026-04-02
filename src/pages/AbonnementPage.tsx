@@ -26,15 +26,15 @@ interface PriceOption {
 }
 
 const NO_PUB_PRICES: PriceOption[] = [
-  { duration: 'monthly', label: 'Mensuel', price: '2,99€' },
-  { duration: 'quarterly', label: '3 mois', price: '7,99€', perMonth: '≈ 2,66€/mois', saving: '11%' },
-  { duration: 'yearly', label: 'Annuel', price: '29,99€', perMonth: '≈ 2,49€/mois', saving: '30%', badge: 'Meilleure offre' },
+  { duration: 'monthly', label: 'Mensuel', price: 'À définir' },
+  { duration: 'quarterly', label: '3 mois', price: 'À définir' },
+  { duration: 'yearly', label: 'Annuel', price: 'À définir' },
 ];
 
 const BREEDER_PRICES: PriceOption[] = [
-  { duration: 'monthly', label: 'Mensuel', price: '9,99€' },
-  { duration: 'quarterly', label: '3 mois', price: '27,99€', perMonth: '≈ 9,33€/mois', saving: '7%' },
-  { duration: 'yearly', label: 'Annuel', price: '99€', perMonth: '≈ 8,25€/mois', saving: '17%', badge: '2 mois offerts' },
+  { duration: 'monthly', label: 'Mensuel', price: 'À définir' },
+  { duration: 'quarterly', label: '3 mois', price: 'À définir' },
+  { duration: 'yearly', label: 'Annuel', price: 'À définir' },
 ];
 
 const NOPUB_FEATURES = [

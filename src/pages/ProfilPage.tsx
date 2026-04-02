@@ -464,19 +464,6 @@ export default function ProfilPage() {
             <Button onClick={() => navigate(`/autres-soins/${animal.id}`)} className="w-full"><Pill className="w-4 h-4 mr-2" />Autres soins / traitements</Button>
             <p className="text-sm text-muted-foreground mt-3">{actifsAutresSoins.length} soin(s) ou traitement(s) en cours</p>
           </div>
-          {/* Poids */}
-          <div className="bg-card rounded-xl p-3 border border-border shadow-sm">
-            <h2 className="font-extrabold text-sm mb-2">Suivi du poids</h2>
-            <p className="text-sm text-muted-foreground mb-3">
-              {(() => {
-                if (!animal.poids || animal.poids.length === 0) return 'Poids non renseigné';
-                const sorted = [...animal.poids].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-                const last = sorted[0];
-                return `${formatWeight(last.poids)} le ${new Date(last.date).toLocaleDateString('fr-FR')}`;
-              })()}
-            </p>
-            {!isParadis && <Button variant="secondary" onClick={() => navigate(`/poids/${animal.id}`)}>Gérer le poids</Button>}
-          </div>
         </div>
       </ScrollArea>
 
@@ -485,6 +472,11 @@ export default function ProfilPage() {
         <DialogContent className="sm:max-w-md max-h-[90vh] overflow-auto">
           <DialogHeader><DialogTitle>Éditer le profil</DialogTitle></DialogHeader>
           <div className="space-y-4 py-4">
+            <div>
+               <Label>Distinction couleur</Label>
+               <p className="text-xs text-muted-foreground mt-0.5 mb-2">Permet d'identifier un bébé avec un bracelet ou repère couleur</p>
+               <ColorPicker value={colorDraft} onChange={setColorDraft} />
+             </div>
             <div><Label>Nom</Label><Input value={nameDraft} onChange={(e) => setNameDraft(e.target.value)} placeholder="Nom" className="mt-1.5" /></div>
             <div><Label>Type</Label><Input value={typeDraft} onChange={(e) => setTypeDraft(e.target.value)} placeholder="Chat, Chien..." className="mt-1.5" /></div>
             <div>
@@ -513,7 +505,6 @@ export default function ProfilPage() {
              <div><Label>Couleur</Label>
                <Input value={robeEditDraft} onChange={(e) => setRobeEditDraft(e.target.value)} placeholder="Ex: Noir, Roux..." className="mt-1.5" />
              </div>
-             <div><Label>Couleur d'accent</Label><div className="mt-2"><ColorPicker value={colorDraft} onChange={setColorDraft} /></div></div>
             <div className="flex justify-end gap-3 pt-4">
               <Button variant="outline" onClick={() => setEditOpen(false)}>Annuler</Button>
               <Button onClick={saveEdit} disabled={!birthValid}>Enregistrer</Button>
