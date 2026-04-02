@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import AppLayout from '@/components/AppLayout';
 import { useNavigate } from 'react-router-dom';
 
 export default function PrivacyPage() {
