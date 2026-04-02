@@ -111,6 +111,7 @@ function AppRoutes() {
       <Route path="/elevage-beta" element={<ProtectedRoute><ElevageBetaPage /></ProtectedRoute>} />
       <Route path="/guide" element={<ProtectedRoute><GuidePage /></ProtectedRoute>} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
+      <Route path="/privacy" element={<PrivacyPage />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
