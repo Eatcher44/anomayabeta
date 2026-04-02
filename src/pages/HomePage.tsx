@@ -524,6 +524,8 @@ export default function HomePage() {
     navigate('/auth');
   };
 
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
