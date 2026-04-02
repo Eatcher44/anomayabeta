@@ -1,13 +1,14 @@
 import React from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import AppLayout from '@/components/AppLayout';
 import { useNavigate } from 'react-router-dom';
 
 export default function PrivacyPage() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-background px-4 py-6 max-w-2xl mx-auto">
+    <AppLayout className="bg-background px-4 py-6 max-w-2xl mx-auto">
       <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="mb-4 gap-1">
         <ArrowLeft className="w-4 h-4" /> Retour
       </Button>
@@ -54,6 +55,6 @@ export default function PrivacyPage() {
           via la fonctionnalité "Avis / Bug" intégrée à l'application.
         </p>
       </div>
-    </div>
+    </AppLayout>
   );
 }
