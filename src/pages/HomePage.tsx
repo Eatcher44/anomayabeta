@@ -712,15 +712,7 @@ export default function HomePage() {
         >
           <Bird className="w-3.5 h-3.5 text-muted-foreground" />
           <span className="text-[11px] font-semibold text-muted-foreground">Paradis</span>
-            </button>
-            <button
-              onClick={() => navigate('/guide')}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-full border border-primary/30 bg-primary/5 dark:bg-primary/10 dark:border-primary/20 hover:bg-primary/10 dark:hover:bg-primary/20 transition-colors"
-              title="Guide"
-            >
-              <BookOpen className="w-4 h-4 text-primary" />
-              <span className="text-[11px] font-bold text-primary">Guide</span>
-            </button>
+        </button>
 
         <div className="w-px h-4 bg-border/50" />
 
