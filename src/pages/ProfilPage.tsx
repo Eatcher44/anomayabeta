@@ -193,7 +193,7 @@ export default function ProfilPage() {
   const motherAnimal = animal?.mother_id ? animaux.find((a) => a.id === animal.mother_id) : null;
   const [fatherInfo, setFatherInfo] = useState<{ name: string } | null>(null);
   const [maleMatings, setMaleMatings] = useState<any[]>([]);
-  const [breederProfile, setBreederProfile] = useState<BreederProfileData | undefined>(undefined);
+  
 
   useEffect(() => {
     if (!animal?.litter_id) return;
