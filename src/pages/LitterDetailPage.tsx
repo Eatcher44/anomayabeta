@@ -35,9 +35,9 @@ function isSexUnsetStatic(a: Animal) {
 const COMMERCIAL_STATUSES: { value: CommercialStatus; label: string; color: string; darkColor: string; textColor: string; darkTextColor: string }[] = [
   { value: 'available', label: 'Disponible', color: 'bg-[hsl(145,50%,88%)]', darkColor: 'dark:bg-[hsl(145,30%,20%)]', textColor: 'text-[hsl(145,50%,25%)]', darkTextColor: 'dark:text-[hsl(145,50%,65%)]' },
   { value: 'option', label: 'Option', color: 'bg-[hsl(45,80%,88%)]', darkColor: 'dark:bg-[hsl(45,40%,18%)]', textColor: 'text-[hsl(45,70%,25%)]', darkTextColor: 'dark:text-[hsl(45,70%,65%)]' },
-  { value: 'reserved', label: 'Réservé', color: 'bg-[hsl(211,60%,90%)]', darkColor: 'dark:bg-[hsl(211,30%,20%)]', textColor: 'text-[hsl(211,60%,30%)]', darkTextColor: 'dark:text-[hsl(211,60%,70%)]' },
-  { value: 'sold', label: 'Vendu', color: 'bg-[hsl(0,0%,88%)]', darkColor: 'dark:bg-[hsl(0,0%,22%)]', textColor: 'text-[hsl(0,0%,30%)]', darkTextColor: 'dark:text-[hsl(0,0%,70%)]' },
-  { value: 'kept', label: 'Gardé', color: 'bg-[hsl(270,50%,90%)]', darkColor: 'dark:bg-[hsl(270,30%,20%)]', textColor: 'text-[hsl(270,50%,30%)]', darkTextColor: 'dark:text-[hsl(270,50%,70%)]' },
+  { value: 'reserved', label: 'Réservé', color: 'bg-[hsl(30,80%,90%)]', darkColor: 'dark:bg-[hsl(30,40%,18%)]', textColor: 'text-[hsl(30,70%,30%)]', darkTextColor: 'dark:text-[hsl(30,70%,65%)]' },
+  { value: 'sold', label: 'Vendu', color: 'bg-[hsl(0,60%,92%)]', darkColor: 'dark:bg-[hsl(0,30%,20%)]', textColor: 'text-[hsl(0,60%,35%)]', darkTextColor: 'dark:text-[hsl(0,50%,65%)]' },
+  { value: 'kept', label: 'Gardé', color: 'bg-[hsl(211,60%,90%)]', darkColor: 'dark:bg-[hsl(211,30%,20%)]', textColor: 'text-[hsl(211,60%,30%)]', darkTextColor: 'dark:text-[hsl(211,60%,70%)]' },
 ];
 
 function getStatusConfig(status: CommercialStatus | undefined) {
