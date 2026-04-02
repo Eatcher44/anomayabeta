@@ -65,11 +65,11 @@ export function AnimalsProvider({ children }: { children: React.ReactNode }) {
         deposit_received: (a as any).deposit_received || false,
         planned_departure_date: (a as any).planned_departure_date || null,
         commercial_notes: (a as any).commercial_notes || null,
-        deposit_amount: (a as any).deposit_amount ?? null,
-        sale_price: (a as any).sale_price ?? null,
-        payment_status: (a as any).payment_status || null,
-        breeder_status: (a as any).breeder_status || null,
-        reservation_date: (a as any).reservation_date || null,
+        deposit_amount: null,
+        sale_price: null,
+        payment_status: null,
+        breeder_status: null,
+        reservation_date: null,
         poids: parseJsonArray<WeightEntry>(a.poids, []),
         soins: parseJsonArray<SoinEntry>(a.soins, []),
         consultations: parseJsonArray<ConsultationEntry>(a.consultations, []),
@@ -213,8 +213,8 @@ export function AnimalsProvider({ children }: { children: React.ReactNode }) {
       if ('mother_id' in patch) {
         updatePayload.mother_id = (patch as any).mother_id;
       }
-      // Commercial & breeder fields
-      for (const key of ['commercial_status', 'buyer_name', 'buyer_phone', 'buyer_email', 'deposit_received', 'planned_departure_date', 'commercial_notes', 'particularite', 'robe', 'sale_price', 'deposit_amount', 'payment_status', 'breeder_status', 'reservation_date'] as const) {
+      // Commercial & breeder fields (only columns that exist in DB)
+      for (const key of ['commercial_status', 'buyer_name', 'buyer_phone', 'buyer_email', 'deposit_received', 'planned_departure_date', 'commercial_notes', 'particularite', 'robe'] as const) {
         if (key in patch) {
           updatePayload[key] = (patch as any)[key];
         }
