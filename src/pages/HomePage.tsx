@@ -572,8 +572,8 @@ export default function HomePage() {
             <Button variant="ghost" size="icon" onClick={() => navigate('/notifications')} title="Notifications">
               <Bell className="w-5 h-5" />
             </Button>
-            <Button variant="ghost" size="icon" onClick={handleSignOut} title="Déconnexion">
-              <LogOut className="w-5 h-5" />
+            <Button variant="ghost" size="icon" onClick={() => setSettingsOpen(true)} title="Paramètres">
+              <Settings className="w-5 h-5" />
             </Button>
           </div>
         </div>
