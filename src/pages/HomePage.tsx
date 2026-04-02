@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Calendar, LogOut, GripVertical, Bell, Activity, Crown, Bird, Baby, BarChart3, ArrowRightLeft, Lock, Sparkles, MessageSquare, ArrowDownToLine } from 'lucide-react';
+import { Plus, Calendar, LogOut, GripVertical, Bell, Activity, Crown, Bird, Baby, BarChart3, ArrowRightLeft, Lock, Sparkles, MessageSquare, ArrowDownToLine, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
