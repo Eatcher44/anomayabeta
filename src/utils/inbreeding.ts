@@ -1,106 +1,119 @@
 /**
- * Inbreeding coefficient calculation (simplified)
- * Based on Wright's coefficient of inbreeding (F)
+ * Simple inbreeding / consanguinity detection utility.
  */
 
-import { Animal } from '@/types/animal';
+import type { Animal } from '@/types/animal';
 
-/**
- * Calculates the inbreeding coefficient for a given animal.
- * This is a simplified version assuming we have access to the full pedigree.
- * F = sum((1/2)^(n+1) * (1 + Fa))
- * where n is the number of generations between parents and common ancestor.
- */
-export function calculateInbreedingCoefficient(
-  animal: Animal,
-  allAnimals: Animal[]
-): number {
-  if (!animal.mother_id) return 0;
+export type InbreedingRisk = 'none' | 'moderate' | 'high';
 
-  const father = allAnimals.find((a) => a.id === getFatherId(animal, allAnimals));
-  const mother = allAnimals.find((a) => a.id === animal.mother_id);
-
-  if (!father || !mother) return 0;
-
-  // Find common ancestors
-  const fatherAncestors = getAncestors(father, allAnimals);
-  const motherAncestors = getAncestors(mother, allAnimals);
-
-  const commonAncestors = fatherAncestors.filter((fa) =>
-    motherAncestors.some((ma) => ma.id === fa.id)
-  );
-
-  let coefficient = 0;
-
-  for (const ancestor of commonAncestors) {
-    const n1 = getGenerationDistance(father, ancestor, allAnimals);
-    const n2 = getGenerationDistance(mother, ancestor, allAnimals);
-    
-    const fa = calculateInbreedingCoefficient(ancestor, allAnimals);
-    coefficient += Math.pow(0.5, n1 + n2 + 1) * (1 + fa);
-  }
-
-  return Math.min(coefficient, 1);
+export interface InbreedingResult {
+  risk: InbreedingRisk;
+  title: string;
+  subtitle: string;
+  details: string[];
 }
 
-function getFatherId(animal: Animal, allAnimals: Animal[]): string | null {
-  // In a real app, you'd have a father_id field. 
-  // Assuming it's stored in commercial_notes or a custom field if not explicit.
-  return (animal as any).father_id || null;
+interface AncestorMap {
+  motherId: string | null;
+  fatherId: string | null;
 }
 
-function getAncestors(animal: Animal, allAnimals: Animal[]): Animal[] {
-  const ancestors: Animal[] = [];
-  const fatherId = getFatherId(animal, allAnimals);
-  const motherId = animal.mother_id;
-
-  if (fatherId) {
-    const father = allAnimals.find((a) => a.id === fatherId);
-    if (father) {
-      ancestors.push(father);
-      ancestors.push(...getAncestors(father, allAnimals));
-    }
+function getParents(
+  animalId: string,
+  animals: Animal[],
+  litters: { mother_id: string; father_id: string | null; id: string }[],
+): AncestorMap {
+  const animal = animals.find(a => a.id === animalId);
+  if (!animal) return { motherId: null, fatherId: null };
+  const motherId = animal.mother_id || null;
+  let fatherId: string | null = null;
+  if (animal.litter_id) {
+    const litter = litters.find(l => l.id === animal.litter_id);
+    if (litter?.father_id) fatherId = litter.father_id;
   }
-
-  if (motherId) {
-    const mother = allAnimals.find((a) => a.id === motherId);
-    if (mother) {
-      ancestors.push(mother);
-      ancestors.push(...getAncestors(mother, allAnimals));
-    }
-  }
-
-  return Array.from(new Set(ancestors));
+  return { motherId, fatherId };
 }
 
-function getGenerationDistance(
-  animal: Animal,
-  ancestor: Animal,
-  allAnimals: Animal[],
-  depth: number = 0
-): number {
-  if (animal.id === ancestor.id) return depth;
+function getGrandparents(
+  animalId: string,
+  animals: Animal[],
+  litters: { mother_id: string; father_id: string | null; id: string }[],
+): string[] {
+  const parents = getParents(animalId, animals, litters);
+  const gps: string[] = [];
+  for (const pid of [parents.motherId, parents.fatherId]) {
+    if (!pid) continue;
+    const pp = getParents(pid, animals, litters);
+    if (pp.motherId) gps.push(pp.motherId);
+    if (pp.fatherId) gps.push(pp.fatherId);
+  }
+  return gps;
+}
 
-  const fatherId = getFatherId(animal, allAnimals);
-  const motherId = animal.mother_id;
+export function checkInbreeding(
+  animalAId: string,
+  animalBId: string,
+  animals: Animal[],
+  litters: { mother_id: string; father_id: string | null; id: string }[],
+): InbreedingResult {
+  if (!animalAId || !animalBId || animalAId === animalBId) {
+    return { risk: 'none', title: '', subtitle: '', details: [] };
+  }
 
-  let minDistance = Infinity;
+  const details: string[] = [];
+  let risk: InbreedingRisk = 'none';
 
-  if (fatherId) {
-    const father = allAnimals.find((a) => a.id === fatherId);
-    if (father) {
-      const d = getGenerationDistance(father, ancestor, allAnimals, depth + 1);
-      if (d < minDistance) minDistance = d;
+  const parentsA = getParents(animalAId, animals, litters);
+  const parentsB = getParents(animalBId, animals, litters);
+  const nameOf = (id: string) => animals.find(a => a.id === id)?.nom || 'Inconnu';
+
+  if (parentsA.motherId === animalBId || parentsA.fatherId === animalBId) {
+    details.push(`${nameOf(animalBId)} est un parent direct de ${nameOf(animalAId)}.`);
+    risk = 'high';
+  }
+  if (parentsB.motherId === animalAId || parentsB.fatherId === animalAId) {
+    details.push(`${nameOf(animalAId)} est un parent direct de ${nameOf(animalBId)}.`);
+    risk = 'high';
+  }
+  if (parentsA.motherId && parentsA.motherId === parentsB.motherId) {
+    details.push('Les deux animaux partagent la même mère.');
+    risk = risk === 'none' ? 'high' : risk;
+  }
+  if (parentsA.fatherId && parentsA.fatherId === parentsB.fatherId) {
+    details.push('Les deux animaux partagent le même père.');
+    risk = risk === 'none' ? 'high' : risk;
+  }
+  if (risk === 'none') {
+    if (parentsA.motherId && parentsA.motherId === parentsB.fatherId) {
+      details.push('Un parent en commun a été détecté (demi-fratrie).');
+      risk = 'high';
+    }
+    if (parentsA.fatherId && parentsA.fatherId === parentsB.motherId) {
+      details.push('Un parent en commun a été détecté (demi-fratrie).');
+      risk = 'high';
+    }
+  }
+  if (risk === 'none') {
+    const gpsA = getGrandparents(animalAId, animals, litters);
+    const gpsB = getGrandparents(animalBId, animals, litters);
+    if (gpsA.includes(animalBId) || gpsB.includes(animalAId)) {
+      details.push('Un lien grand-parent a été détecté.');
+      risk = 'high';
+    }
+    if (risk === 'none') {
+      const sharedGps = gpsA.filter(gp => gpsB.includes(gp));
+      if (sharedGps.length > 0) {
+        details.push('Un ancêtre commun a été trouvé dans les grands-parents.');
+        risk = 'moderate';
+      }
     }
   }
 
-  if (motherId) {
-    const mother = allAnimals.find((a) => a.id === motherId);
-    if (mother) {
-      const d = getGenerationDistance(mother, ancestor, allAnimals, depth + 1);
-      if (d < minDistance) minDistance = d;
-    }
+  if (risk === 'none') {
+    return { risk: 'none', title: 'Aucune parenté proche détectée', subtitle: 'Aucun lien familial proche trouvé dans la généalogie enregistrée.', details: [] };
   }
-
-  return minDistance;
+  if (risk === 'high') {
+    return { risk: 'high', title: 'Risque élevé de consanguinité', subtitle: 'Un lien familial proche a été détecté.', details };
+  }
+  return { risk: 'moderate', title: 'Parenté connue détectée', subtitle: 'Un ancêtre commun a été trouvé. Vérifiez la généalogie.', details };
 }
