@@ -472,6 +472,11 @@ export default function ProfilPage() {
         <DialogContent className="sm:max-w-md max-h-[90vh] overflow-auto">
           <DialogHeader><DialogTitle>Éditer le profil</DialogTitle></DialogHeader>
           <div className="space-y-4 py-4">
+            <div>
+               <Label>Distinction couleur</Label>
+               <p className="text-xs text-muted-foreground mt-0.5 mb-2">Permet d'identifier un bébé avec un bracelet ou repère couleur</p>
+               <ColorPicker value={colorDraft} onChange={setColorDraft} />
+             </div>
             <div><Label>Nom</Label><Input value={nameDraft} onChange={(e) => setNameDraft(e.target.value)} placeholder="Nom" className="mt-1.5" /></div>
             <div><Label>Type</Label><Input value={typeDraft} onChange={(e) => setTypeDraft(e.target.value)} placeholder="Chat, Chien..." className="mt-1.5" /></div>
             <div>
@@ -499,11 +504,6 @@ export default function ProfilPage() {
              </div>
              <div><Label>Couleur</Label>
                <Input value={robeEditDraft} onChange={(e) => setRobeEditDraft(e.target.value)} placeholder="Ex: Noir, Roux..." className="mt-1.5" />
-             </div>
-             <div>
-               <Label>Distinction couleur</Label>
-               <p className="text-xs text-muted-foreground mt-0.5 mb-2">Permet d'identifier un bébé avec un bracelet ou repère couleur</p>
-               <ColorPicker value={colorDraft} onChange={setColorDraft} />
              </div>
             <div className="flex justify-end gap-3 pt-4">
               <Button variant="outline" onClick={() => setEditOpen(false)}>Annuler</Button>
