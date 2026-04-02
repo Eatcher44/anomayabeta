@@ -379,6 +379,7 @@ export default function HomePage() {
         poids: [],
         soins: [],
         consultations: [],
+        repas: [],
       };
 
       if (editingId) {

@@ -169,7 +169,7 @@ export default function LitterDetailPage() {
           sterilise: false, breeder_visible: false,
           litter_id: (data as any).litter_id, mother_id: (data as any).mother_id,
           commercial_status: 'available',
-          poids: [], soins: [], consultations: [],
+          poids: [], soins: [], consultations: [], repas: [],
           createdAt: data.created_at,
         };
         setAnimaux((prev) => [newAnimal, ...prev]);
