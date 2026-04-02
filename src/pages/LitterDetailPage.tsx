@@ -399,6 +399,14 @@ export default function LitterDetailPage() {
                         </div>
                         <div>
                           <div className="flex items-center gap-2 flex-wrap">
+                            {/* Distinction color dot */}
+                            {nb.couleur && (
+                              <span
+                                className="w-4 h-4 rounded-full border border-border flex-shrink-0"
+                                style={{ backgroundColor: nb.couleur }}
+                                title={`Distinction: ${nb.couleur}`}
+                              />
+                            )}
                             <p className="font-bold">{nb.nom}</p>
                             {/* Commercial status badge */}
                             <Badge

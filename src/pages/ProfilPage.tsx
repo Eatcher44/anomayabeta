@@ -464,19 +464,6 @@ export default function ProfilPage() {
             <Button onClick={() => navigate(`/autres-soins/${animal.id}`)} className="w-full"><Pill className="w-4 h-4 mr-2" />Autres soins / traitements</Button>
             <p className="text-sm text-muted-foreground mt-3">{actifsAutresSoins.length} soin(s) ou traitement(s) en cours</p>
           </div>
-          {/* Poids */}
-          <div className="bg-card rounded-xl p-3 border border-border shadow-sm">
-            <h2 className="font-extrabold text-sm mb-2">Suivi du poids</h2>
-            <p className="text-sm text-muted-foreground mb-3">
-              {(() => {
-                if (!animal.poids || animal.poids.length === 0) return 'Poids non renseigné';
-                const sorted = [...animal.poids].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-                const last = sorted[0];
-                return `${formatWeight(last.poids)} le ${new Date(last.date).toLocaleDateString('fr-FR')}`;
-              })()}
-            </p>
-            {!isParadis && <Button variant="secondary" onClick={() => navigate(`/poids/${animal.id}`)}>Gérer le poids</Button>}
-          </div>
         </div>
       </ScrollArea>
 
