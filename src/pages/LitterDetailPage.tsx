@@ -46,6 +46,20 @@ function getStatusConfig(status: CommercialStatus | undefined) {
 
 type FilterKey = 'all' | CommercialStatus;
 
+// Helper: get last weight
+function getLastWeight(a: Animal): number | null {
+  if (!Array.isArray(a?.poids) || a.poids.length === 0) return null;
+  const sorted = [...a.poids].sort((b, c) => new Date(c.date).getTime() - new Date(b.date).getTime());
+  return typeof sorted[0]?.poids === 'number' ? sorted[0].poids : null;
+}
+
+// Helper: get last feeding
+function getLastRepas(a: Animal): { quantity: number; time: string } | null {
+  if (!Array.isArray(a?.repas) || a.repas.length === 0) return null;
+  const sorted = [...a.repas].sort((b, c) => new Date(`${c.date}T${c.time}`).getTime() - new Date(`${b.date}T${b.time}`).getTime());
+  return sorted[0] ? { quantity: sorted[0].quantity, time: sorted[0].time } : null;
+}
+
 export default function LitterDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -58,14 +72,18 @@ export default function LitterDetailPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [paradisId, setParadisId] = useState<string | null>(null);
 
-  // Recovery modal
-  const [recoveryOpen, setRecoveryOpen] = useState(false);
-  const [recoveryCount, setRecoveryCount] = useState(1);
-  const [recovering, setRecovering] = useState(false);
+  // Long press
+  const [longPressAnimal, setLongPressAnimal] = useState<Animal | null>(null);
+  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Filters
-  const [sexFilter, setSexFilter] = useState<'all' | 'unset'>('all');
-  const [commercialFilter, setCommercialFilter] = useState<FilterKey>('all');
+  const handleTouchStart = (animal: Animal) => {
+    longPressTimer.current = setTimeout(() => {
+      setLongPressAnimal(animal);
+    }, 500);
+  };
+  const handleTouchEnd = () => {
+    if (longPressTimer.current) clearTimeout(longPressTimer.current);
+  };
 
   const fetchLitter = useCallback(async () => {
     if (!user || !id) return;
