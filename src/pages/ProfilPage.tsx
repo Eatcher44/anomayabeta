@@ -503,6 +503,82 @@ export default function ProfilPage() {
             <Button onClick={() => navigate(`/autres-soins/${animal.id}`)} className="w-full"><Pill className="w-4 h-4 mr-2" />Autres soins / traitements</Button>
             <p className="text-sm text-muted-foreground mt-3">{actifsAutresSoins.length} soin(s) ou traitement(s) en cours</p>
           </div>
+
+          {/* Breeder / Reproduction sections — hidden for paradis, newborns and pet-only sterilized */}
+          {(() => {
+            if (isParadis || isNewborn) return null;
+            if (!isBreederEligible(animal.type)) return null;
+            const breederVisible = (animal as any).breeder_visible !== false; // default true for legacy
+            const isRetired = !!animal.sterilise && breederVisible;
+            const isPetOnly = !!animal.sterilise && !breederVisible;
+            if (isPetOnly) return null;
+            const readOnly = isRetired;
+
+            if (isFemale(animal)) {
+              return (
+                <>
+                  <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
+                    <h2 className="font-extrabold mb-3">Chaleurs{readOnly ? ' (historique)' : ''}</h2>
+                    {isBreeder ? (
+                      <Button onClick={() => navigate(`/chaleurs/${animal.id}`)}>
+                        <Flame className="w-4 h-4 mr-2" />
+                        {readOnly ? "Voir l'historique des chaleurs" : 'Gérer les chaleurs'}
+                      </Button>
+                    ) : (
+                      <Button variant="outline" disabled><Flame className="w-4 h-4 mr-2" />À venir (pack Éleveur)</Button>
+                    )}
+                  </div>
+
+                  <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
+                    <h2 className="font-extrabold mb-3">Reproduction{readOnly ? ' (historique)' : ''}</h2>
+                    {isBreeder ? (
+                      <Button onClick={() => navigate(`/reproduction/${animal.id}`)}>
+                        <Baby className="w-4 h-4 mr-2" />
+                        {readOnly ? "Voir l'historique de reproduction" : 'Gérer la reproduction'}
+                      </Button>
+                    ) : (
+                      <Button variant="outline" disabled><Baby className="w-4 h-4 mr-2" />À venir (pack Éleveur)</Button>
+                    )}
+                  </div>
+                </>
+              );
+            }
+
+            if (isMale(animal) && isBreeder) {
+              return (
+                <div className="bg-card rounded-xl p-4 border border-border shadow-sm">
+                  <h2 className="font-extrabold mb-3">Reproduction{readOnly ? ' (historique)' : ''}</h2>
+                  {maleMatings.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">Aucune saillie enregistrée pour ce mâle.</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {maleMatings.map((m: any) => {
+                        const statusLabel = m.status === 'cancelled' ? 'Annulée' : m.status === 'birth_confirmed' ? 'Mise-bas effectuée' : 'En cours';
+                        const statusColor = m.status === 'cancelled' ? 'text-muted-foreground' : m.status === 'birth_confirmed' ? 'text-green-600 dark:text-green-400' : 'text-primary';
+                        return (
+                          <div key={m.id} className={`rounded-lg border border-border p-3 ${m.status === 'cancelled' ? 'opacity-60' : ''}`}>
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <p className="font-semibold text-sm">Mère : {m.motherName}</p>
+                                <p className="text-xs text-muted-foreground">Saillie le {fmt(m.date_saillie)}</p>
+                              </div>
+                              <span className={`text-xs font-semibold ${statusColor}`}>{statusLabel}</span>
+                            </div>
+                            {m.litter && (
+                              <button onClick={() => navigate(`/portee/${m.litter.id}`)} className="mt-2 text-xs text-primary hover:underline">
+                                Portée du {fmt(m.litter.birth_date)} • {m.litter.newborn_count} petit(s) →
+                              </button>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            }
+            return null;
+          })()}
         </div>
       </ScrollArea>
 
