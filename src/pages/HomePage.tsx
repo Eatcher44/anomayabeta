@@ -959,6 +959,15 @@ export default function HomePage() {
                 <ExternalLink className="w-3.5 h-3.5" />
                 Politique de confidentialité
               </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full justify-start gap-2"
+                onClick={() => navigate('/changelog')}
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+                Historique des mises à jour
+              </Button>
             </div>
 
             {/* Account Deletion */}
