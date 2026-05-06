@@ -34,7 +34,7 @@ import { toast } from '@/hooks/use-toast';
 import { formatWeight } from '@/components/AnimalRow';
 import { formatDateOnlyFr, toDateOnlyString, parseDateOnly } from '@/utils/dateOnly';
 import { getLitterAgeText } from '@/utils/litterAge';
-import { BirthTimeEditor } from '@/components/BirthTimeEditor';
+
 import type { Animal, CommercialStatus } from '@/types/animal';
 
 function isSexUnsetStatic(a: Animal) {
