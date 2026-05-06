@@ -331,7 +331,8 @@ export default function ProfilPage() {
     } catch { toast({ title: 'Erreur', description: 'Impossible de mettre à jour la photo', variant: 'destructive' }); }
   };
 
-  const headerStyle = animal.couleur ? { borderColor: animal.couleur, borderWidth: '2px' } : {};
+  const isLitterBaby = !!animal.litter_id;
+  const headerStyle = (isLitterBaby && animal.couleur) ? { borderColor: animal.couleur, borderWidth: '2px' } : {};
   const isParadis = !!animal.paradis;
   const isNewborn = !!(animal.litter_id && (animal as any).breeder_visible === false);
 
