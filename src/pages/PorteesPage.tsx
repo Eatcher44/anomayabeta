@@ -53,7 +53,7 @@ export default function PorteesPage() {
   const [fatherManualName, setFatherManualName] = useState('');
   const [birthDate, setBirthDate] = useState(new Date());
   const [birthDateValid, setBirthDateValid] = useState(true);
-  const [nbNewborns, setNbNewborns] = useState(1);
+  const [nbNewborns, setNbNewborns] = useState<string>('1');
   const [saving, setSaving] = useState(false);
   const [reproductionId, setReproductionId] = useState<string | null>(null);
 
@@ -116,14 +116,19 @@ export default function PorteesPage() {
     const bd = searchParams.get('birth_date');
     if (bd) { const pd = parseDateOnly(bd); if (pd) setBirthDate(pd); }
 
-    setNbNewborns(1);
+    setNbNewborns('1');
     setModalOpen(true);
     setSearchParams({}, { replace: true });
   }, [searchParams, setSearchParams]);
 
   const createLitter = async () => {
-    if (!user || !motherId || !birthDateValid || nbNewborns < 1) return;
-    const validCount = Math.max(1, Math.min(20, Math.floor(nbNewborns)));
+    if (!user || !motherId || !birthDateValid) return;
+    const parsed = parseInt(nbNewborns, 10);
+    if (!parsed || parsed < 1) {
+      toast({ title: 'Nombre de petits invalide', description: 'Veuillez saisir un nombre entre 1 et 20.', variant: 'destructive' });
+      return;
+    }
+    const validCount = Math.max(1, Math.min(20, Math.floor(parsed)));
     setSaving(true);
 
     const mother = animaux.find((a) => a.id === motherId);
@@ -264,7 +269,7 @@ export default function PorteesPage() {
     setFatherMode('none');
     setFatherId('');
     setFatherManualName('');
-    setNbNewborns(1);
+    setNbNewborns('1');
     setBirthDate(new Date());
     setReproductionId(null);
     setModalOpen(true);
@@ -423,11 +428,20 @@ export default function PorteesPage() {
             <div>
               <Label>Nombre de petits</Label>
               <Input
-                type="number"
-                min={1}
-                max={20}
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 value={nbNewborns}
-                onChange={(e) => setNbNewborns(Math.max(1, Math.min(20, parseInt(e.target.value) || 1)))}
+                onChange={(e) => {
+                  const v = e.target.value.replace(/[^0-9]/g, '');
+                  setNbNewborns(v);
+                }}
+                onBlur={() => {
+                  if (nbNewborns === '') return;
+                  const n = parseInt(nbNewborns, 10);
+                  if (isNaN(n) || n < 1) setNbNewborns('1');
+                  else if (n > 20) setNbNewborns('20');
+                }}
                 className="mt-1.5"
               />
             </div>
