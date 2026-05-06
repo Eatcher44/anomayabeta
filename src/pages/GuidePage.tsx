@@ -130,6 +130,8 @@ const GUIDE_SECTIONS = [
       'Reproducteurs : suivi des mâles et femelles.',
       'Gestations : suivi des saillies et naissances.',
       'Portées : gestion des portées actives et archivées.',
+      'Vous pouvez modifier la date et l\'heure de naissance d\'une portée depuis le bouton "Modifier la portée".',
+      'Vous pouvez trier les petits d\'une portée par prénom ou par poids pour les retrouver plus facilement.',
       'Départs & Réservations : gérez les réservations et départs des petits.',
     ],
   },
