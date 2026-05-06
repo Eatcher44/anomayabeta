@@ -51,6 +51,7 @@ export const CHANGELOG: ChangelogVersion[] = [
       'Correction de l’affichage des animaux castrés ou stérilisés dans les reproducteurs actifs',
       'Correction de plusieurs détails d’affichage dans l’écran Ma famille et dans les portées',
       'Correction de plusieurs incohérences d’affichage sur mobile et tablette',
+      'Correction de la saisie du nombre de petits sur mobile, qui empêchait de remplacer facilement la valeur par défaut',
     ],
   },
   {
