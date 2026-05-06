@@ -69,8 +69,7 @@ export default function AnimalRow({ item, onPickPhoto, onOpenProfile, onDelete, 
               {(() => {
                 const parts: string[] = [];
                 if (item.race && item.race !== '—') parts.push(displayBreed(item.race));
-                if (item.couleur) parts.push(item.couleur.toLowerCase());
-                else if (item.robe) parts.push(item.robe.toLowerCase());
+                if (item.robe) parts.push(item.robe.toLowerCase());
                 if (item.particularite && item.particularite.toLowerCase() !== 'aucune') parts.push(item.particularite.toLowerCase());
                 return parts.length > 0 ? (
                   <span className="font-normal text-muted-foreground text-sm">
