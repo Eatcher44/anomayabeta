@@ -595,7 +595,12 @@ export default function ProfilPage() {
              </div>
            </div>
          </DialogContent>
-       </Dialog>
-     </div>
-   );
- }
+        </Dialog>
+        <SterilizationConfirmModal
+          open={sterilModalOpen}
+          sexe={sexDraft}
+          onChoose={handleSterilChoice}
+        />
+      </div>
+    );
+  }
