@@ -539,8 +539,8 @@ export default function HomePage() {
     <div className="bg-gradient-to-b from-[hsl(33,60%,95%)] to-[hsl(30,40%,92%)] dark:from-background dark:to-background">
       {/* Header */}
       <div className="px-4 pt-6 pb-4">
-        <div className="flex justify-between items-start mb-4">
-          <div className="flex items-center gap-1.5">
+        <div className="grid grid-cols-3 items-center mb-3">
+          <div className="flex items-center gap-1.5 justify-start">
             <DarkModeToggle dark={dark} onToggle={toggleDark} />
             <button
               onClick={() => navigate('/abonnement')}
@@ -550,25 +550,12 @@ export default function HomePage() {
               <Crown className="w-4 h-4 text-amber-500" />
               <span className="text-[11px] font-bold text-amber-700 dark:text-amber-400">Anomaya+</span>
             </button>
-            <button
-              onClick={() => navigate('/guide')}
-              className="relative flex items-center gap-1 px-2.5 py-1.5 rounded-full border border-primary/40 bg-primary/10 dark:bg-primary/20 dark:border-primary/30 hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors"
-              title="Guide"
-            >
-              <BookOpen className="w-4 h-4 text-primary" />
-              <span className="text-[11px] font-bold text-primary">Guide</span>
-              {isBeta && (
-                <span className="absolute -top-2 -right-2 px-1.5 py-px rounded-full text-[8px] font-bold bg-primary text-primary-foreground leading-tight">
-                  Nouveau
-                </span>
-              )}
-            </button>
           </div>
-          <div className="text-center flex-1">
-            <div className="text-3xl mb-2">🐾🐾</div>
-            <h1 className="text-2xl font-extrabold text-primary">Ma famille</h1>
+          <div className="text-center">
+            <div className="text-3xl mb-1">🐾🐾</div>
+            <h1 className="text-2xl font-extrabold text-primary whitespace-nowrap">Ma famille</h1>
           </div>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 justify-end">
             <Button variant="ghost" size="icon" onClick={() => navigate('/notifications')} title="Notifications">
               <Bell className="w-5 h-5" />
             </Button>
@@ -576,6 +563,23 @@ export default function HomePage() {
               <Settings className="w-5 h-5" />
             </Button>
           </div>
+        </div>
+
+        {/* Guide row (placed below top row to avoid squeezing the title) */}
+        <div className="flex justify-center mb-4">
+          <button
+            onClick={() => navigate('/guide')}
+            className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-primary/40 bg-primary/10 dark:bg-primary/20 dark:border-primary/30 hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors"
+            title="Guide"
+          >
+            <BookOpen className="w-4 h-4 text-primary" />
+            <span className="text-xs font-bold text-primary">Guide</span>
+            {isBeta && (
+              <span className="absolute -top-2 -right-2 px-1.5 py-px rounded-full text-[8px] font-bold bg-primary text-primary-foreground leading-tight">
+                Nouveau
+              </span>
+            )}
+          </button>
         </div>
 
         {/* Health Dashboard button */}
