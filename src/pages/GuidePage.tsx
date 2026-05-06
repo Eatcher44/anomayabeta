@@ -133,6 +133,21 @@ const GUIDE_SECTIONS = [
       'Départs & Réservations : gérez les réservations et départs des petits.',
     ],
   },
+  {
+    id: 'v01-notes',
+    icon: ClipboardList,
+    title: 'Nouveautés v0.1 — bon à savoir',
+    description: 'Les changements importants à connaître.',
+    steps: [
+      'Les vaccins sont optionnels par défaut : aucun rappel n\'est créé tant que vous ne le configurez pas.',
+      'Vous pouvez configurer manuellement les rappels (vaccins, vermifuges, traitements) depuis la fiche santé.',
+      'Les animaux stérilisés ou castrés ne sont plus listés comme reproducteurs actifs.',
+      'Les reproducteurs en retraite conservent leur historique (saillies, portées, chaleurs).',
+      'L\'âge des petits dans une portée est calculé à partir de la date de naissance et de l\'heure de naissance.',
+      'La distinction couleur permet d\'identifier visuellement chaque petit dans les portées.',
+      'L\'historique des mises à jour est disponible dans Paramètres → Historique des mises à jour.',
+    ],
+  },
 ];
 
 export default function GuidePage() {
