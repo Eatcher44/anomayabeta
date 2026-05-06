@@ -116,14 +116,19 @@ export default function PorteesPage() {
     const bd = searchParams.get('birth_date');
     if (bd) { const pd = parseDateOnly(bd); if (pd) setBirthDate(pd); }
 
-    setNbNewborns(1);
+    setNbNewborns('1');
     setModalOpen(true);
     setSearchParams({}, { replace: true });
   }, [searchParams, setSearchParams]);
 
   const createLitter = async () => {
-    if (!user || !motherId || !birthDateValid || nbNewborns < 1) return;
-    const validCount = Math.max(1, Math.min(20, Math.floor(nbNewborns)));
+    if (!user || !motherId || !birthDateValid) return;
+    const parsed = parseInt(nbNewborns, 10);
+    if (!parsed || parsed < 1) {
+      toast({ title: 'Nombre de petits invalide', description: 'Veuillez saisir un nombre entre 1 et 20.', variant: 'destructive' });
+      return;
+    }
+    const validCount = Math.max(1, Math.min(20, Math.floor(parsed)));
     setSaving(true);
 
     const mother = animaux.find((a) => a.id === motherId);
