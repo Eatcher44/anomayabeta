@@ -146,7 +146,7 @@ const GUIDE_SECTIONS = [
       'Les animaux stérilisés ou castrés ne sont plus listés comme reproducteurs actifs.',
       'Les reproducteurs en retraite conservent leur historique (saillies, portées, chaleurs).',
       'L\'âge des petits dans une portée est calculé à partir de la date de naissance et de l\'heure de naissance.',
-      'La distinction couleur permet d\'identifier visuellement chaque petit dans les portées.',
+      'La distinction couleur sert principalement à repérer les bébés dans une portée (bracelet ou repère de couleur). Elle s\'affiche dans les portées, pas sur les cartes générales de Ma famille.',
       'L\'historique des mises à jour est disponible dans Paramètres → Historique des mises à jour.',
     ],
   },
