@@ -35,6 +35,7 @@ import { toast } from '@/hooks/use-toast';
 import { useBreeder } from '@/context/BreederContext';
 import { isBreederEligible } from '@/utils/breederUtils';
 import type { Animal, CommercialStatus } from '@/types/animal';
+import SterilizationConfirmModal, { SterilizationChoice } from '@/components/SterilizationConfirmModal';
 
 
 
@@ -280,19 +281,44 @@ export default function ProfilPage() {
      setEditOpen(true);
   };
 
-  const saveEdit = async () => {
-    if (!birthValid) return;
+  const [sterilModalOpen, setSterilModalOpen] = useState(false);
+
+  const performSave = async (overrides: Partial<Animal> = {}) => {
     try {
       await updateAnimal(animal.id, (a) => ({
         ...a, nom: nameDraft.trim() || a.nom, type: typeDraft.trim() || a.type,
         sexe: sexDraft, race: raceDraft.trim() || undefined,
         naissance: birthDraft.toISOString(), sterilise: sterilDraft,
-         puce: puceEditDraft.trim() || undefined, couleur: colorDraft,
-         particularite: particulariteEditDraft.trim() || null,
-         robe: robeEditDraft.trim() || null,
+        puce: puceEditDraft.trim() || undefined, couleur: colorDraft,
+        particularite: particulariteEditDraft.trim() || null,
+        robe: robeEditDraft.trim() || null,
+        ...overrides,
       }));
       setEditOpen(false);
     } catch { toast({ title: 'Erreur', description: "Impossible de sauvegarder", variant: 'destructive' }); }
+  };
+
+  const saveEdit = async () => {
+    if (!birthValid) return;
+    // If user is newly marking the animal as sterilised, prompt for choice
+    const wasSteril = !!animal.sterilise;
+    if (sterilDraft && !wasSteril && isBreederEligible(typeDraft || animal.type)) {
+      setSterilModalOpen(true);
+      return;
+    }
+    await performSave();
+  };
+
+  const handleSterilChoice = async (choice: SterilizationChoice) => {
+    setSterilModalOpen(false);
+    if (choice === 'cancel') {
+      // Revert the draft toggle
+      setSterilDraft(false);
+      return;
+    }
+    // retire: keep breeder_visible true (history visible). pet: hide breeder UI.
+    const breederVisible = choice === 'retire';
+    await performSave({ breeder_visible: breederVisible } as any);
   };
 
   const handleChangePhoto = async () => {
@@ -569,7 +595,12 @@ export default function ProfilPage() {
              </div>
            </div>
          </DialogContent>
-       </Dialog>
-     </div>
-   );
- }
+        </Dialog>
+        <SterilizationConfirmModal
+          open={sterilModalOpen}
+          sexe={sexDraft}
+          onChoose={handleSterilChoice}
+        />
+      </div>
+    );
+  }

@@ -27,7 +27,7 @@ import { toast } from '@/hooks/use-toast';
 import { formatWeight } from '@/components/AnimalRow';
 import { formatDateOnlyFr, toDateOnlyString, parseDateOnly } from '@/utils/dateOnly';
 import { getLitterAgeText } from '@/utils/litterAge';
-import { Input as TimeInput } from '@/components/ui/input';
+import { BirthTimeEditor } from '@/components/BirthTimeEditor';
 import type { Animal, CommercialStatus } from '@/types/animal';
 
 function isSexUnsetStatic(a: Animal) {
@@ -345,11 +345,13 @@ export default function LitterDetailPage() {
               {sexDefined} / {sexTotal}
             </Badge>
           </div>
-          {!litter.birth_time && (
-            <div className="pt-2">
-              <BirthTimeEditor litterId={litter.id} onSaved={(t) => setLitter((l: any) => ({ ...l, birth_time: t }))} />
-            </div>
-          )}
+          <div className="pt-2">
+            <BirthTimeEditor
+              litterId={litter.id}
+              initialValue={litter.birth_time}
+              onSaved={(t) => setLitter((l: any) => ({ ...l, birth_time: t }))}
+            />
+          </div>
         </div>
 
         {/* Litter Summary */}
