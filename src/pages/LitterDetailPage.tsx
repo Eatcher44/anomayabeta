@@ -505,6 +505,24 @@ export default function LitterDetailPage() {
           </div>
         </div>
 
+        {/* Sort control */}
+        {activeNewborns.length > 1 && (
+          <div className="flex items-center justify-between gap-2">
+            <Label className="text-xs text-muted-foreground">Trier les petits</Label>
+            <Select value={sortKey} onValueChange={(v) => setSortKey(v as SortKey)}>
+              <SelectTrigger className="h-8 w-auto min-w-[160px] text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="name-asc">Prénom A → Z</SelectItem>
+                <SelectItem value="name-desc">Prénom Z → A</SelectItem>
+                <SelectItem value="weight-asc">Poids croissant</SelectItem>
+                <SelectItem value="weight-desc">Poids décroissant</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+
         {/* Banner for remaining unknown sexes */}
         {sexRemaining > 0 && (
           <div className="flex items-center justify-between bg-[hsl(145,40%,92%)] dark:bg-[hsl(145,25%,18%)] border border-[hsl(145,30%,75%)] dark:border-[hsl(145,20%,30%)] rounded-lg px-3 py-2">
