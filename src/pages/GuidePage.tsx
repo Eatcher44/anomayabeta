@@ -65,8 +65,8 @@ const GUIDE_SECTIONS = [
     steps: [
       'Ouvrez le profil d\'un animal et cliquez sur "Modifier".',
       'Renseignez le champ "Couleur / Robe" (ex : Bleu, Roux, Crème).',
-      'La couleur apparaît directement sur la carte de l\'animal dans "Ma famille".',
-      'Dans les portées, chaque chaton affiche un badge coloré avec sa couleur.',
+      'Pour les bébés d\'une portée, vous pouvez aussi définir une distinction couleur (bracelet) qui colore le contour de leur carte dans la portée.',
+      'La distinction couleur n\'apparaît que dans les portées, pas sur les cartes de Ma famille.',
       'Format affiché : "Race couleur particularité" (ex : Maine Coon bleu polydactile).',
     ],
   },
