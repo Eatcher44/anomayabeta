@@ -269,7 +269,7 @@ export default function PorteesPage() {
     setFatherMode('none');
     setFatherId('');
     setFatherManualName('');
-    setNbNewborns(1);
+    setNbNewborns('1');
     setBirthDate(new Date());
     setReproductionId(null);
     setModalOpen(true);
@@ -428,11 +428,20 @@ export default function PorteesPage() {
             <div>
               <Label>Nombre de petits</Label>
               <Input
-                type="number"
-                min={1}
-                max={20}
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 value={nbNewborns}
-                onChange={(e) => setNbNewborns(Math.max(1, Math.min(20, parseInt(e.target.value) || 1)))}
+                onChange={(e) => {
+                  const v = e.target.value.replace(/[^0-9]/g, '');
+                  setNbNewborns(v);
+                }}
+                onBlur={() => {
+                  if (nbNewborns === '') return;
+                  const n = parseInt(nbNewborns, 10);
+                  if (isNaN(n) || n < 1) setNbNewborns('1');
+                  else if (n > 20) setNbNewborns('20');
+                }}
                 className="mt-1.5"
               />
             </div>
