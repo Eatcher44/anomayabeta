@@ -61,11 +61,11 @@ export default function PorteesPage() {
   const [deleteLitterId, setDeleteLitterId] = useState<string | null>(null);
 
   const females = animaux.filter((a) =>
-    a.sexe?.toLowerCase().startsWith('f') && !a.paradis && isBreederEligible(a.type)
+    a.sexe?.toLowerCase().startsWith('f') && !a.paradis && !a.sterilise && isBreederEligible(a.type)
   );
 
   const males = animaux.filter((a) =>
-    a.sexe?.toLowerCase().startsWith('m') && !a.paradis && isBreederEligible(a.type)
+    a.sexe?.toLowerCase().startsWith('m') && !a.paradis && !a.sterilise && isBreederEligible(a.type)
   );
 
   const fetchLitters = useCallback(async () => {
