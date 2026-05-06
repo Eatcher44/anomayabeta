@@ -67,7 +67,7 @@ export default function ReproductionPage() {
   const [birthTargetId, setBirthTargetId] = useState<string | null>(null);
 
   const males = animaux.filter(
-    (a) => a.sexe?.toLowerCase().startsWith('m') && !a.paradis && isBreederEligible(a.type)
+    (a) => a.sexe?.toLowerCase().startsWith('m') && !a.paradis && !a.sterilise && isBreederEligible(a.type)
   );
 
   useEffect(() => {
