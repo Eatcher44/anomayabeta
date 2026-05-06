@@ -20,6 +20,13 @@ import {
 import {
   Drawer, DrawerContent, DrawerHeader, DrawerTitle,
 } from '@/components/ui/drawer';
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { CalendarIcon } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { useAnimals } from '@/context/AnimalsContext';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -27,7 +34,7 @@ import { toast } from '@/hooks/use-toast';
 import { formatWeight } from '@/components/AnimalRow';
 import { formatDateOnlyFr, toDateOnlyString, parseDateOnly } from '@/utils/dateOnly';
 import { getLitterAgeText } from '@/utils/litterAge';
-import { BirthTimeEditor } from '@/components/BirthTimeEditor';
+
 import type { Animal, CommercialStatus } from '@/types/animal';
 
 function isSexUnsetStatic(a: Animal) {
@@ -97,6 +104,16 @@ export default function LitterDetailPage() {
   const [sexFilter, setSexFilter] = useState<'all' | 'unset'>('all');
   const [commercialFilter, setCommercialFilter] = useState<FilterKey>('all');
 
+  // Sort
+  type SortKey = 'name-asc' | 'name-desc' | 'weight-asc' | 'weight-desc';
+  const [sortKey, setSortKey] = useState<SortKey>('name-asc');
+
+  // Edit litter modal
+  const [editOpen, setEditOpen] = useState(false);
+  const [editDate, setEditDate] = useState<Date | undefined>(undefined);
+  const [editTime, setEditTime] = useState<string>('');
+  const [savingEdit, setSavingEdit] = useState(false);
+
   const fetchLitter = useCallback(async () => {
     if (!user || !id) return;
     const { data } = await supabase.from('litters').select('*').eq('id', id).single();
@@ -116,13 +133,32 @@ export default function LitterDetailPage() {
   const sexTotal = activeNewborns.length;
   const sexRemaining = sexTotal - sexDefined;
 
-  // Apply filters
+  // Apply filters + sort
   const newborns = useMemo(() => {
     let list = activeNewborns;
     if (sexFilter === 'unset') list = list.filter((a) => isSexUnsetStatic(a));
     if (commercialFilter !== 'all') list = list.filter((a) => (a.commercial_status || 'available') === commercialFilter);
-    return list;
-  }, [activeNewborns, sexFilter, commercialFilter]);
+    const norm = (s?: string) =>
+      (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+    const sorted = [...list].sort((a, b) => {
+      if (sortKey === 'name-asc' || sortKey === 'name-desc') {
+        const an = norm(a.nom);
+        const bn = norm(b.nom);
+        if (!an && bn) return 1;
+        if (an && !bn) return -1;
+        const cmp = an.localeCompare(bn);
+        return sortKey === 'name-asc' ? cmp : -cmp;
+      }
+      const aw = getLastWeight(a);
+      const bw = getLastWeight(b);
+      if (aw === null && bw === null) return norm(a.nom).localeCompare(norm(b.nom));
+      if (aw === null) return 1;
+      if (bw === null) return -1;
+      if (aw === bw) return norm(a.nom).localeCompare(norm(b.nom));
+      return sortKey === 'weight-asc' ? aw - bw : bw - aw;
+    });
+    return sorted;
+  }, [activeNewborns, sexFilter, commercialFilter, sortKey]);
 
   if (loading) {
     return (
@@ -285,6 +321,30 @@ export default function LitterDetailPage() {
     }
   };
 
+  const handleSaveEdit = async () => {
+    if (!editDate) {
+      toast({ title: 'Date requise', variant: 'destructive' });
+      return;
+    }
+    setSavingEdit(true);
+    try {
+      const newDate = toDateOnlyString(editDate);
+      const newTime = editTime || null;
+      const { error } = await supabase
+        .from('litters')
+        .update({ birth_date: newDate, birth_time: newTime })
+        .eq('id', litter.id);
+      if (error) throw error;
+      setLitter((l: any) => ({ ...l, birth_date: newDate, birth_time: newTime }));
+      toast({ title: 'Portée mise à jour' });
+      setEditOpen(false);
+    } catch {
+      toast({ title: 'Erreur', variant: 'destructive' });
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
   const getSexBgClass = (nb: Animal) => {
     const sex = nb.sexe?.toLowerCase();
     if (!sex || (sex !== 'mâle' && sex !== 'male' && sex !== 'femelle' && sex !== 'female')) {
@@ -339,18 +399,27 @@ export default function LitterDetailPage() {
             <span className="text-muted-foreground">Âge des petits</span>
             <span className="font-bold">{getLitterAgeText(litter.birth_date, litter.birth_time)}</span>
           </div>
-          <div className="flex justify-between items-center">
-            <span className="text-muted-foreground">Sexes définis</span>
-            <Badge variant={sexDefined === sexTotal && sexTotal > 0 ? 'default' : 'secondary'} className="text-xs">
-              {sexDefined} / {sexTotal}
-            </Badge>
-          </div>
+          {sexTotal > 0 && sexDefined < sexTotal && (
+            <div className="flex justify-between items-center">
+              <span className="text-muted-foreground">Sexes définis</span>
+              <Badge variant="secondary" className="text-xs">
+                {sexDefined} / {sexTotal}
+              </Badge>
+            </div>
+          )}
           <div className="pt-2">
-            <BirthTimeEditor
-              litterId={litter.id}
-              initialValue={litter.birth_time}
-              onSaved={(t) => setLitter((l: any) => ({ ...l, birth_time: t }))}
-            />
+            <Button
+              type="button"
+              className="w-full"
+              onClick={() => {
+                setEditDate(parseDateOnly(litter.birth_date) || undefined);
+                setEditTime(litter.birth_time || '');
+                setEditOpen(true);
+              }}
+            >
+              <Edit className="w-4 h-4 mr-2" />
+              Modifier la portée
+            </Button>
           </div>
         </div>
 
@@ -435,6 +504,24 @@ export default function LitterDetailPage() {
             </button>
           </div>
         </div>
+
+        {/* Sort control */}
+        {activeNewborns.length > 1 && (
+          <div className="flex items-center justify-between gap-2">
+            <Label className="text-xs text-muted-foreground">Trier les petits</Label>
+            <Select value={sortKey} onValueChange={(v) => setSortKey(v as SortKey)}>
+              <SelectTrigger className="h-8 w-auto min-w-[160px] text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="name-asc">Prénom A → Z</SelectItem>
+                <SelectItem value="name-desc">Prénom Z → A</SelectItem>
+                <SelectItem value="weight-asc">Poids croissant</SelectItem>
+                <SelectItem value="weight-desc">Poids décroissant</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
 
         {/* Banner for remaining unknown sexes */}
         {sexRemaining > 0 && (
@@ -683,6 +770,60 @@ export default function LitterDetailPage() {
           </div>
         </DrawerContent>
       </Drawer>
+
+      {/* Edit litter modal */}
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Modifier la portée</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-1.5">
+              <Label className="text-xs">Date de naissance</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className={cn('w-full justify-start text-left font-normal', !editDate && 'text-muted-foreground')}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {editDate ? formatDateOnlyFr(toDateOnlyString(editDate)) : 'Choisir une date'}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={editDate}
+                    onSelect={setEditDate}
+                    initialFocus
+                    className={cn('p-3 pointer-events-auto')}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Heure de naissance (optionnel)</Label>
+              <Input
+                type="time"
+                value={editTime}
+                onChange={(e) => setEditTime(e.target.value)}
+              />
+              <p className="text-[11px] text-muted-foreground">
+                Permet de calculer l'âge des petits plus précisément.
+              </p>
+            </div>
+            <div className="flex gap-2 pt-2">
+              <Button type="button" variant="outline" className="flex-1" onClick={() => setEditOpen(false)}>
+                Annuler
+              </Button>
+              <Button type="button" className="flex-1" onClick={handleSaveEdit} disabled={savingEdit}>
+                {savingEdit ? 'Enregistrement...' : 'Enregistrer'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
