@@ -321,6 +321,30 @@ export default function LitterDetailPage() {
     }
   };
 
+  const handleSaveEdit = async () => {
+    if (!editDate) {
+      toast({ title: 'Date requise', variant: 'destructive' });
+      return;
+    }
+    setSavingEdit(true);
+    try {
+      const newDate = toDateOnlyString(editDate);
+      const newTime = editTime || null;
+      const { error } = await supabase
+        .from('litters')
+        .update({ birth_date: newDate, birth_time: newTime })
+        .eq('id', litter.id);
+      if (error) throw error;
+      setLitter((l: any) => ({ ...l, birth_date: newDate, birth_time: newTime }));
+      toast({ title: 'Portée mise à jour' });
+      setEditOpen(false);
+    } catch {
+      toast({ title: 'Erreur', variant: 'destructive' });
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
   const getSexBgClass = (nb: Animal) => {
     const sex = nb.sexe?.toLowerCase();
     if (!sex || (sex !== 'mâle' && sex !== 'male' && sex !== 'femelle' && sex !== 'female')) {
