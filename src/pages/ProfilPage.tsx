@@ -331,7 +331,8 @@ export default function ProfilPage() {
     } catch { toast({ title: 'Erreur', description: 'Impossible de mettre à jour la photo', variant: 'destructive' }); }
   };
 
-  const headerStyle = animal.couleur ? { borderColor: animal.couleur, borderWidth: '2px' } : {};
+  const isLitterBaby = !!animal.litter_id;
+  const headerStyle = (isLitterBaby && animal.couleur) ? { borderColor: animal.couleur, borderWidth: '2px' } : {};
   const isParadis = !!animal.paradis;
   const isNewborn = !!(animal.litter_id && (animal as any).breeder_visible === false);
 
@@ -415,8 +416,8 @@ export default function ProfilPage() {
               )}
             </div>
             <div className="space-y-1">
-              {/* Distinction couleur */}
-              {animal.couleur ? (
+              {/* Distinction couleur — uniquement pour les bébés d'une portée */}
+              {isLitterBaby && (animal.couleur ? (
                 <div className="flex items-center justify-between py-1.5 text-sm">
                   <span className="text-muted-foreground shrink-0">Distinction couleur</span>
                   <span className="w-4 h-4 rounded-full border border-border flex-shrink-0" style={{ backgroundColor: animal.couleur }} />
@@ -426,7 +427,7 @@ export default function ProfilPage() {
                   <button onClick={openEditModal} className="text-sm font-semibold text-primary hover:underline">Ajouter une distinction couleur</button>
                   <p className="text-xs text-muted-foreground mt-0.5">Permet d'identifier un bébé avec un bracelet ou repère couleur</p>
                 </div>
-              ) : null}
+              ) : null)}
               <div className="flex flex-wrap justify-between gap-x-3 py-1 text-sm"><span className="text-muted-foreground shrink-0">Date de naissance</span><span className="font-bold text-right break-words" style={{ overflowWrap: 'anywhere' }}>{animal.naissance ? fmt(animal.naissance) : 'Non définie'}</span></div>
               <div className="flex flex-wrap justify-between gap-x-3 py-1 text-sm"><span className="text-muted-foreground shrink-0">Race</span><span className="font-bold text-right break-words" style={{ overflowWrap: 'anywhere' }}>{animal.race && animal.race !== '—' ? displayBreed(animal.race) : 'Non définie'}</span></div>
               <div className="flex flex-wrap justify-between gap-x-3 py-1 text-sm"><span className="text-muted-foreground shrink-0">Sexe</span><span className="font-bold">{animal.sexe}</span></div>
@@ -510,11 +511,13 @@ export default function ProfilPage() {
         <DialogContent className="sm:max-w-md max-h-[90vh] overflow-auto">
           <DialogHeader><DialogTitle>Éditer le profil</DialogTitle></DialogHeader>
           <div className="space-y-4 py-4">
-            <div>
-               <Label>Distinction couleur</Label>
-               <p className="text-xs text-muted-foreground mt-0.5 mb-2">Permet d'identifier un bébé avec un bracelet ou repère couleur</p>
-               <ColorPicker value={colorDraft} onChange={setColorDraft} />
-             </div>
+            {isLitterBaby && (
+              <div>
+                 <Label>Distinction couleur</Label>
+                 <p className="text-xs text-muted-foreground mt-0.5 mb-2">Permet d'identifier un bébé avec un bracelet ou repère couleur</p>
+                 <ColorPicker value={colorDraft} onChange={setColorDraft} />
+               </div>
+            )}
             <div><Label>Nom</Label><Input value={nameDraft} onChange={(e) => setNameDraft(e.target.value)} placeholder="Nom" className="mt-1.5" /></div>
             <div><Label>Type</Label><Input value={typeDraft} onChange={(e) => setTypeDraft(e.target.value)} placeholder="Chat, Chien..." className="mt-1.5" /></div>
             <div>
