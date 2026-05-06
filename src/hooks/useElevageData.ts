@@ -91,7 +91,7 @@ export function useElevageData(species: string) {
 
   // All eligible animals of this species
   const eligible = useMemo(
-    () => animaux.filter(a => !a.paradis && a.breeder_visible !== false && isBreederEligible(a.type) && isSpecies(a.type)),
+    () => animaux.filter(a => !a.paradis && !a.sterilise && a.breeder_visible !== false && isBreederEligible(a.type) && isSpecies(a.type)),
     [animaux, isSpecies]
   );
   const females = useMemo(() => eligible.filter(a => a.sexe?.toLowerCase().startsWith('f')), [eligible]);
