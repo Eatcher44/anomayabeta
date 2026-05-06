@@ -1,0 +1,1 @@
+ALTER TABLE public.litters ADD COLUMN IF NOT EXISTS birth_time text;
