@@ -104,6 +104,16 @@ export default function LitterDetailPage() {
   const [sexFilter, setSexFilter] = useState<'all' | 'unset'>('all');
   const [commercialFilter, setCommercialFilter] = useState<FilterKey>('all');
 
+  // Sort
+  type SortKey = 'name-asc' | 'name-desc' | 'weight-asc' | 'weight-desc';
+  const [sortKey, setSortKey] = useState<SortKey>('name-asc');
+
+  // Edit litter modal
+  const [editOpen, setEditOpen] = useState(false);
+  const [editDate, setEditDate] = useState<Date | undefined>(undefined);
+  const [editTime, setEditTime] = useState<string>('');
+  const [savingEdit, setSavingEdit] = useState(false);
+
   const fetchLitter = useCallback(async () => {
     if (!user || !id) return;
     const { data } = await supabase.from('litters').select('*').eq('id', id).single();
