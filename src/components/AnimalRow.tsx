@@ -37,13 +37,10 @@ export default function AnimalRow({ item, onPickPhoto, onOpenProfile, onDelete, 
   const bgClass = isFemale ? 'bg-female' : 'bg-male';
   const textClass = isFemale ? 'text-female' : 'text-male';
 
-  const accentStyle = item.couleur ? { borderColor: item.couleur, borderWidth: '2px' } : {};
-
   return (
     <div className="mb-3 rounded-xl">
       <div
         className={`flex items-center rounded-xl p-3 border border-border ${bgClass} shadow-sm`}
-        style={accentStyle}
       >
         {/* Photo */}
         <button
