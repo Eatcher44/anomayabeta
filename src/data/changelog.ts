@@ -40,7 +40,7 @@ export const CHANGELOG: ChangelogVersion[] = [
       'Les animaux castrés ou stérilisés ne sont plus proposés comme reproducteurs actifs',
       'Le bouton Guide a été déplacé pour laisser plus de place au titre « Ma famille »',
       'L’affichage de l’écran Ma famille a été ajusté pour mieux s’adapter aux petits écrans',
-      'La couleur de distinction est maintenant utilisée pour le contour des cartes des bébés dans une portée',
+      'La couleur de distinction est désormais affichée uniquement dans les portées, afin de mieux correspondre à l’usage des bracelets ou repères de couleur pour les bébés',
       'L’âge des petits est calculé à partir de la date et de l’heure de naissance',
       'L’affichage de l’âge est adapté automatiquement en jours, semaines et mois',
       'Préparation de la future gestion du Pack Éleveur après la bêta',
