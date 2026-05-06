@@ -133,13 +133,32 @@ export default function LitterDetailPage() {
   const sexTotal = activeNewborns.length;
   const sexRemaining = sexTotal - sexDefined;
 
-  // Apply filters
+  // Apply filters + sort
   const newborns = useMemo(() => {
     let list = activeNewborns;
     if (sexFilter === 'unset') list = list.filter((a) => isSexUnsetStatic(a));
     if (commercialFilter !== 'all') list = list.filter((a) => (a.commercial_status || 'available') === commercialFilter);
-    return list;
-  }, [activeNewborns, sexFilter, commercialFilter]);
+    const norm = (s?: string) =>
+      (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+    const sorted = [...list].sort((a, b) => {
+      if (sortKey === 'name-asc' || sortKey === 'name-desc') {
+        const an = norm(a.nom);
+        const bn = norm(b.nom);
+        if (!an && bn) return 1;
+        if (an && !bn) return -1;
+        const cmp = an.localeCompare(bn);
+        return sortKey === 'name-asc' ? cmp : -cmp;
+      }
+      const aw = getLastWeight(a);
+      const bw = getLastWeight(b);
+      if (aw === null && bw === null) return norm(a.nom).localeCompare(norm(b.nom));
+      if (aw === null) return 1;
+      if (bw === null) return -1;
+      if (aw === bw) return norm(a.nom).localeCompare(norm(b.nom));
+      return sortKey === 'weight-asc' ? aw - bw : bw - aw;
+    });
+    return sorted;
+  }, [activeNewborns, sexFilter, commercialFilter, sortKey]);
 
   if (loading) {
     return (
