@@ -53,7 +53,7 @@ export default function PorteesPage() {
   const [fatherManualName, setFatherManualName] = useState('');
   const [birthDate, setBirthDate] = useState(new Date());
   const [birthDateValid, setBirthDateValid] = useState(true);
-  const [nbNewborns, setNbNewborns] = useState(1);
+  const [nbNewborns, setNbNewborns] = useState<string>('1');
   const [saving, setSaving] = useState(false);
   const [reproductionId, setReproductionId] = useState<string | null>(null);
 
