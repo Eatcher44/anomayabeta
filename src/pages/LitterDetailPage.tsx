@@ -345,11 +345,13 @@ export default function LitterDetailPage() {
               {sexDefined} / {sexTotal}
             </Badge>
           </div>
-          {!litter.birth_time && (
-            <div className="pt-2">
-              <BirthTimeEditor litterId={litter.id} onSaved={(t) => setLitter((l: any) => ({ ...l, birth_time: t }))} />
-            </div>
-          )}
+          <div className="pt-2">
+            <BirthTimeEditor
+              litterId={litter.id}
+              initialValue={litter.birth_time}
+              onSaved={(t) => setLitter((l: any) => ({ ...l, birth_time: t }))}
+            />
+          </div>
         </div>
 
         {/* Litter Summary */}
