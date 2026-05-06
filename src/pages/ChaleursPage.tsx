@@ -13,6 +13,7 @@ import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import DateField from '@/components/DateField';
 import { useReminderPicker, ReminderPickerUI, createReminders } from '@/components/ReminderPicker';
+import { toDateOnlyString, parseDateOnly, formatDateOnlyFr } from '@/utils/dateOnly';
 import { toast } from '@/hooks/use-toast';
 
 interface HeatCycle {
@@ -84,8 +85,8 @@ export default function ChaleursPage() {
 
   const openEdit = (r: HeatCycle) => {
     setEditId(r.id);
-    setDebutDraft(new Date(r.date_debut));
-    setFinDraft(r.date_fin ? new Date(r.date_fin) : null);
+    setDebutDraft(parseDateOnly(r.date_debut) || new Date());
+    setFinDraft(r.date_fin ? (parseDateOnly(r.date_fin) || null) : null);
     setNotesDraft(r.notes || '');
     reminder.reset();
     setModalOpen(true);
@@ -111,8 +112,8 @@ export default function ChaleursPage() {
     const payload = {
       user_id: user.id,
       animal_id: animal.id,
-      date_debut: debutDraft.toISOString().split('T')[0],
-      date_fin: finDraft ? finDraft.toISOString().split('T')[0] : null,
+      date_debut: toDateOnlyString(debutDraft),
+      date_fin: finDraft ? toDateOnlyString(finDraft) : null,
       notes: notesDraft.trim() || null,
     };
 
@@ -146,13 +147,13 @@ export default function ChaleursPage() {
     }
   };
 
-  const fmt = (d: string) => new Date(d).toLocaleDateString('fr-FR');
+  const fmt = (d: string) => formatDateOnlyFr(d);
 
   // Compute next estimated heat from most recent record
   const latestRecord = records.length > 0 ? records[0] : null;
   const nextHeatDate = latestRecord
     ? (() => {
-        const d = new Date(latestRecord.date_debut);
+        const d = parseDateOnly(latestRecord.date_debut) || new Date(latestRecord.date_debut);
         d.setDate(d.getDate() + nextHeatDays);
         return d;
       })()
@@ -199,7 +200,7 @@ export default function ChaleursPage() {
         ) : (
           <div className="space-y-3">
             {records.map((r) => {
-              const nextEst = new Date(r.date_debut);
+              const nextEst = parseDateOnly(r.date_debut) || new Date(r.date_debut);
               nextEst.setDate(nextEst.getDate() + nextHeatDays);
 
               return (
