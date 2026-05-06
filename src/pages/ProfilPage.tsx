@@ -35,6 +35,7 @@ import { toast } from '@/hooks/use-toast';
 import { useBreeder } from '@/context/BreederContext';
 import { isBreederEligible } from '@/utils/breederUtils';
 import type { Animal, CommercialStatus } from '@/types/animal';
+import SterilizationConfirmModal, { SterilizationChoice } from '@/components/SterilizationConfirmModal';
 
 
 
