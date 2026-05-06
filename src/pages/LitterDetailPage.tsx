@@ -25,6 +25,9 @@ import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { formatWeight } from '@/components/AnimalRow';
+import { formatDateOnlyFr, toDateOnlyString, parseDateOnly } from '@/utils/dateOnly';
+import { getLitterAgeText } from '@/utils/litterAge';
+import { Input as TimeInput } from '@/components/ui/input';
 import type { Animal, CommercialStatus } from '@/types/animal';
 
 function isSexUnsetStatic(a: Animal) {
@@ -142,7 +145,7 @@ export default function LitterDetailPage() {
     ? animaux.find((a) => a.id === litter.father_id)?.nom || 'Inconnu'
     : litter.father_name || null;
 
-  const fmt = (d: string) => new Date(d).toLocaleDateString('fr-FR');
+  const fmt = (d: string) => formatDateOnlyFr(d);
   const isSexUnset = isSexUnsetStatic;
 
   const handleSetSex = async (animalId: string, sex: 'Mâle' | 'Femelle') => {
@@ -326,11 +329,15 @@ export default function LitterDetailPage() {
           )}
           <div className="flex justify-between">
             <span className="text-muted-foreground">Date de naissance</span>
-            <span className="font-bold">{fmt(litter.birth_date)}</span>
+            <span className="font-bold">{fmt(litter.birth_date)}{litter.birth_time ? ` à ${litter.birth_time}` : ''}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Nombre de petits</span>
             <span className="font-bold">{allNewborns.length}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">Âge des petits</span>
+            <span className="font-bold">{getLitterAgeText(litter.birth_date, litter.birth_time)}</span>
           </div>
           <div className="flex justify-between items-center">
             <span className="text-muted-foreground">Sexes définis</span>
@@ -338,6 +345,11 @@ export default function LitterDetailPage() {
               {sexDefined} / {sexTotal}
             </Badge>
           </div>
+          {!litter.birth_time && (
+            <div className="pt-2">
+              <BirthTimeEditor litterId={litter.id} onSaved={(t) => setLitter((l: any) => ({ ...l, birth_time: t }))} />
+            </div>
+          )}
         </div>
 
         {/* Litter Summary */}

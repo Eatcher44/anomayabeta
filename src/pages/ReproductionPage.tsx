@@ -21,6 +21,7 @@ import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { isBreederEligible } from '@/utils/breederUtils';
 import DateField from '@/components/DateField';
+import { toDateOnlyString, parseDateOnly, formatDateOnlyFr } from '@/utils/dateOnly';
 import { toast } from '@/hooks/use-toast';
 
 interface Reproduction {
@@ -103,7 +104,7 @@ export default function ReproductionPage() {
 
   const openEdit = (r: Reproduction) => {
     setEditId(r.id);
-    setDateDraft(new Date(r.date_saillie));
+    setDateDraft(parseDateOnly(r.date_saillie) || new Date());
     setNotesDraft(r.notes || '');
     setConfirmedDraft(r.confirmed);
     if (r.father_animal_id) {
@@ -127,7 +128,7 @@ export default function ReproductionPage() {
     const payload: any = {
       user_id: user.id,
       animal_id: animal.id,
-      date_saillie: dateDraft.toISOString().split('T')[0],
+      date_saillie: toDateOnlyString(dateDraft),
       notes: notesDraft.trim() || null,
       confirmed: confirmedDraft,
       father_animal_id: fatherMode === 'existing' && fatherAnimalId ? fatherAnimalId : null,
@@ -186,7 +187,7 @@ export default function ReproductionPage() {
     const params = new URLSearchParams({
       from_reproduction: rec.id,
       mother_id: animal.id,
-      birth_date: new Date().toISOString().split('T')[0],
+      birth_date: toDateOnlyString(new Date()),
     });
     if (rec.father_animal_id) params.set('father_animal_id', rec.father_animal_id);
     if (rec.father_external_name) params.set('father_external_name', rec.father_external_name);
@@ -194,7 +195,7 @@ export default function ReproductionPage() {
     setBirthTargetId(null);
   };
 
-  const fmt = (d: string) => new Date(d).toLocaleDateString('fr-FR');
+  const fmt = (d: string) => formatDateOnlyFr(d);
 
   const getFatherLabel = (r: Reproduction) => {
     if (r.father_animal_id) {
@@ -241,7 +242,7 @@ export default function ReproductionPage() {
         ) : (
           <div className="space-y-3">
             {records.map((r) => {
-              const saillieDate = new Date(r.date_saillie);
+              const saillieDate = parseDateOnly(r.date_saillie) || new Date(r.date_saillie);
               const expectedBirth = new Date(saillieDate);
               expectedBirth.setDate(expectedBirth.getDate() + GESTATION_DAYS);
               const now = new Date();
@@ -282,7 +283,7 @@ export default function ReproductionPage() {
                     {!isCancelled && (
                       <p>
                         <CalendarIcon className="w-3.5 h-3.5 inline mr-1" />
-                        Mise-bas estimée : <span className="font-semibold text-foreground">{fmt(expectedBirth.toISOString())}</span>
+                        Mise-bas estimée : <span className="font-semibold text-foreground">{expectedBirth.toLocaleDateString('fr-FR')}</span>
                       </p>
                     )}
                     {isOngoing && (

@@ -37,9 +37,11 @@ import FeedbackPage from "./pages/FeedbackPage";
 import ElevageBetaPage from "./pages/ElevageBetaPage";
 import GuidePage from "./pages/GuidePage";
 import PrivacyPage from "./pages/PrivacyPage";
+import ChangelogPage from "./pages/ChangelogPage";
 import ScrollToTop from "./components/ScrollToTop";
 import DevBadge from "./components/DevBadge";
 import BetaWelcomePopup from "./components/BetaWelcomePopup";
+import WhatsNewModal from "./components/WhatsNewModal";
 
 const queryClient = new QueryClient();
 
@@ -113,6 +115,7 @@ function AppRoutes() {
       <Route path="/guide" element={<ProtectedRoute><GuidePage /></ProtectedRoute>} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/privacy" element={<PrivacyPage />} />
+      <Route path="/changelog" element={<ProtectedRoute noLayout><ChangelogPage /></ProtectedRoute>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
@@ -130,6 +133,7 @@ const App = () => (
               <ScrollToTop />
               <DevBadge />
               <BetaWelcomePopup />
+              <WhatsNewModal />
               <AppRoutes />
               <BreederBottomNav />
             </BrowserRouter>

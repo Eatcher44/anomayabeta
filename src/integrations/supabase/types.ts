@@ -259,6 +259,7 @@ export type Database = {
       litters: {
         Row: {
           birth_date: string
+          birth_time: string | null
           created_at: string
           father_id: string | null
           father_name: string | null
@@ -270,6 +271,7 @@ export type Database = {
         }
         Insert: {
           birth_date: string
+          birth_time?: string | null
           created_at?: string
           father_id?: string | null
           father_name?: string | null
@@ -281,6 +283,7 @@ export type Database = {
         }
         Update: {
           birth_date?: string
+          birth_time?: string | null
           created_at?: string
           father_id?: string | null
           father_name?: string | null

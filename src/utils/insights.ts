@@ -58,28 +58,9 @@ function getVaccineAlerts(animal: Animal, today: Date): HealthAlert[] {
   return alerts;
 }
 
-/** Check if mandatory vaccines are missing entirely (never done) */
-function getMissingMandatoryVaccineAlerts(animal: Animal): HealthAlert[] {
-  const alerts: HealthAlert[] = [];
-  const soins = animal.soins || [];
-  const doneVaccineNames = soins.filter((s) => s.type === 'Vaccin' && s.date).map((s) => s.nom);
-  const mandatory = getMandatoryVaccineNames(animal.type);
-
-  for (const name of mandatory) {
-    if (!doneVaccineNames.includes(name)) {
-      alerts.push({
-        id: `vac-missing-${animal.id}-${name}`,
-        animalId: animal.id,
-        animalName: animal.nom,
-        type: 'vaccine',
-        severity: 'urgent',
-        title: `Vaccin obligatoire manquant`,
-        description: `${animal.nom} — ${name}`,
-        icon: '💉',
-      });
-    }
-  }
-  return alerts;
+/** No vaccines are mandatory by default — protocols depend on the vet/breeder/country. */
+function getMissingMandatoryVaccineAlerts(_animal: Animal): HealthAlert[] {
+  return [];
 }
 
 /** Check if anti-puce / vermifuge are missing or overdue */

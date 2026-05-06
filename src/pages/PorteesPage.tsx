@@ -22,6 +22,7 @@ import { isBreederEligible } from '@/utils/breederUtils';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import DateField from '@/components/DateField';
+import { toDateOnlyString, parseDateOnly, formatDateOnlyFr } from '@/utils/dateOnly';
 import { toast } from '@/hooks/use-toast';
 
 interface Litter {
@@ -113,7 +114,7 @@ export default function PorteesPage() {
     }
 
     const bd = searchParams.get('birth_date');
-    if (bd) setBirthDate(new Date(bd));
+    if (bd) { const pd = parseDateOnly(bd); if (pd) setBirthDate(pd); }
 
     setNbNewborns(1);
     setModalOpen(true);
@@ -131,7 +132,7 @@ export default function PorteesPage() {
     try {
       const fatherIdValue = fatherMode === 'existing' && fatherId ? fatherId : null;
       const fatherNameValue = fatherMode === 'manual' && fatherManualName.trim() ? fatherManualName.trim() : null;
-      const birthDateStr = birthDate.toISOString().split('T')[0];
+      const birthDateStr = toDateOnlyString(birthDate);
 
       if (import.meta.env.DEV) console.log('[Litter] Creating with newbornCount:', validCount);
 
@@ -203,7 +204,7 @@ export default function PorteesPage() {
           type: data.type,
           sexe: data.sexe,
           race: data.race || undefined,
-          naissance: data.naissance ? new Date(data.naissance).toISOString() : undefined,
+          naissance: data.naissance || undefined,
           sterilise: false,
           breeder_visible: false,
           litter_id: data.litter_id,
@@ -255,7 +256,7 @@ export default function PorteesPage() {
     setDeleteLitterId(null);
   };
 
-  const fmt = (d: string) => new Date(d).toLocaleDateString('fr-FR');
+  const fmt = (d: string) => formatDateOnlyFr(d);
   const getMotherName = (mid: string) => animaux.find((a) => a.id === mid)?.nom || 'Inconnue';
 
   const openCreateModal = () => {
