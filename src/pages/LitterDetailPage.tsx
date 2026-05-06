@@ -375,18 +375,27 @@ export default function LitterDetailPage() {
             <span className="text-muted-foreground">Âge des petits</span>
             <span className="font-bold">{getLitterAgeText(litter.birth_date, litter.birth_time)}</span>
           </div>
-          <div className="flex justify-between items-center">
-            <span className="text-muted-foreground">Sexes définis</span>
-            <Badge variant={sexDefined === sexTotal && sexTotal > 0 ? 'default' : 'secondary'} className="text-xs">
-              {sexDefined} / {sexTotal}
-            </Badge>
-          </div>
+          {sexTotal > 0 && sexDefined < sexTotal && (
+            <div className="flex justify-between items-center">
+              <span className="text-muted-foreground">Sexes définis</span>
+              <Badge variant="secondary" className="text-xs">
+                {sexDefined} / {sexTotal}
+              </Badge>
+            </div>
+          )}
           <div className="pt-2">
-            <BirthTimeEditor
-              litterId={litter.id}
-              initialValue={litter.birth_time}
-              onSaved={(t) => setLitter((l: any) => ({ ...l, birth_time: t }))}
-            />
+            <Button
+              type="button"
+              className="w-full"
+              onClick={() => {
+                setEditDate(parseDateOnly(litter.birth_date) || undefined);
+                setEditTime(litter.birth_time || '');
+                setEditOpen(true);
+              }}
+            >
+              <Edit className="w-4 h-4 mr-2" />
+              Modifier la portée
+            </Button>
           </div>
         </div>
 
