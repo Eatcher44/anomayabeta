@@ -39,6 +39,7 @@ export const CHANGELOG: ChangelogVersion[] = [
       'Aucun bug majeur corrigé dans cette version',
     ],
   },
+  {
     version: '0.1.5',
     title: 'Correction du suivi de gestation',
     date: TODAY_ISO,
