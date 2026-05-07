@@ -33,6 +33,7 @@ import ElevagePage from "./pages/ElevagePage";
 import DepartsReservationsPage from "./pages/DepartsReservationsPage";
 import PreparerDepartPage from "./pages/PreparerDepartPage";
 import BreederBottomNav from "./components/BreederBottomNav";
+import BreederRouteGate from "./components/BreederRouteGate";
 import FeedbackPage from "./pages/FeedbackPage";
 import ElevageBetaPage from "./pages/ElevageBetaPage";
 import GuidePage from "./pages/GuidePage";
