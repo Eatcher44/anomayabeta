@@ -111,6 +111,7 @@ function AppRoutes() {
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/privacy" element={<PrivacyPage />} />
       <Route path="/changelog" element={<ProtectedRoute noLayout><ChangelogPage /></ProtectedRoute>} />
+      <Route path="/splash-preview" element={<SplashPreviewPage />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
