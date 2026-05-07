@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "app.anomaya.mobile",
+      "sha256_cert_fingerprints": [
+        "26:8A:30:73:2D:A6:13:C7:55:0C:6E:77:7F:FE:B1:96:DB:B4:79:82:6D:BF:37:77:D1:A6:3A:A9:D0:F6:AC:88"
+      ]
+    }
+  }
+]
