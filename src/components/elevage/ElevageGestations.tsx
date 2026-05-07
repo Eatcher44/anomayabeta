@@ -20,7 +20,7 @@ export default function ElevageGestations({ reproductions, animaux, getGestation
 
   const active = reproductions.filter(r => r.status === 'active');
   const cancelled = reproductions.filter(r => r.status === 'cancelled');
-  const confirmed = reproductions.filter(r => r.status === 'birth_confirmed' || r.confirmed);
+  const confirmed = reproductions.filter(r => r.status === 'birth_confirmed');
 
   const renderList = (items: Reproduction[], label: string) => {
     if (items.length === 0) return null;
@@ -42,7 +42,7 @@ export default function ElevageGestations({ reproductions, animaux, getGestation
           const progress = Math.round((days / config.gestationAvgDays) * 100);
           const isActive = g.status === 'active' && days >= 0 && days <= config.gestationMaxDays;
 
-          const statusLabel = g.status === 'cancelled' ? 'Annulée' : g.status === 'birth_confirmed' || g.confirmed ? 'Mise-bas' : `J${days}/${config.gestationAvgDays}`;
+          const statusLabel = g.status === 'cancelled' ? 'Annulée' : g.status === 'birth_confirmed' ? 'Mise-bas' : `J${days}/${config.gestationAvgDays}`;
           const statusVariant = g.status === 'cancelled' ? 'destructive' as const : 'secondary' as const;
 
           return (
