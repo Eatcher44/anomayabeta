@@ -44,7 +44,6 @@ import DevBadge from "./components/DevBadge";
 import BetaWelcomePopup from "./components/BetaWelcomePopup";
 import WhatsNewModal from "./components/WhatsNewModal";
 import SplashScreen from "./components/SplashScreen";
-import SplashPreviewPage from "./pages/SplashPreviewPage";
 
 const queryClient = new QueryClient();
 
@@ -111,7 +110,7 @@ function AppRoutes() {
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/privacy" element={<PrivacyPage />} />
       <Route path="/changelog" element={<ProtectedRoute noLayout><ChangelogPage /></ProtectedRoute>} />
-      <Route path="/splash-preview" element={<SplashPreviewPage />} />
+      
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
