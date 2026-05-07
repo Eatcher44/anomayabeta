@@ -39,6 +39,7 @@ import { useBreeder } from '@/context/BreederContext';
 import { BOTTOM_NAV_HEIGHT } from '@/components/BreederBottomNav';
 import { isBeta } from '@/config/appVariant';
 import AccountDeletionSection from '@/components/AccountDeletionSection';
+import BetaPlanSwitcher from '@/components/BetaPlanSwitcher';
 
 
 type SortKey = 'alpha' | 'alpha-desc' | 'age-asc' | 'age-desc' | 'poids-asc' | 'poids-desc';
@@ -973,6 +974,9 @@ export default function HomePage() {
                 Historique des mises à jour
               </Button>
             </div>
+
+            {/* Beta plan simulator */}
+            <BetaPlanSwitcher />
 
             {/* Account Deletion */}
             <AccountDeletionSection />
