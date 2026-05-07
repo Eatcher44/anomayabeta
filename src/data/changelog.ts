@@ -8,10 +8,10 @@ export interface ChangelogVersion {
   bugs: string[];
 }
 
-export const CURRENT_CHANGELOG_VERSION = '0.1';
+export const CURRENT_CHANGELOG_VERSION = '0.1.5';
 export const CHANGELOG_STORAGE_KEY = 'anomaya_last_seen_version';
 
-// Today's date for v0.1 (compile-time)
+// Today's date for newest entry (compile-time)
 const today = new Date();
 const yyyy = today.getFullYear();
 const mm = String(today.getMonth() + 1).padStart(2, '0');
@@ -19,6 +19,24 @@ const dd = String(today.getDate()).padStart(2, '0');
 const TODAY_ISO = `${yyyy}-${mm}-${dd}`;
 
 export const CHANGELOG: ChangelogVersion[] = [
+  {
+    version: '0.1.5',
+    title: 'Correction du suivi de gestation',
+    date: TODAY_ISO,
+    intro:
+      'Cette petite mise à jour corrige un problème important dans le suivi des saillies et des gestations.',
+    ajouts: [
+      'Aucun ajout majeur dans cette version',
+    ],
+    modifications: [
+      'Le suivi de gestation distingue mieux la saillie confirmée et la mise bas réellement effectuée',
+    ],
+    bugs: [
+      'Correction d’un bug où confirmer une saillie pouvait valider la mise bas trop tôt',
+      'Correction de la disparition du compteur de gestation après confirmation d’une saillie',
+      'Le compteur de jours de gestation reste visible jusqu’à la confirmation réelle de la mise bas',
+    ],
+  },
   {
     version: '0.1',
     title: 'Premières améliorations de la bêta',
