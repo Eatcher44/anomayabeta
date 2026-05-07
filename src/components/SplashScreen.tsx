@@ -8,16 +8,44 @@ import { Cat, Dog, Bird, Rabbit, PawPrint } from 'lucide-react';
  * - Animated progress bar (asymptotic — never blocks the UI)
  * - Light & dark mode compatible, safe-area aware
  */
-export default function SplashScreen() {
+export const SPLASH_PHRASES = [
+  'Préparation de votre espace…',
+  'Réveil des compagnons…',
+  'Synchronisation des soins…',
+  'Préparation de votre famille…',
+  'Chargement…',
+];
+
+interface SplashScreenProps {
+  /** Override the phrase shown under the progress bar. If omitted, phrases rotate. */
+  phrase?: string;
+  /** Force progress value (0-100) instead of animated asymptotic progress. */
+  progress?: number;
+}
+
+export default function SplashScreen({ phrase, progress: forcedProgress }: SplashScreenProps = {}) {
   const [progress, setProgress] = useState(8);
+  const [phraseIndex, setPhraseIndex] = useState(0);
 
   useEffect(() => {
+    if (forcedProgress !== undefined) return;
     // Asymptotic progress: feels alive, never reaches 100 on its own.
     const id = setInterval(() => {
       setProgress((p) => (p >= 92 ? p : p + Math.max(1, (95 - p) * 0.08)));
     }, 120);
     return () => clearInterval(id);
-  }, []);
+  }, [forcedProgress]);
+
+  useEffect(() => {
+    if (phrase) return;
+    const id = setInterval(() => {
+      setPhraseIndex((i) => (i + 1) % SPLASH_PHRASES.length);
+    }, 2000);
+    return () => clearInterval(id);
+  }, [phrase]);
+
+  const shownProgress = forcedProgress !== undefined ? forcedProgress : progress;
+  const shownPhrase = phrase ?? SPLASH_PHRASES[phraseIndex];
 
   return (
     <div
