@@ -98,24 +98,15 @@ export default function AbonnementPage() {
   const prices = selectedPlan === 'nopub' ? NO_PUB_PRICES : BREEDER_PRICES;
   const currentPrice = prices.find(p => p.duration === selectedDuration);
 
-  const ctaLabel = isBeta
-    ? 'Bientôt disponible'
-    : selectedPlan === 'breeder'
-      ? `Continuer — Pack Éleveur (${currentPrice?.price})`
-      : `Continuer — Sans pub (${currentPrice?.price})`;
+  const ctaLabel = selectedPlan === 'breeder'
+    ? 'Disponible après la bêta'
+    : 'En préparation';
 
   const handleContinue = () => {
-    if (isBeta) {
-      toast({ title: 'Bientôt disponible', description: 'Les abonnements seront disponibles dans la version finale.' });
-      return;
-    }
-    if (selectedPlan === 'breeder') {
-      setBreeder(true);
-    } else {
-      setNoAds(true);
-    }
-    toast({ title: 'Abonnement activé !', description: selectedPlan === 'breeder' ? 'Pack Éleveur activé' : 'Sans publicités activé' });
-    navigate('/');
+    toast({
+      title: 'Bientôt disponible',
+      description: "Les abonnements seront disponibles dans la version finale. Pendant la bêta, aucun paiement n'est effectué.",
+    });
   };
 
   const handleRestore = () => {
@@ -209,7 +200,7 @@ export default function AbonnementPage() {
         <Button
           className="w-full h-12 text-base font-bold rounded-xl"
           onClick={handleContinue}
-          disabled={isBeta}
+          disabled
         >
           {ctaLabel}
         </Button>
