@@ -65,7 +65,7 @@ export const CHANGELOG: ChangelogVersion[] = [
   {
     version: '0.1',
     title: 'Premières améliorations de la bêta',
-    date: TODAY_ISO,
+    date: '2026-05-05',
     intro:
       "Merci pour les premiers retours envoyés depuis le lancement de la bêta. Cette mise à jour corrige plusieurs points importants et prépare les prochaines étapes d'Anomaya.",
     ajouts: [
