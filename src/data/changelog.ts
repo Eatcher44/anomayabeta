@@ -29,12 +29,16 @@ export const CHANGELOG: ChangelogVersion[] = [
       'Ajout d’une logique de plans Gratuit, Sans pub et Pack Éleveur',
       'Ajout d’un outil de test bêta pour simuler les différents accès',
       'Ajout d’un écran de verrouillage clair pour les fonctionnalités éleveur',
+      'Ajout d’un nouvel écran de chargement plus travaillé au lancement de l’application',
+      'Ajout de messages de chargement variables pour rendre l’attente plus agréable',
     ],
     modifications: [
       'Les données d’élevage sont conservées même lorsque l’accès au Pack Éleveur est désactivé',
       'L’écran Anomaya+ présente les futurs packs sans paiement réel pendant la bêta',
       'Préparation de la logique qui permettra plus tard de gérer les pubs et les abonnements',
       'Les raccourcis liés au Pack Éleveur affichent désormais plus clairement leur accès Pro',
+      'Amélioration du rendu visuel de l’écran de démarrage avec une illustration plus chaleureuse et adaptée au format mobile',
+      'Ajustement de l’affichage de l’image de chargement pour éviter les recadrages trop importants selon la taille de l’écran',
     ],
     bugs: [
       'Correction du délai d’ouverture de la page Anomaya+ depuis certains accès verrouillés',
