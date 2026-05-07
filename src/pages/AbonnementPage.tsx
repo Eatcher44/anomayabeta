@@ -127,6 +127,21 @@ export default function AbonnementPage() {
       </div>
 
       <div className="px-4 pb-10 max-w-lg mx-auto space-y-5 animate-fade-in">
+        {/* Beta test controls — moved to top so testers see them first */}
+        {(isBeta || isDev) && (
+          <Card className="p-4 border-2 border-dashed border-amber-500/50 bg-amber-500/5 space-y-3 mt-4">
+            <div className="flex items-center gap-2 text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
+              <FlaskConical className="h-3.5 w-3.5" />
+              Mode test bêta
+            </div>
+            <p className="text-[11px] text-muted-foreground leading-relaxed">
+              Pendant la bêta, vous pouvez simuler les accès Gratuit, Sans pub
+              et Pack Éleveur pour vérifier le comportement de l’application.
+              Aucun paiement réel n’est effectué.
+            </p>
+            <BetaPlanSwitcher />
+          </Card>
+        )}
         {/* Hero */}
         <div className="text-center pt-6 space-y-2">
           <div className="mx-auto w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-3">
