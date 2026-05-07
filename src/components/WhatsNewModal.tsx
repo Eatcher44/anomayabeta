@@ -3,7 +3,6 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { CHANGELOG, CURRENT_CHANGELOG_VERSION, CHANGELOG_STORAGE_KEY, isVersionNewer } from '@/data/changelog';
 
 export default function WhatsNewModal() {
@@ -26,13 +25,15 @@ export default function WhatsNewModal() {
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) dismiss(); }}>
-      <DialogContent className="sm:max-w-md max-h-[85vh] flex flex-col">
-        <DialogHeader>
+      <DialogContent
+        className="sm:max-w-md p-0 gap-0 flex flex-col max-h-[85vh] overflow-hidden"
+      >
+        <DialogHeader className="px-6 pt-6 pb-3 shrink-0">
           <DialogTitle>Nouveautés de la version {v.version}</DialogTitle>
           <DialogDescription>Voici les dernières améliorations de la bêta.</DialogDescription>
         </DialogHeader>
 
-        <ScrollArea className="flex-1 -mx-2 px-2">
+        <div className="flex-1 min-h-0 overflow-y-auto px-6">
           <div className="py-2 space-y-4 text-sm">
             {v.intro && <p className="text-muted-foreground leading-relaxed">{v.intro}</p>}
 
@@ -46,9 +47,14 @@ export default function WhatsNewModal() {
               <Section title="Résolutions de bugs" items={v.bugs} />
             )}
           </div>
-        </ScrollArea>
+        </div>
 
-        <Button onClick={dismiss} className="w-full mt-2">Merci, j'ai compris</Button>
+        <div
+          className="px-6 pt-3 pb-6 shrink-0 border-t border-border/50 bg-background"
+          style={{ paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}
+        >
+          <Button onClick={dismiss} className="w-full">Merci, j'ai compris</Button>
+        </div>
       </DialogContent>
     </Dialog>
   );
