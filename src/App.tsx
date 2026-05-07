@@ -43,6 +43,7 @@ import ScrollToTop from "./components/ScrollToTop";
 import DevBadge from "./components/DevBadge";
 import BetaWelcomePopup from "./components/BetaWelcomePopup";
 import WhatsNewModal from "./components/WhatsNewModal";
+import SplashScreen from "./components/SplashScreen";
 
 const queryClient = new QueryClient();
 
