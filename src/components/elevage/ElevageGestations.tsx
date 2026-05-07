@@ -42,7 +42,7 @@ export default function ElevageGestations({ reproductions, animaux, getGestation
           const progress = Math.round((days / config.gestationAvgDays) * 100);
           const isActive = g.status === 'active' && days >= 0 && days <= config.gestationMaxDays;
 
-          const statusLabel = g.status === 'cancelled' ? 'Annulée' : g.status === 'birth_confirmed' || g.confirmed ? 'Mise-bas' : `J${days}/${config.gestationAvgDays}`;
+          const statusLabel = g.status === 'cancelled' ? 'Annulée' : g.status === 'birth_confirmed' ? 'Mise-bas' : `J${days}/${config.gestationAvgDays}`;
           const statusVariant = g.status === 'cancelled' ? 'destructive' as const : 'secondary' as const;
 
           return (
