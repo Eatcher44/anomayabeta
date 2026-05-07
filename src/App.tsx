@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -116,6 +117,17 @@ function AppRoutes() {
   );
 }
 
+/** Guarantees the custom splash is visible for a minimum duration on app open. */
+function StartupSplashGate({ children }: { children: React.ReactNode }) {
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setReady(true), 1200);
+    return () => clearTimeout(t);
+  }, []);
+  if (!ready) return <SplashScreen />;
+  return <>{children}</>;
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
@@ -127,10 +139,12 @@ const App = () => (
             <BrowserRouter>
               <ScrollToTop />
               <DevBadge />
-              <BetaWelcomePopup />
-              <WhatsNewModal />
-              <AppRoutes />
-              <BreederBottomNav />
+              <StartupSplashGate>
+                <BetaWelcomePopup />
+                <WhatsNewModal />
+                <AppRoutes />
+                <BreederBottomNav />
+              </StartupSplashGate>
             </BrowserRouter>
           </TooltipProvider>
         </BreederProvider>

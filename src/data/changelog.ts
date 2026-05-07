@@ -31,6 +31,7 @@ export const CHANGELOG: ChangelogVersion[] = [
       'Ajout d’un écran de verrouillage clair pour les fonctionnalités éleveur',
       'Ajout d’un nouvel écran de chargement plus travaillé au lancement de l’application',
       'Ajout de messages de chargement variables pour rendre l’attente plus agréable',
+      'Amélioration de l’écran de lancement de l’application pour un démarrage plus propre et plus agréable',
     ],
     modifications: [
       'Les données d’élevage sont conservées même lorsque l’accès au Pack Éleveur est désactivé',
@@ -40,6 +41,7 @@ export const CHANGELOG: ChangelogVersion[] = [
       'Amélioration du rendu visuel de l’écran de démarrage avec une illustration plus chaleureuse et adaptée au format mobile',
       'Ajustement de l’affichage de l’image de chargement pour éviter les recadrages trop importants selon la taille de l’écran',
       'Les cartes des bébés dans une portée utilisent désormais le même accès au profil que les animaux de Ma famille',
+      'Meilleure cohérence visuelle entre l’ouverture de l’application et l’écran de chargement Anomaya',
     ],
     bugs: [
       'Correction du délai d’ouverture de la page Anomaya+ depuis certains accès verrouillés',
