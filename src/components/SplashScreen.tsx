@@ -94,11 +94,11 @@ export default function SplashScreen({ phrase, progress: forcedProgress }: Splas
         <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
           <div
             className="h-full rounded-full bg-gradient-to-r from-primary/70 via-primary to-primary/70 transition-[width] duration-300 ease-out"
-            style={{ width: `${progress}%` }}
+            style={{ width: `${shownProgress}%` }}
           />
         </div>
         <p className="mt-3 text-center text-[11px] font-medium tracking-wide text-muted-foreground">
-          Préparation de votre espace…
+          {shownPhrase}
         </p>
       </div>
 
