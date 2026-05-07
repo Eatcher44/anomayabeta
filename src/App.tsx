@@ -99,18 +99,18 @@ function AppRoutes() {
       <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
       <Route path="/abonnement" element={<ProtectedRoute noLayout><AbonnementPage /></ProtectedRoute>} />
       <Route path="/paradis" element={<ProtectedRoute><ParadisPage /></ProtectedRoute>} />
-      <Route path="/reproduction/:id" element={<ProtectedRoute><ReproductionPage /></ProtectedRoute>} />
-      <Route path="/chaleurs/:id" element={<ProtectedRoute><ChaleursPage /></ProtectedRoute>} />
-      <Route path="/portees" element={<ProtectedRoute><PorteesPage /></ProtectedRoute>} />
-      <Route path="/portee/:id" element={<ProtectedRoute><LitterDetailPage /></ProtectedRoute>} />
-      <Route path="/stats-elevage" element={<ProtectedRoute><StatsElevagePage /></ProtectedRoute>} />
-      <Route path="/transfer/:id" element={<ProtectedRoute><TransferPage /></ProtectedRoute>} />
+      <Route path="/reproduction/:id" element={<ProtectedRoute><BreederRouteGate><ReproductionPage /></BreederRouteGate></ProtectedRoute>} />
+      <Route path="/chaleurs/:id" element={<ProtectedRoute><BreederRouteGate><ChaleursPage /></BreederRouteGate></ProtectedRoute>} />
+      <Route path="/portees" element={<ProtectedRoute><BreederRouteGate><PorteesPage /></BreederRouteGate></ProtectedRoute>} />
+      <Route path="/portee/:id" element={<ProtectedRoute><BreederRouteGate><LitterDetailPage /></BreederRouteGate></ProtectedRoute>} />
+      <Route path="/stats-elevage" element={<ProtectedRoute><BreederRouteGate><StatsElevagePage /></BreederRouteGate></ProtectedRoute>} />
+      <Route path="/transfer/:id" element={<ProtectedRoute><BreederRouteGate><TransferPage /></BreederRouteGate></ProtectedRoute>} />
       <Route path="/claim" element={<ProtectedRoute><TransferPage /></ProtectedRoute>} />
-      <Route path="/transferes" element={<ProtectedRoute><TransferesPage /></ProtectedRoute>} />
-      <Route path="/profil-eleveur" element={<ProtectedRoute><BreederProfilePage /></ProtectedRoute>} />
-      <Route path="/elevage" element={<ProtectedRoute><ElevagePage /></ProtectedRoute>} />
-      <Route path="/departs-reservations" element={<ProtectedRoute><DepartsReservationsPage /></ProtectedRoute>} />
-      <Route path="/depart/:id" element={<ProtectedRoute><PreparerDepartPage /></ProtectedRoute>} />
+      <Route path="/transferes" element={<ProtectedRoute><BreederRouteGate><TransferesPage /></BreederRouteGate></ProtectedRoute>} />
+      <Route path="/profil-eleveur" element={<ProtectedRoute><BreederRouteGate><BreederProfilePage /></BreederRouteGate></ProtectedRoute>} />
+      <Route path="/elevage" element={<ProtectedRoute><BreederRouteGate><ElevagePage /></BreederRouteGate></ProtectedRoute>} />
+      <Route path="/departs-reservations" element={<ProtectedRoute><BreederRouteGate><DepartsReservationsPage /></BreederRouteGate></ProtectedRoute>} />
+      <Route path="/depart/:id" element={<ProtectedRoute><BreederRouteGate><PreparerDepartPage /></BreederRouteGate></ProtectedRoute>} />
       <Route path="/feedback" element={<ProtectedRoute><FeedbackPage /></ProtectedRoute>} />
       <Route path="/elevage-beta" element={<ProtectedRoute><ElevageBetaPage /></ProtectedRoute>} />
       <Route path="/guide" element={<ProtectedRoute><GuidePage /></ProtectedRoute>} />
