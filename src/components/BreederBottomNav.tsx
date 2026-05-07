@@ -23,11 +23,8 @@ export default function BreederBottomNav() {
     } else {
       if (gateRef.current) return;
       gateRef.current = true;
-      toast({ title: '🔒 Fonction Pack Éleveur', description: 'Accédez à toutes les fonctionnalités éleveur' });
-      setTimeout(() => {
-        navigate('/abonnement?plan=breeder');
-        gateRef.current = false;
-      }, 1500);
+      navigate('/abonnement?plan=breeder');
+      setTimeout(() => { gateRef.current = false; }, 300);
     }
   };
 

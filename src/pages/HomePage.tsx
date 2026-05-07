@@ -136,11 +136,8 @@ export default function HomePage() {
     }
     if (premiumGateRef.current) return; // debounce
     premiumGateRef.current = true;
-    toast({ title: '🔒 Fonction Pack Éleveur', description: 'Accédez à toutes les fonctionnalités éleveur' });
-    setTimeout(() => {
-      navigate('/abonnement?plan=breeder');
-      premiumGateRef.current = false;
-    }, 1500);
+    navigate('/abonnement?plan=breeder');
+    setTimeout(() => { premiumGateRef.current = false; }, 300);
   }, [isBreeder, navigate]);
 
   // Sort
@@ -738,10 +735,18 @@ export default function HomePage() {
               handlePremiumGate('/transferes');
             }
           }}
-          className="flex items-center gap-1.5 h-8 px-3 rounded-xl hover:bg-muted/80 active:bg-muted transition-colors"
+          className={`flex items-center gap-1.5 h-8 px-3 rounded-xl transition-colors ${
+            isBreeder ? 'hover:bg-muted/80 active:bg-muted' : 'opacity-70 hover:opacity-90'
+          }`}
         >
           <ArrowRightLeft className="w-3.5 h-3.5 text-muted-foreground" />
           <span className="text-[11px] font-semibold text-muted-foreground">Transférés</span>
+          {!isBreeder && (
+            <span className="flex items-center gap-0.5 ml-0.5 px-1 py-px rounded text-[9px] font-bold bg-primary/10 text-primary">
+              <Lock className="w-2.5 h-2.5" />
+              Pro
+            </span>
+          )}
         </button>
 
         <div className="w-px h-4 bg-border/50" />
