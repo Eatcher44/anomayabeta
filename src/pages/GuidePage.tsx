@@ -138,6 +138,20 @@ const GUIDE_SECTIONS = [
     ],
   },
   {
+    id: 'plans',
+    icon: Building2,
+    title: 'Comprendre les accès Anomaya',
+    description: 'Plans Gratuit, Sans pub et Pack Éleveur — vos données restent toujours conservées.',
+    steps: [
+      'Gratuit : accès au suivi de base (animaux, poids, soins, rappels).',
+      'Sans pub : supprimera les publicités lorsqu’elles seront ajoutées.',
+      'Pack Éleveur : donne accès aux outils d’élevage (portées, gestation, chaleurs, départs, transferts).',
+      'Si le Pack Éleveur expire, vos données d’élevage ne sont pas supprimées : elles restent en sécurité.',
+      'Reprendre le Pack Éleveur permet de retrouver immédiatement toutes vos données d’élevage.',
+      'Pendant la bêta, vous pouvez simuler les accès depuis Paramètres → Tester les accès d’abonnement.',
+    ],
+  },
+  {
     id: 'v01-notes',
     icon: ClipboardList,
     title: 'Nouveautés v0.1 — bon à savoir',

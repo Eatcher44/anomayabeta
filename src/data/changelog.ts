@@ -8,7 +8,7 @@ export interface ChangelogVersion {
   bugs: string[];
 }
 
-export const CURRENT_CHANGELOG_VERSION = '0.1.5';
+export const CURRENT_CHANGELOG_VERSION = '0.2';
 export const CHANGELOG_STORAGE_KEY = 'anomaya_last_seen_version';
 
 // Today's date for newest entry (compile-time)
@@ -19,6 +19,26 @@ const dd = String(today.getDate()).padStart(2, '0');
 const TODAY_ISO = `${yyyy}-${mm}-${dd}`;
 
 export const CHANGELOG: ChangelogVersion[] = [
+  {
+    version: '0.2',
+    title: "Préparation des accès d'abonnement",
+    date: TODAY_ISO,
+    intro:
+      "Cette mise à jour prépare la future organisation des accès Anomaya, sans paiement réel pour le moment. L’objectif est de vérifier que les données restent bien conservées lorsque l’accès au Pack Éleveur change.",
+    ajouts: [
+      'Ajout d’une logique de plans Gratuit, Sans pub et Pack Éleveur',
+      'Ajout d’un outil de test bêta pour simuler les différents accès',
+      'Ajout d’un écran de verrouillage clair pour les fonctionnalités éleveur',
+    ],
+    modifications: [
+      'Les données d’élevage sont conservées même lorsque l’accès au Pack Éleveur est désactivé',
+      'L’écran Anomaya+ présente les futurs packs sans paiement réel pendant la bêta',
+      'Préparation de la logique qui permettra plus tard de gérer les pubs et les abonnements',
+    ],
+    bugs: [
+      'Aucun bug majeur corrigé dans cette version',
+    ],
+  },
   {
     version: '0.1.5',
     title: 'Correction du suivi de gestation',
