@@ -983,21 +983,6 @@ export default function HomePage() {
             {/* Beta plan simulator */}
             <BetaPlanSwitcher />
 
-            {/* Beta-only: splash preview */}
-            {isBeta && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full justify-start gap-2"
-                onClick={() => {
-                  setSettingsOpen(false);
-                  navigate('/splash-preview');
-                }}
-              >
-                <ExternalLink className="w-3.5 h-3.5" />
-                Prévisualiser l’écran de chargement
-              </Button>
-            )}
 
             {/* Account Deletion */}
             <AccountDeletionSection />
