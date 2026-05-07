@@ -44,6 +44,7 @@ import DevBadge from "./components/DevBadge";
 import BetaWelcomePopup from "./components/BetaWelcomePopup";
 import WhatsNewModal from "./components/WhatsNewModal";
 import SplashScreen from "./components/SplashScreen";
+import SplashPreviewPage from "./pages/SplashPreviewPage";
 
 const queryClient = new QueryClient();
 
