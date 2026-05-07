@@ -10,6 +10,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { isBeta } from '@/config/appVariant';
+import BetaPlanSwitcher from '@/components/BetaPlanSwitcher';
 
 const isDev = import.meta.env.DEV;
 
@@ -220,7 +221,7 @@ export default function AbonnementPage() {
           Restaurer mon abonnement
         </button>
 
-        {/* Dev-only toggle */}
+        {/* Dev-only legacy toggle (kept for direct breeder/no-ads switches in dev) */}
         {isDev && (
           <Card className="p-4 border-dashed border-2 border-amber-500/50 bg-amber-500/5 space-y-3">
             <div className="flex items-center gap-2 text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
