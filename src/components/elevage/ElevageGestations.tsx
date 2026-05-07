@@ -20,7 +20,7 @@ export default function ElevageGestations({ reproductions, animaux, getGestation
 
   const active = reproductions.filter(r => r.status === 'active');
   const cancelled = reproductions.filter(r => r.status === 'cancelled');
-  const confirmed = reproductions.filter(r => r.status === 'birth_confirmed' || r.confirmed);
+  const confirmed = reproductions.filter(r => r.status === 'birth_confirmed');
 
   const renderList = (items: Reproduction[], label: string) => {
     if (items.length === 0) return null;
