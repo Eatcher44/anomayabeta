@@ -646,7 +646,13 @@ export default function LitterDetailPage() {
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
-                      <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                      <button
+                        onClick={(e) => { e.stopPropagation(); navigate(`/profil/${nb.id}`); }}
+                        aria-label="Ouvrir le profil"
+                        className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-md hover:shadow-lg transition-shadow shrink-0"
+                      >
+                        <ChevronRight className="w-5 h-5" />
+                      </button>
                     </div>
                   </div>
 

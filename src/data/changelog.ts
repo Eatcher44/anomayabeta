@@ -39,9 +39,11 @@ export const CHANGELOG: ChangelogVersion[] = [
       'Les raccourcis liés au Pack Éleveur affichent désormais plus clairement leur accès Pro',
       'Amélioration du rendu visuel de l’écran de démarrage avec une illustration plus chaleureuse et adaptée au format mobile',
       'Ajustement de l’affichage de l’image de chargement pour éviter les recadrages trop importants selon la taille de l’écran',
+      'Les cartes des bébés dans une portée utilisent désormais le même accès au profil que les animaux de Ma famille',
     ],
     bugs: [
       'Correction du délai d’ouverture de la page Anomaya+ depuis certains accès verrouillés',
+      'Correction de l’accès au profil des bébés depuis les cartes d’une portée',
     ],
   },
   {
