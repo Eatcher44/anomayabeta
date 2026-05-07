@@ -42,6 +42,7 @@ export const CHANGELOG: ChangelogVersion[] = [
       'Ajustement de l’affichage de l’image de chargement pour éviter les recadrages trop importants selon la taille de l’écran',
       'Les cartes des bébés dans une portée utilisent désormais le même accès au profil que les animaux de Ma famille',
       'Meilleure cohérence visuelle entre l’ouverture de l’application et l’écran de chargement Anomaya',
+      'L’écran de chargement personnalisé reste désormais visible suffisamment longtemps pour offrir une transition plus propre au lancement de l’application',
     ],
     bugs: [
       'Correction du délai d’ouverture de la page Anomaya+ depuis certains accès verrouillés',
