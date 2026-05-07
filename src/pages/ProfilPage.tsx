@@ -525,7 +525,7 @@ export default function ProfilPage() {
                         {readOnly ? "Voir l'historique des chaleurs" : 'Gérer les chaleurs'}
                       </Button>
                     ) : (
-                      <Button variant="outline" disabled><Flame className="w-4 h-4 mr-2" />À venir (pack Éleveur)</Button>
+                      <Button onClick={() => navigate('/abonnement?plan=breeder')} className="bg-primary text-primary-foreground hover:bg-primary/90"><Flame className="w-4 h-4 mr-2" />Pack Éleveur</Button>
                     )}
                   </div>
 
@@ -537,7 +537,7 @@ export default function ProfilPage() {
                         {readOnly ? "Voir l'historique de reproduction" : 'Gérer la reproduction'}
                       </Button>
                     ) : (
-                      <Button variant="outline" disabled><Baby className="w-4 h-4 mr-2" />À venir (pack Éleveur)</Button>
+                      <Button onClick={() => navigate('/abonnement?plan=breeder')} className="bg-primary text-primary-foreground hover:bg-primary/90"><Baby className="w-4 h-4 mr-2" />Pack Éleveur</Button>
                     )}
                   </div>
                 </>
