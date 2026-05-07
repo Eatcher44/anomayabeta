@@ -1,11 +1,12 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Lock, Crown } from 'lucide-react';
+import { Lock, Crown, Database } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { isBeta } from '@/config/appVariant';
 
 /**
- * Clean premium screen shown when a non-subscriber tries to access
- * breeder features after the beta period ends.
+ * Premium gate shown when a non-subscriber tries to access breeder features.
+ * Makes it explicit that breeder data is preserved, never deleted.
  */
 export default function BreederGate() {
   const navigate = useNavigate();
@@ -16,16 +17,19 @@ export default function BreederGate() {
         <Lock className="w-8 h-8 text-primary" />
       </div>
 
-      <h1 className="text-xl font-bold text-foreground mb-2">
+      <h1 className="text-xl font-bold text-foreground mb-3">
         Pack Éleveur requis
       </h1>
 
-      <p className="text-sm text-muted-foreground max-w-xs leading-relaxed mb-2">
-        Les outils éleveur font partie du Pack Éleveur professionnel.
+      <p className="text-sm text-muted-foreground max-w-xs leading-relaxed mb-4">
+        Vos données d'élevage sont conservées. Activez le Pack Éleveur pour
+        retrouver l'accès complet à vos portées, suivis et outils d'élevage.
       </p>
-      <p className="text-sm text-muted-foreground max-w-xs leading-relaxed mb-8">
-        Débloquez la gestion avancée de votre élevage.
-      </p>
+
+      <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground mb-6">
+        <Database className="w-3 h-3" />
+        Aucune donnée n'est supprimée
+      </div>
 
       <Button
         onClick={() => navigate('/abonnement?plan=breeder')}
@@ -33,16 +37,23 @@ export default function BreederGate() {
         size="lg"
       >
         <Crown className="w-4 h-4" />
-        Passer au Pack Éleveur
+        Voir le Pack Éleveur
       </Button>
 
       <Button
         variant="ghost"
         onClick={() => navigate('/')}
-        className="mt-4 text-muted-foreground"
+        className="mt-3 text-muted-foreground"
       >
         Retour à Ma famille
       </Button>
+
+      {isBeta && (
+        <p className="mt-6 text-[11px] text-muted-foreground/70 max-w-xs leading-relaxed">
+          Pendant la bêta, cette logique est en test et aucun paiement réel
+          n'est effectué.
+        </p>
+      )}
     </div>
   );
 }
