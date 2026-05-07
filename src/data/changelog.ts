@@ -34,9 +34,10 @@ export const CHANGELOG: ChangelogVersion[] = [
       'Les données d’élevage sont conservées même lorsque l’accès au Pack Éleveur est désactivé',
       'L’écran Anomaya+ présente les futurs packs sans paiement réel pendant la bêta',
       'Préparation de la logique qui permettra plus tard de gérer les pubs et les abonnements',
+      'Les raccourcis liés au Pack Éleveur affichent désormais plus clairement leur accès Pro',
     ],
     bugs: [
-      'Aucun bug majeur corrigé dans cette version',
+      'Correction du délai d’ouverture de la page Anomaya+ depuis certains accès verrouillés',
     ],
   },
   {
