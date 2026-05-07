@@ -136,11 +136,8 @@ export default function HomePage() {
     }
     if (premiumGateRef.current) return; // debounce
     premiumGateRef.current = true;
-    toast({ title: '🔒 Fonction Pack Éleveur', description: 'Accédez à toutes les fonctionnalités éleveur' });
-    setTimeout(() => {
-      navigate('/abonnement?plan=breeder');
-      premiumGateRef.current = false;
-    }, 1500);
+    navigate('/abonnement?plan=breeder');
+    setTimeout(() => { premiumGateRef.current = false; }, 300);
   }, [isBreeder, navigate]);
 
   // Sort
