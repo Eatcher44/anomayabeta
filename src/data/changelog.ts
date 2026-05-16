@@ -32,6 +32,8 @@ export const CHANGELOG: ChangelogVersion[] = [
       'Ajout d’un nouvel écran de chargement plus travaillé au lancement de l’application',
       'Ajout de messages de chargement variables pour rendre l’attente plus agréable',
       'Amélioration de l’écran de lancement de l’application pour un démarrage plus propre et plus agréable',
+      'Ajout d’une nouvelle icône Anomaya plus élégante',
+      'Ajout d’un écran de chargement plus premium au lancement de l’application',
     ],
     modifications: [
       'Les données d’élevage sont conservées même lorsque l’accès au Pack Éleveur est désactivé',
@@ -43,6 +45,7 @@ export const CHANGELOG: ChangelogVersion[] = [
       'Les cartes des bébés dans une portée utilisent désormais le même accès au profil que les animaux de Ma famille',
       'Meilleure cohérence visuelle entre l’ouverture de l’application et l’écran de chargement Anomaya',
       'L’écran de chargement personnalisé reste désormais visible suffisamment longtemps pour offrir une transition plus propre au lancement de l’application',
+      'Amélioration de l’identité visuelle d’Anomaya au démarrage de l’application',
     ],
     bugs: [
       'Correction du délai d’ouverture de la page Anomaya+ depuis certains accès verrouillés',

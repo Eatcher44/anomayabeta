@@ -8,13 +8,13 @@
   "description": "Suivi d’élevage chiens et chats : portées, soins, poids, gestion complète.",
   "icons": [
     {
-      "src": "https://raw.githubusercontent.com/Eatcher44/anomayabeta/main/icon-512.png",
+      "src": "/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "https://raw.githubusercontent.com/Eatcher44/anomayabeta/main/icon-512.png",
+      "src": "/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
