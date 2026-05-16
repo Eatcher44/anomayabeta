@@ -192,7 +192,7 @@ export default function ProfilPage() {
 
   // Parent info for newborns
   const motherAnimal = animal?.mother_id ? animaux.find((a) => a.id === animal.mother_id) : null;
-  const [fatherInfo, setFatherInfo] = useState<{ name: string } | null>(null);
+  const [fatherInfo, setFatherInfo] = useState<{ name: string; id?: string | null } | null>(null);
   const [maleMatings, setMaleMatings] = useState<any[]>([]);
   
 
@@ -201,10 +201,11 @@ export default function ProfilPage() {
     (async () => {
       const { data } = await supabase.from('litters').select('father_id, father_name').eq('id', animal.litter_id).single();
       if (data) {
-        if (data.father_name) setFatherInfo({ name: data.father_name });
-        else if (data.father_id) {
+        if (data.father_id) {
           const father = animaux.find((a) => a.id === data.father_id);
-          setFatherInfo({ name: father?.nom || 'Inconnu' });
+          setFatherInfo({ name: father?.nom || data.father_name || 'Inconnu', id: data.father_id });
+        } else if (data.father_name) {
+          setFatherInfo({ name: data.father_name, id: null });
         }
       }
     })();
@@ -470,7 +471,13 @@ export default function ProfilPage() {
                 </div>
               )}
               {fatherInfo && (
-                <div className="flex flex-wrap justify-between gap-x-3 py-1 text-sm"><span className="text-muted-foreground shrink-0">Père</span><span className="font-bold">{fatherInfo.name}</span></div>
+                <div className="flex flex-wrap justify-between gap-x-3 py-1 text-sm"><span className="text-muted-foreground shrink-0">Père</span>
+                  {fatherInfo.id ? (
+                    <button onClick={() => navigate(`/profil/${fatherInfo.id}`)} className="font-bold text-primary hover:underline text-sm">{fatherInfo.name}</button>
+                  ) : (
+                    <span className="font-bold">{fatherInfo.name}</span>
+                  )}
+                </div>
               )}
             </div>
           </div>
