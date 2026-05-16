@@ -367,6 +367,48 @@ export type Database = {
           },
         ]
       }
+      pharmacy_items: {
+        Row: {
+          category: string | null
+          created_at: string
+          expiration_date: string | null
+          id: string
+          low_stock_threshold: number | null
+          name: string
+          notes: string | null
+          quantity_remaining: number
+          unit: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          expiration_date?: string | null
+          id?: string
+          low_stock_threshold?: number | null
+          name: string
+          notes?: string | null
+          quantity_remaining?: number
+          unit?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          expiration_date?: string | null
+          id?: string
+          low_stock_threshold?: number | null
+          name?: string
+          notes?: string | null
+          quantity_remaining?: number
+          unit?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       rendezvous: {
         Row: {
           animal_ids: string[] | null
