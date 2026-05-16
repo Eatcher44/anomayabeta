@@ -192,7 +192,7 @@ export default function ProfilPage() {
 
   // Parent info for newborns
   const motherAnimal = animal?.mother_id ? animaux.find((a) => a.id === animal.mother_id) : null;
-  const [fatherInfo, setFatherInfo] = useState<{ name: string } | null>(null);
+  const [fatherInfo, setFatherInfo] = useState<{ name: string; id?: string | null } | null>(null);
   const [maleMatings, setMaleMatings] = useState<any[]>([]);
   
 
@@ -201,10 +201,11 @@ export default function ProfilPage() {
     (async () => {
       const { data } = await supabase.from('litters').select('father_id, father_name').eq('id', animal.litter_id).single();
       if (data) {
-        if (data.father_name) setFatherInfo({ name: data.father_name });
-        else if (data.father_id) {
+        if (data.father_id) {
           const father = animaux.find((a) => a.id === data.father_id);
-          setFatherInfo({ name: father?.nom || 'Inconnu' });
+          setFatherInfo({ name: father?.nom || data.father_name || 'Inconnu', id: data.father_id });
+        } else if (data.father_name) {
+          setFatherInfo({ name: data.father_name, id: null });
         }
       }
     })();
