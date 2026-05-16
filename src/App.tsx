@@ -46,6 +46,7 @@ import BetaWelcomePopup from "./components/BetaWelcomePopup";
 import WhatsNewModal from "./components/WhatsNewModal";
 import SplashScreen from "./components/SplashScreen";
 import PharmaciePage from "./pages/PharmaciePage";
+import HistoriqueSoinsPage from "./pages/HistoriqueSoinsPage";
 
 const queryClient = new QueryClient();
 
