@@ -471,7 +471,13 @@ export default function ProfilPage() {
                 </div>
               )}
               {fatherInfo && (
-                <div className="flex flex-wrap justify-between gap-x-3 py-1 text-sm"><span className="text-muted-foreground shrink-0">Père</span><span className="font-bold">{fatherInfo.name}</span></div>
+                <div className="flex flex-wrap justify-between gap-x-3 py-1 text-sm"><span className="text-muted-foreground shrink-0">Père</span>
+                  {fatherInfo.id ? (
+                    <button onClick={() => navigate(`/profil/${fatherInfo.id}`)} className="font-bold text-primary hover:underline text-sm">{fatherInfo.name}</button>
+                  ) : (
+                    <span className="font-bold">{fatherInfo.name}</span>
+                  )}
+                </div>
               )}
             </div>
           </div>
