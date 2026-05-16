@@ -112,6 +112,17 @@ const GUIDE_SECTIONS = [
     ],
   },
   {
+    id: 'historique-soins',
+    icon: Pill,
+    title: 'Consulter l\'historique des soins',
+    description: 'Retrouvez tous les soins d\'un animal au même endroit.',
+    steps: [
+      'L\'historique des soins regroupe les vaccins, antiparasitaires, vermifuges et autres traitements d\'un animal au même endroit.',
+      'Les produits donnés depuis la Pharmacie apparaissent aussi dans cet historique.',
+      'Accédez-y depuis le profil de l\'animal, à côté du bouton "Autres soins / traitements".',
+    ],
+  },
+  {
     id: 'breeders',
     icon: Heart,
     title: 'Gérer les reproducteurs',

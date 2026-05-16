@@ -24,15 +24,19 @@ export const CHANGELOG: ChangelogVersion[] = [
       'Ajout de la possibilité de lier un traitement donné à un produit de la pharmacie',
       'Ajout de l’ajustement manuel du stock',
       'Ajout d’indications visuelles pour les stocks faibles ou expirés',
+      'Ajout d’un historique des soins complet dans le profil de chaque animal',
     ],
     modifications: [
       'Le suivi des traitements devient plus pratique grâce à la déduction automatique des doses utilisées',
       'Le Tableau de bord santé donne maintenant accès plus rapidement à la Pharmacie',
       'Les liens vers les parents d’un bébé sont maintenant plus complets lorsqu’une mère et un père sont renseignés',
+      'Les soins d’un animal sont désormais regroupés plus clairement par catégories : vaccins, antiparasitaires/vermifuges et autres traitements',
+      'Les produits donnés depuis la Pharmacie peuvent être retrouvés plus facilement dans l’historique des soins',
     ],
     bugs: [
       'Correction de l’affichage des produits donnés depuis la Pharmacie dans l’historique de soins de l’animal',
       'Correction de l’accès au profil du père depuis la fiche d’un bébé lorsque le père est renseigné',
+      'Correction de l’affichage des traitements issus de la Pharmacie dans l’historique de l’animal',
     ],
   },
   {

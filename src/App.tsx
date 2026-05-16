@@ -46,6 +46,7 @@ import BetaWelcomePopup from "./components/BetaWelcomePopup";
 import WhatsNewModal from "./components/WhatsNewModal";
 import SplashScreen from "./components/SplashScreen";
 import PharmaciePage from "./pages/PharmaciePage";
+import HistoriqueSoinsPage from "./pages/HistoriqueSoinsPage";
 
 const queryClient = new QueryClient();
 
@@ -92,6 +93,7 @@ function AppRoutes() {
       <Route path="/consultation/:id" element={<ProtectedRoute><ConsultationPage /></ProtectedRoute>} />
       <Route path="/dashboard-sante" element={<ProtectedRoute><HealthDashboardPage /></ProtectedRoute>} />
       <Route path="/pharmacie" element={<ProtectedRoute><PharmaciePage /></ProtectedRoute>} />
+      <Route path="/historique-soins/:id" element={<ProtectedRoute><HistoriqueSoinsPage /></ProtectedRoute>} />
       <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
       <Route path="/abonnement" element={<ProtectedRoute noLayout><AbonnementPage /></ProtectedRoute>} />
       <Route path="/paradis" element={<ProtectedRoute><ParadisPage /></ProtectedRoute>} />
