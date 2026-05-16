@@ -561,6 +561,7 @@ export default function PharmaciePage() {
               <DateField
                 value={form.expiration || new Date()}
                 onChange={(d) => setForm({ ...form, expiration: d })}
+                maximumDate={new Date(2100, 11, 31)}
               />
               {form.expiration && (
                 <Button variant="ghost" size="sm" className="mt-1 h-auto p-1 text-xs" onClick={() => setForm({ ...form, expiration: null })}>
