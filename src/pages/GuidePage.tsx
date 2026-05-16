@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, PawPrint, Edit, Baby, CalendarPlus, Heart, ClipboardList, Building2, Utensils, Palette, Scale } from 'lucide-react';
+import { ArrowLeft, PawPrint, Edit, Baby, CalendarPlus, Heart, ClipboardList, Building2, Utensils, Palette, Scale, Pill } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
@@ -95,6 +95,20 @@ const GUIDE_SECTIONS = [
       'Renseignez la date et les détails.',
       'Activez un rappel si vous le souhaitez.',
       'Retrouvez l\'historique complet dans le profil.',
+    ],
+  },
+  {
+    id: 'pharmacie',
+    icon: Pill,
+    title: 'Utiliser la pharmacie',
+    description: 'Suivez vos médicaments et traitements disponibles à la maison.',
+    steps: [
+      'La pharmacie permet de suivre les produits et médicaments que vous avez déjà.',
+      'Vous pouvez indiquer la quantité restante et l\'unité (dose, comprimé, ml, pipette…).',
+      'Lorsqu\'un traitement est donné à un animal depuis la pharmacie, la dose est retirée automatiquement du stock.',
+      'Vous pouvez ajouter, retirer ou modifier manuellement le stock à tout moment.',
+      'Des indications visuelles préviennent quand un produit est en stock faible, épuisé, expiré ou expire bientôt.',
+      'La pharmacie est accessible à tous les utilisateurs, même sans Pack Éleveur.',
     ],
   },
   {
