@@ -8,44 +8,47 @@ export interface ChangelogVersion {
   bugs: string[];
 }
 
-export const CURRENT_CHANGELOG_VERSION = '0.2';
+export const CURRENT_CHANGELOG_VERSION = '0.2.5';
 export const CHANGELOG_STORAGE_KEY = 'anomaya_last_seen_version';
-
-// Today's date for newest entry (compile-time)
-const today = new Date();
-const yyyy = today.getFullYear();
-const mm = String(today.getMonth() + 1).padStart(2, '0');
-const dd = String(today.getDate()).padStart(2, '0');
-const TODAY_ISO = `${yyyy}-${mm}-${dd}`;
 
 export const CHANGELOG: ChangelogVersion[] = [
   {
+    version: '0.2.5',
+    title: 'Amélioration de l’identité visuelle',
+    date: '2026-05-16',
+    intro:
+      "Cette mise à jour améliore l’apparence d’Anomaya au lancement de l’application, avec une nouvelle icône et un écran de chargement plus soigné.",
+    ajouts: [
+      'Ajout d’une nouvelle icône Anomaya plus élégante',
+      'Ajout d’un nouvel écran de chargement plus premium au lancement de l’application',
+      'Ajout d’un visuel de démarrage plus cohérent avec l’univers Anomaya',
+    ],
+    modifications: [
+      'Amélioration de l’identité visuelle d’Anomaya au démarrage de l’application',
+      'Meilleure cohérence entre l’icône, l’écran de chargement et l’ambiance générale de l’application',
+      'L’écran de chargement reste visible suffisamment longtemps pour offrir une transition plus propre',
+    ],
+    bugs: [
+      'Aucun correctif majeur dans cette version',
+    ],
+  },
+  {
     version: '0.2',
     title: "Préparation des accès d'abonnement",
-    date: TODAY_ISO,
+    date: '2026-05-14',
     intro:
       "Cette mise à jour prépare la future organisation des accès Anomaya, sans paiement réel pour le moment. L’objectif est de vérifier que les données restent bien conservées lorsque l’accès au Pack Éleveur change.",
     ajouts: [
       'Ajout d’une logique de plans Gratuit, Sans pub et Pack Éleveur',
       'Ajout d’un outil de test bêta pour simuler les différents accès',
       'Ajout d’un écran de verrouillage clair pour les fonctionnalités éleveur',
-      'Ajout d’un nouvel écran de chargement plus travaillé au lancement de l’application',
-      'Ajout de messages de chargement variables pour rendre l’attente plus agréable',
-      'Amélioration de l’écran de lancement de l’application pour un démarrage plus propre et plus agréable',
-      'Ajout d’une nouvelle icône Anomaya plus élégante',
-      'Ajout d’un écran de chargement plus premium au lancement de l’application',
     ],
     modifications: [
       'Les données d’élevage sont conservées même lorsque l’accès au Pack Éleveur est désactivé',
       'L’écran Anomaya+ présente les futurs packs sans paiement réel pendant la bêta',
       'Préparation de la logique qui permettra plus tard de gérer les pubs et les abonnements',
       'Les raccourcis liés au Pack Éleveur affichent désormais plus clairement leur accès Pro',
-      'Amélioration du rendu visuel de l’écran de démarrage avec une illustration plus chaleureuse et adaptée au format mobile',
-      'Ajustement de l’affichage de l’image de chargement pour éviter les recadrages trop importants selon la taille de l’écran',
       'Les cartes des bébés dans une portée utilisent désormais le même accès au profil que les animaux de Ma famille',
-      'Meilleure cohérence visuelle entre l’ouverture de l’application et l’écran de chargement Anomaya',
-      'L’écran de chargement personnalisé reste désormais visible suffisamment longtemps pour offrir une transition plus propre au lancement de l’application',
-      'Amélioration de l’identité visuelle d’Anomaya au démarrage de l’application',
     ],
     bugs: [
       'Correction du délai d’ouverture de la page Anomaya+ depuis certains accès verrouillés',
@@ -55,7 +58,7 @@ export const CHANGELOG: ChangelogVersion[] = [
   {
     version: '0.1.5',
     title: 'Correction du suivi de gestation',
-    date: TODAY_ISO,
+    date: '2026-05-10',
     intro:
       'Cette petite mise à jour corrige un problème important dans le suivi des saillies et des gestations.',
     ajouts: [
