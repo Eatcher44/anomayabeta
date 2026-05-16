@@ -356,20 +356,36 @@ export default function PharmaciePage() {
         .single();
       if (error) throw error;
 
-      // 2. Add soin entry on animal
-      const soin = {
+      // 2. Map pharmacy category to existing soin type so it appears in animal history
+      const categoryToType: Record<string, string> = {
+        'Vermifuge': 'Vermifuge',
+        'Anti-puces': 'Antipuce',
+        'Vaccin': 'Vaccin',
+        'Médicament': 'Traitement',
+        'Complément': 'Traitement',
+        'Autre': 'Traitement',
+      };
+      const soinType = categoryToType[doseTarget.category || ''] || 'Traitement';
+      const isoDate = doseDate.toISOString();
+      const noteWithSource = [doseNotes.trim(), 'Origine : Pharmacie'].filter(Boolean).join(' — ');
+      const soin: any = {
         id: `pharm-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-        type: doseTarget.category || 'Pharmacie',
+        type: soinType,
         nom: doseTarget.name,
-        date: doseDate.toISOString(),
         produit: doseTarget.name,
+        date: isoDate,
         doseValue: v,
-        doseUnit: doseTarget.unit || undefined,
-        notes: doseNotes.trim() || undefined,
-        // Pharmacy link (extra fields, ignored by old code)
+        doseUnit: (doseTarget.unit as any) || undefined,
+        notes: noteWithSource,
         pharmacyItemId: doseTarget.id,
         pharmacyDeducted: v,
-      } as any;
+        source: 'pharmacie',
+      };
+      // Treatments are displayed using debut/fin; set both to the dose date for a one-shot dose
+      if (soinType === 'Traitement') {
+        soin.debut = isoDate;
+        soin.fin = isoDate;
+      }
       const newSoins = [...(animal.soins || []), soin];
       await updateAnimal(doseAnimalId, { soins: newSoins });
 
