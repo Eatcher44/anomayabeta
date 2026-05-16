@@ -28,9 +28,11 @@ export const CHANGELOG: ChangelogVersion[] = [
     modifications: [
       'Le suivi des traitements devient plus pratique grâce à la déduction automatique des doses utilisées',
       'Le Tableau de bord santé donne maintenant accès plus rapidement à la Pharmacie',
+      'Les liens vers les parents d’un bébé sont maintenant plus complets lorsqu’une mère et un père sont renseignés',
     ],
     bugs: [
-      'Aucun correctif majeur dans cette version',
+      'Correction de l’affichage des produits donnés depuis la Pharmacie dans l’historique de soins de l’animal',
+      'Correction de l’accès au profil du père depuis la fiche d’un bébé lorsque le père est renseigné',
     ],
   },
   {
