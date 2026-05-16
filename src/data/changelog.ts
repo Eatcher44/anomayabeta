@@ -8,10 +8,31 @@ export interface ChangelogVersion {
   bugs: string[];
 }
 
-export const CURRENT_CHANGELOG_VERSION = '0.2.5';
+export const CURRENT_CHANGELOG_VERSION = '0.3';
 export const CHANGELOG_STORAGE_KEY = 'anomaya_last_seen_version';
 
 export const CHANGELOG: ChangelogVersion[] = [
+  {
+    version: '0.3',
+    title: 'Ajout de la pharmacie',
+    date: '2026-05-16',
+    intro:
+      'Cette mise à jour ajoute une pharmacie pour mieux suivre les produits, médicaments et traitements disponibles à la maison.',
+    ajouts: [
+      'Ajout d’une nouvelle section Pharmacie accessible à tous les utilisateurs',
+      'Ajout du suivi des quantités restantes pour les médicaments et traitements',
+      'Ajout de la possibilité de lier un traitement donné à un produit de la pharmacie',
+      'Ajout de l’ajustement manuel du stock',
+      'Ajout d’indications visuelles pour les stocks faibles ou expirés',
+    ],
+    modifications: [
+      'Le suivi des traitements devient plus pratique grâce à la déduction automatique des doses utilisées',
+      'Le Tableau de bord santé donne maintenant accès plus rapidement à la Pharmacie',
+    ],
+    bugs: [
+      'Aucun correctif majeur dans cette version',
+    ],
+  },
   {
     version: '0.2.5',
     title: 'Amélioration de l’identité visuelle',

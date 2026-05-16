@@ -45,6 +45,7 @@ import DevBadge from "./components/DevBadge";
 import BetaWelcomePopup from "./components/BetaWelcomePopup";
 import WhatsNewModal from "./components/WhatsNewModal";
 import SplashScreen from "./components/SplashScreen";
+import PharmaciePage from "./pages/PharmaciePage";
 
 const queryClient = new QueryClient();
 
@@ -90,6 +91,7 @@ function AppRoutes() {
       <Route path="/autres-soins/:id" element={<ProtectedRoute><AutresSoinsPage /></ProtectedRoute>} />
       <Route path="/consultation/:id" element={<ProtectedRoute><ConsultationPage /></ProtectedRoute>} />
       <Route path="/dashboard-sante" element={<ProtectedRoute><HealthDashboardPage /></ProtectedRoute>} />
+      <Route path="/pharmacie" element={<ProtectedRoute><PharmaciePage /></ProtectedRoute>} />
       <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
       <Route path="/abonnement" element={<ProtectedRoute noLayout><AbonnementPage /></ProtectedRoute>} />
       <Route path="/paradis" element={<ProtectedRoute><ParadisPage /></ProtectedRoute>} />
