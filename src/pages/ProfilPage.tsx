@@ -507,7 +507,10 @@ export default function ProfilPage() {
                 <Bug className="w-4 h-4 shrink-0" />Anti-puce & Vermifuge
               </button>
             </div>
-            <Button onClick={() => navigate(`/autres-soins/${animal.id}`)} className="w-full"><Pill className="w-4 h-4 mr-2" />Autres soins / traitements</Button>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <Button onClick={() => navigate(`/autres-soins/${animal.id}`)} className="w-full"><Pill className="w-4 h-4 mr-2" />Autres soins / traitements</Button>
+              <Button variant="outline" onClick={() => navigate(`/historique-soins/${animal.id}`)} className="w-full"><Pill className="w-4 h-4 mr-2" />Historique des soins</Button>
+            </div>
             <p className="text-sm text-muted-foreground mt-3">{actifsAutresSoins.length} soin(s) ou traitement(s) en cours</p>
           </div>
 
