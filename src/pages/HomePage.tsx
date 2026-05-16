@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Calendar, LogOut, GripVertical, Bell, Activity, Crown, Bird, Baby, BarChart3, ArrowRightLeft, Lock, Sparkles, MessageSquare, ArrowDownToLine, BookOpen, Settings, ExternalLink, Trash2 } from 'lucide-react';
+import { Plus, Calendar, LogOut, GripVertical, Bell, Activity, Crown, Bird, Baby, BarChart3, ArrowRightLeft, Lock, Sparkles, MessageSquare, ArrowDownToLine, BookOpen, Settings, ExternalLink, Trash2, Pill } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -584,13 +584,23 @@ export default function HomePage() {
         {animaux.length > 0 && (
           <Button
             variant="outline"
-            className="w-full mb-4 font-semibold bg-[hsl(350,60%,95%)] dark:bg-[hsl(350,30%,18%)] border-[hsl(350,40%,85%)] dark:border-[hsl(350,20%,30%)] hover:bg-[hsl(350,60%,90%)] dark:hover:bg-[hsl(350,30%,22%)] rounded-2xl py-3"
+            className="w-full mb-2 font-semibold bg-[hsl(350,60%,95%)] dark:bg-[hsl(350,30%,18%)] border-[hsl(350,40%,85%)] dark:border-[hsl(350,20%,30%)] hover:bg-[hsl(350,60%,90%)] dark:hover:bg-[hsl(350,30%,22%)] rounded-2xl py-3"
             onClick={() => navigate('/dashboard-sante')}
           >
             <Activity className="w-4 h-4 mr-2 text-[hsl(350,60%,55%)]" />
             Tableau de bord santé
           </Button>
         )}
+
+        {/* Pharmacie button — accessible to everyone */}
+        <Button
+          variant="outline"
+          className="w-full mb-4 font-semibold bg-[hsl(210,60%,95%)] dark:bg-[hsl(210,30%,18%)] border-[hsl(210,40%,85%)] dark:border-[hsl(210,20%,30%)] hover:bg-[hsl(210,60%,90%)] dark:hover:bg-[hsl(210,30%,22%)] rounded-2xl py-3"
+          onClick={() => navigate('/pharmacie')}
+        >
+          <Pill className="w-4 h-4 mr-2 text-[hsl(210,70%,50%)]" />
+          Pharmacie
+        </Button>
 
         {/* Compact Health Alerts — only active, visible animals */}
         {activeAnimals.length > 0 && (
