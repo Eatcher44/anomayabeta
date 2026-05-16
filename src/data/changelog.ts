@@ -35,7 +35,7 @@ export const CHANGELOG: ChangelogVersion[] = [
   {
     version: '0.2',
     title: "Préparation des accès d'abonnement",
-    date: '2026-05-14',
+    date: '2026-05-08',
     intro:
       "Cette mise à jour prépare la future organisation des accès Anomaya, sans paiement réel pour le moment. L’objectif est de vérifier que les données restent bien conservées lorsque l’accès au Pack Éleveur change.",
     ajouts: [
@@ -58,7 +58,7 @@ export const CHANGELOG: ChangelogVersion[] = [
   {
     version: '0.1.5',
     title: 'Correction du suivi de gestation',
-    date: '2026-05-10',
+    date: '2026-05-06',
     intro:
       'Cette petite mise à jour corrige un problème important dans le suivi des saillies et des gestations.',
     ajouts: [
