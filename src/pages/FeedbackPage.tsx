@@ -22,7 +22,7 @@ function FeedbackForm({ type }: FeedbackFormProps) {
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
   const [steps, setSteps] = useState('');
-  const [screenshotUrl, setScreenshotUrl] = useState<string | null>(null);
+  const [screenshotPath, setScreenshotPath] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
 
@@ -46,8 +46,7 @@ function FeedbackForm({ type }: FeedbackFormProps) {
       const path = `${user.id}/bug_${Date.now()}_${user.id}.${ext}`;
       const { error } = await supabase.storage.from('bug-screenshots').upload(path, file, { upsert: true });
       if (error) throw error;
-      const { data } = supabase.storage.from('bug-screenshots').getPublicUrl(path);
-      setScreenshotUrl(data.publicUrl);
+      setScreenshotPath(path);
       toast({ title: 'Capture ajoutée' });
     } catch {
       toast({ title: "Impossible d'envoyer la capture. Réessayez.", variant: 'destructive' });
@@ -67,7 +66,7 @@ function FeedbackForm({ type }: FeedbackFormProps) {
           userId: user.id,
           userEmail: user.email,
           route: window.location.pathname,
-          screenshotUrl: screenshotUrl || undefined,
+          screenshotPath: screenshotPath || undefined,
         },
       });
 
