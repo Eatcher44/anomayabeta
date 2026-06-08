@@ -117,7 +117,7 @@ function FeedbackForm({ type }: FeedbackFormProps) {
             <Label>Capture d'écran (optionnel)</Label>
             <Button variant="outline" size="sm" onClick={handleScreenshot} className="mt-1">
               <Camera className="w-4 h-4 mr-2" />
-              {screenshotUrl ? 'Capture ajoutée ✓' : 'Ajouter une capture'}
+              {screenshotPath ? 'Capture ajoutée ✓' : 'Ajouter une capture'}
             </Button>
           </div>
         </>
