@@ -58,9 +58,12 @@ Deno.serve(async (req) => {
   const userClient = createClient(url, Deno.env.get("SUPABASE_ANON_KEY")!, {
     global: { headers: { Authorization: authHeader } },
   });
-  const { data: claims, error: claimsError } = await userClient.auth.getClaims(authHeader.slice(7));
-  const uid = claims?.claims?.sub;
-  if (claimsError || !uid) return reply(401, { error: "Session invalide" });
+  let uid: string | undefined;
+  try {
+    const { data: claims, error: claimsError } = await userClient.auth.getClaims(authHeader.slice(7));
+    if (!claimsError) uid = claims?.claims?.sub;
+  } catch { /* malformed token */ }
+  if (!uid) return reply(401, { error: "Session invalide" });
 
   let body: any = {};
   try { body = await req.json(); } catch { /* empty */ }
