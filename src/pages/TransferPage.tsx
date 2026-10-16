@@ -92,77 +92,21 @@ export default function TransferPage() {
     if (!user || !claimCode.trim()) return;
     setClaiming(true);
     try {
-      // Find the transfer code
-      const { data: tc, error: findError } = await supabase
-        .from('transfer_codes')
-        .select('*')
-        .eq('code', claimCode.trim().toUpperCase())
-        .is('claimed_at', null)
-        .gt('expires_at', new Date().toISOString())
-        .single();
-
-      if (findError || !tc) {
-        toast({ title: 'Code invalide ou expiré', variant: 'destructive' });
-        setClaiming(false);
+      // Validated and applied atomically on the server.
+      const { error } = await supabase.rpc('claim_transfer_code', { p_code: claimCode.trim().toUpperCase() });
+      if (error) {
+        const msg = error.message?.includes('own_code')
+          ? 'Vous ne pouvez pas réclamer votre propre code.'
+          : error.message?.includes('invalid_code')
+            ? 'Code invalide, expiré ou déjà utilisé.'
+            : 'Le transfert a échoué. Réessayez.';
+        toast({ title: 'Erreur de transfert', description: msg, variant: 'destructive' });
         return;
       }
-
-      const animalId = (tc as any).animal_id;
-      const fromUserId = (tc as any).from_user_id;
-
-      // Fetch the animal data for snapshot before transfer
-      const { data: animalData } = await supabase
-        .from('animals')
-        .select('*')
-        .eq('id', animalId)
-        .single();
-
-      // Create archive entry for the original owner
-      if (animalData) {
-        await supabase
-          .from('transfer_archive')
-          .insert({
-            original_owner_id: fromUserId,
-            animal_id: animalId,
-            animal_name: (animalData as any).nom,
-            animal_photo: (animalData as any).photo,
-            animal_data: {
-              type: (animalData as any).type,
-              sexe: (animalData as any).sexe,
-              race: (animalData as any).race,
-              naissance: (animalData as any).naissance,
-              puce: (animalData as any).puce,
-              poids: (animalData as any).poids,
-              soins: (animalData as any).soins,
-              consultations: (animalData as any).consultations,
-            },
-            transfer_code_id: (tc as any).id,
-          } as any);
-      }
-
-      // Transfer ownership - set breeder_visible to true for buyer
-      const { error: transferError } = await supabase
-        .from('animals')
-        .update({ user_id: user.id, litter_id: null, mother_id: null, breeder_visible: true })
-        .eq('id', animalId);
-
-      if (transferError) throw transferError;
-
-      // Mark code as claimed
-      await supabase
-        .from('transfer_codes')
-        .update({ to_user_id: user.id, claimed_at: new Date().toISOString() })
-        .eq('id', (tc as any).id);
-
-      // Delete notifications for the old owner
-      await supabase
-        .from('notifications')
-        .delete()
-        .eq('animal_id', animalId);
-
       toast({ title: 'Profil transféré !', description: "L'animal a été ajouté à votre famille." });
       setClaimCode('');
-      navigate('/');
+      // Full reload so the family list includes the new animal.
+      window.location.assign('/');
     } catch {
       toast({ title: 'Erreur de transfert', variant: 'destructive' });
     } finally {
