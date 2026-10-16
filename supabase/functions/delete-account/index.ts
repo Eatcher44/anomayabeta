@@ -110,7 +110,7 @@ Deno.serve(async (req) => {
 
     // 3. Auth account last.
     const { error: delErr } = await admin.auth.admin.deleteUser(uid);
-    if (delErr) throw new Error(`auth: ${delErr.message}`);
+    if (delErr && (delErr as any).status !== 404 && !/not found/i.test(delErr.message)) throw new Error(`auth: ${delErr.message}`);
 
     return reply(200, { success: true, kept_shared_photos: keep.size });
   } catch (e) {
