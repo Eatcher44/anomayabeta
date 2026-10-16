@@ -1,0 +1,1 @@
+- Account deletion runs only in the delete-account server function: user id from verified JWT, idempotent steps, auth user deleted last; any new user-owned table or storage folder must be added to it. Why: Google Play compliance and no orphan data.
