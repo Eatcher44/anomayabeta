@@ -1,6 +1,6 @@
 // TEMPORARY: creates confirmed disposable test accounts only. Delete after testing.
 import { createClient } from "npm:@supabase/supabase-js@2";
-const KEY = "4b2e8d238eeb8e49f1fca2e15a1a271473bf9d57b6af6c7f";
+const KEY = "eb06344ba384413fb5ce5ee00611a42ee216ba4fcd9fcdc9";
 const DOMAIN = "@anomaya-deltest.invalid";
 Deno.serve(async (req) => {
   if (req.headers.get("x-test-key") !== KEY) return new Response("forbidden", { status: 403 });
