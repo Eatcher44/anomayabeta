@@ -583,7 +583,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      claim_transfer_code: { Args: { p_code: string }; Returns: string }
     }
     Enums: {
       [_ in never]: never
