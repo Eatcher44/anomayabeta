@@ -29,5 +29,11 @@ Deno.serve(async (req) => {
     await admin.from("transfer_codes").update({ to_user_id: to.id, claimed_at: new Date().toISOString() }).eq("id", code_id).eq("from_user_id", from.id);
     return Response.json({ moved: an?.length ?? 0 });
   }
+  if (action === "rmfile") {
+    const path = body.path as string;
+    if (!["b6db9e92-2820-4eea-b2de-ed91b5220c7e/","3752679f-00d9-4c6f-9ae4-65139eea45e6/"].some((x) => path?.startsWith(x))) return new Response("no", { status: 400 });
+    const { error } = await admin.storage.from("animal-photos").remove([path]);
+    return Response.json({ error: error?.message });
+  }
   return new Response("bad action", { status: 400 });
 });
