@@ -88,6 +88,15 @@ Deno.serve(async (req) => {
       if (error) throw new Error(`screenshots: ${error.message}`);
     }
 
+    // 1b. Photos of animals this user received by transfer live in the previous owner's folder.
+    const { data: mine } = await admin.from("animals").select("photo").eq("user_id", uid).like("photo", "%/animal-photos/%");
+    const toPath = (u: string) => decodeURIComponent(String(u).split("/animal-photos/")[1] ?? "").split("?")[0];
+    const foreignPaths = [...new Set((mine ?? []).map((a: any) => toPath(a.photo)).filter((p) => p && !p.startsWith(`${uid}/`)))];
+    for (const p of foreignPaths) {
+      const { count } = await admin.from("animals").select("id", { count: "exact", head: true }).neq("user_id", uid).like("photo", `%/animal-photos/${p}%`);
+      if (!count) await admin.storage.from("animal-photos").remove([p]);
+    }
+
     // 2. Rows. Only rows owned by this user; other users' links are set to NULL by the schema.
     const steps: [string, string][] = [
       ["transfer_archive", "original_owner_id"],
@@ -110,7 +119,7 @@ Deno.serve(async (req) => {
 
     // 3. Auth account last.
     const { error: delErr } = await admin.auth.admin.deleteUser(uid);
-    if (delErr) throw new Error(`auth: ${delErr.message}`);
+    if (delErr && (delErr as any).status !== 404 && !/not found/i.test(delErr.message)) throw new Error(`auth: ${delErr.message}`);
 
     return reply(200, { success: true, kept_shared_photos: keep.size });
   } catch (e) {
