@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from '@/components/ui/dialog';
@@ -6,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { CHANGELOG, CURRENT_CHANGELOG_VERSION, CHANGELOG_STORAGE_KEY, isVersionNewer } from '@/data/changelog';
 
 export default function WhatsNewModal() {
+  const { pathname } = useLocation();
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -22,6 +24,8 @@ export default function WhatsNewModal() {
   };
 
   const v = CHANGELOG.find((c) => c.version === CURRENT_CHANGELOG_VERSION) || CHANGELOG[0];
+
+  if (pathname === '/privacy') return null;
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) dismiss(); }}>

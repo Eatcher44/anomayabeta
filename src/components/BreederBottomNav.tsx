@@ -14,7 +14,7 @@ export default function BreederBottomNav() {
   const gateRef = useRef(false);
 
   // Hide on full-screen / paywall routes
-  const HIDDEN_ROUTES = ['/abonnement', '/reset-password', '/feedback'];
+  const HIDDEN_ROUTES = ['/abonnement', '/reset-password', '/feedback', '/privacy'];
   if (HIDDEN_ROUTES.some(r => location.pathname.startsWith(r))) return null;
 
   const handleElevageClick = () => {
