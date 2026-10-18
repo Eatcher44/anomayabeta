@@ -15,6 +15,13 @@
       "when": 1792352275048,
       "tag": "0001_emergency_suspend_transfer_claims",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792352347002,
+      "tag": "0002_block_direct_transfer_code_mutations",
+      "breakpoints": true
     }
   ]
 }
