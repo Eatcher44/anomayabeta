@@ -3,3 +3,4 @@
 - Keep the public privacy route free of app announcements and bottom navigation. Why: deletion instructions must remain directly accessible without authentication or onboarding.
 - Keep client transfer claims and direct code writes disabled, and account deletion gated before mutations, until coordinated transfer/media authorization passes backend tests. Why: emergency containment must not reopen audited vulnerabilities.
 - Trusted media bindings and persistent deletion state coordinate sensitive transactions under a common advisory mutex; ordinary writes fail busy rather than wait while holding entity rows. Why: storage calls cannot participate in database transactions and URL fields cannot authorize cleanup.
+- Browser-project tests load Deno handlers through a runtime-only import and mock their shared HTTP boundary. Why: tests must exercise authorization without pulling Deno-only modules into the browser type graph.
