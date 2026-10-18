@@ -8,6 +8,34 @@
       "when": 1792175603325,
       "tag": "0000_claim_transfer_code_rpc",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792352275048,
+      "tag": "0001_emergency_suspend_transfer_claims",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792352347002,
+      "tag": "0002_block_direct_transfer_code_mutations",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1792352405480,
+      "tag": "0003_temporarily_protect_animal_media_mutations",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792352445001,
+      "tag": "0004_clarify_denied_media_policy_scope",
+      "breakpoints": true
     }
   ]
 }

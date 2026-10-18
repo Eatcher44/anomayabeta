@@ -1,0 +1,1 @@
+REVOKE INSERT, UPDATE, DELETE ON TABLE public.transfer_codes FROM PUBLIC, anon, authenticated;

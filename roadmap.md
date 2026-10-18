@@ -9,4 +9,12 @@
 # Emergency transfer security review
 - [x] Verify current deployed transfer authorization and photo exposure without production mutations.
 - [x] Report reversible containment, permanent correction, user impact and required tests.
-- [ ] Obtain explicit approval before any production containment or remediation; do not publish.
+- [x] Obtain explicit approval before any production containment or remediation; do not publish.
+
+# Approved security containment and remediation
+- [x] Immediately revoke client transfer claiming and verify effective permissions/direct API denial.
+- [ ] Implement permanent transfers and media coordination: blocked pending recent backup evidence and safe migration approval.
+- [x] Apply temporary global photo overwrite/delete denial and gate automatic account deletion before mutations.
+- [x] Run bounded disposable containment tests, remediate critical/high dependency alerts in preview, rescan and verify account/animal/storage fingerprints.
+- [ ] Run full permanent transfer/media security tests and restore secure transfers: blocked on permanent implementation and backup evidence.
+- [x] Report current containment, limitations and release blockers; no frontend publication.
