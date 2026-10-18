@@ -37,4 +37,41 @@ describe('deployed account deletion handler', () => {
     expect((await handler(new Request('https://app.invalid/delete', { method: 'POST' }))).status).toBe(401);
     expect(mocks.rpc).not.toHaveBeenCalled();
   });
+  it('keeps authentication intact on storage failure and resumes the authorized manifest', async () => {
+    const remove = vi.fn().mockResolvedValueOnce({ error: { message: 'simulated outage' } }).mockResolvedValue({ error: null });
+    mocks.from.mockReturnValue({ remove });
+    mocks.rpc.mockImplementation((name: string) => Promise.resolve(name === 'prepare_account_cleanup'
+      ? { data: { files: [{ bucket: 'animal-photos', path: 'verified-owner/file.png', media_id: 'media-1' }] }, error: null }
+      : { data: null, error: null }));
+    mocks.deleteUser.mockResolvedValue({ error: null });
+    if (!handler) throw new Error('Handler not registered');
+    const request = () => new Request('https://app.invalid/delete', { method: 'POST', body: JSON.stringify({ confirm: 'SUPPRIMER' }) });
+    expect((await handler(request())).status).toBe(500);
+    expect(mocks.deleteUser).not.toHaveBeenCalled();
+    expect(mocks.rpc).not.toHaveBeenCalledWith('complete_media_cleanup', expect.anything());
+    expect((await handler(request())).status).toBe(200);
+    expect(remove).toHaveBeenCalledTimes(2);
+    expect(mocks.rpc).toHaveBeenCalledWith('complete_media_cleanup', { p_uid: 'verified-owner', p_media: 'media-1' });
+    expect(mocks.deleteUser).toHaveBeenCalledExactlyOnceWith('verified-owner');
+  });
+  it('does not delete authentication when a checkpoint fails after storage removal', async () => {
+    mocks.from.mockReturnValue({ remove: vi.fn().mockResolvedValue({ error: null }) });
+    mocks.rpc.mockImplementation((name: string) => Promise.resolve(name === 'prepare_account_cleanup'
+      ? { data: { files: [{ bucket: 'animal-photos', path: 'verified-owner/file.png', media_id: 'media-1' }] }, error: null }
+      : { data: null, error: { message: 'checkpoint unavailable' } }));
+    if (!handler) throw new Error('Handler not registered');
+    expect((await handler(new Request('https://app.invalid/delete', { method: 'POST', body: JSON.stringify({ confirm: 'SUPPRIMER' }) }))).status).toBe(500);
+    expect(mocks.deleteUser).not.toHaveBeenCalled();
+  });
+  it('retries authentication deletion from an already complete database manifest', async () => {
+    mocks.rpc.mockResolvedValue({ data: { complete: true, files: [] }, error: null });
+    mocks.deleteUser.mockResolvedValueOnce({ error: { status: 500 } }).mockResolvedValueOnce({ error: null });
+    if (!handler) throw new Error('Handler not registered');
+    const request = () => new Request('https://app.invalid/delete', { method: 'POST', body: JSON.stringify({ confirm: 'SUPPRIMER', user_id: 'victim' }) });
+    expect((await handler(request())).status).toBe(500);
+    expect((await handler(request())).status).toBe(200);
+    expect(mocks.from).not.toHaveBeenCalled();
+    expect(mocks.deleteUser).toHaveBeenNthCalledWith(1, 'verified-owner');
+    expect(mocks.deleteUser).toHaveBeenNthCalledWith(2, 'verified-owner');
+  });
 });
