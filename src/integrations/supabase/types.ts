@@ -570,6 +570,33 @@ export type Database = {
           },
         ]
       }
+      secure_uploads: {
+        Row: {
+          bucket: string
+          created_at: string
+          id: string
+          object_path: string
+          state: string
+          user_id: string
+        }
+        Insert: {
+          bucket: string
+          created_at?: string
+          id?: string
+          object_path: string
+          state?: string
+          user_id: string
+        }
+        Update: {
+          bucket?: string
+          created_at?: string
+          id?: string
+          object_path?: string
+          state?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       security_release_state: {
         Row: {
           deletion_enabled: boolean
@@ -753,6 +780,21 @@ export type Database = {
           },
         ]
       }
+      upload_deletion_freezes: {
+        Row: {
+          created_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -785,9 +827,14 @@ export type Database = {
         Args: { p_uid: string }
         Returns: undefined
       }
+      freeze_secure_uploads: { Args: { p_uid: string }; Returns: Json }
       prepare_account_cleanup: { Args: { p_uid: string }; Returns: Json }
       prepare_secure_account_deletion: {
         Args: { p_uid: string }
+        Returns: Json
+      }
+      reserve_secure_upload: {
+        Args: { p_bucket: string; p_ext: string; p_uid: string }
         Returns: Json
       }
       secure_claim_transfer: {
@@ -815,6 +862,10 @@ export type Database = {
       security_upload_allowed: {
         Args: { p_bucket: string; p_path: string }
         Returns: boolean
+      }
+      settle_secure_upload: {
+        Args: { p_removed: boolean; p_ticket: string; p_uid: string }
+        Returns: Json
       }
       transfer_has_complex_relationships: {
         Args: { p_animal: string }
