@@ -1,4 +1,5 @@
 # Release audit
+- [ ] Validate real preview animal creation/replacement, breeder media and bug screenshot persistence with disposable accounts; distinguish browser/backend evidence, document Android manual checks and safe legacy transition/late-commit blockers. No publication, permission removal or reactivation.
 - [x] Inspect all upload entry points and run 33 targeted client/server regressions; real preview animal photo/logo/screenshot uploads succeed, signature upload succeeds but owner signed read fails. Test account/files cleaned; original fingerprints unchanged.
 - [x] Apply approved narrowly scoped private signature read predicate; real owner save/reload, foreign/anonymous/public denial and photo/logo regressions pass; two disposable accounts/files cleaned, 27 mocked regressions pass. No publication/reactivation; remaining transition blockers documented.
 - [x] Add versioned write-start evidence, owner-only reconciliation, committed-file/shared-media recovery and removal-checkpoint retry; 17 targeted local tests pass, three disposable hosted accounts cleaned up.
