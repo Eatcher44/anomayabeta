@@ -11,7 +11,7 @@ describe('temporarily disabled kitten PDF export', () => {
     expect(KITTEN_PDF_EXPORT_ENABLED).toBe(false);
   });
   it('refuses direct generation', async () => {
-    await expect(generateCarnetDepart(animal && { animal })).rejects.toThrow();
+    await expect(generateCarnetDepart({ animal })).rejects.toThrow();
   });
   it('does not require a PDF to complete the departure checklist', () => {
     const items = computeDepartureChecklist(animal);
