@@ -3,7 +3,7 @@ import { describe, it, expect, vi } from 'vitest';
 async function run(result: unknown, options: { removeFails?: boolean; checkpointFails?: boolean } = {}) {
   const rpc = vi.fn(async (name: string, args: { p_removed?: boolean }) => {
     if (name === 'list_pending_secure_uploads') return { data: [{ id: 'ticket' }], error: null };
-    if (args.p_removed) return { data: { removed: true }, error: options.checkpointFails ? {} : null };
+    if (args.p_removed) return { data: result && typeof result === 'object' && 'pending' in result ? result : { removed: true }, error: options.checkpointFails ? {} : null };
     return { data: result, error: null };
   });
   const remove = vi.fn(async () => ({ error: options.removeFails ? {} : null }));
@@ -44,5 +44,16 @@ describe('caller-scoped upload recovery boundary (simulated backend)', () => {
     const test = await run({ removed: true });
     await test.promise;
     expect(test.remove).not.toHaveBeenCalled();
+  });
+  it('recovers lost removal acknowledgement only with database confirmation of absence', async () => {
+    const rpc = vi.fn().mockResolvedValueOnce({ data: [{ id: 'ticket' }], error: null })
+      .mockResolvedValueOnce({ data: { pending: true }, error: null })
+      .mockResolvedValueOnce({ data: { removed: true }, error: null });
+    const remove = vi.fn();
+    const modulePath = '../../supabase/functions/_shared/uploadRecovery.ts';
+    const { reconcileUploads } = await import(/* @vite-ignore */ modulePath);
+    expect(await reconcileUploads({ uid: 'owner', admin: { rpc, storage: { from: () => ({ remove }) } } })).toEqual({ pending: 0 });
+    expect(remove).not.toHaveBeenCalled();
+    expect(rpc).toHaveBeenLastCalledWith('settle_secure_upload', { p_uid: 'owner', p_ticket: 'ticket', p_removed: true });
   });
 });

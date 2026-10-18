@@ -20,7 +20,15 @@ export async function reconcileUploads({ admin, uid }: Session) {
         p_uid: uid, p_ticket: ticket.id, p_removed: true,
       });
       if (checkpointError || !checkpoint?.removed) throw new Error('cleanup_pending');
-    } else if (result.pending) pending += 1;
+    } else if (result.pending) {
+      // Recover a lost removal checkpoint. SQL accepts this only when it has
+      // durable observed-commit/cleanup evidence and the object is now absent.
+      const { data: checkpoint, error: checkpointError } = await admin.rpc('settle_secure_upload', {
+        p_uid: uid, p_ticket: ticket.id, p_removed: true,
+      });
+      if (checkpointError || !checkpoint) throw new Error('cleanup_pending');
+      if (!checkpoint.removed && !checkpoint.complete) pending += 1;
+    }
   }
   return { pending };
 }
