@@ -71,6 +71,13 @@
       "when": 1792353392684,
       "tag": "0009_register_pending_uploads_for_safe_cleanup",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1792353490933,
+      "tag": "0010_unique_transfer_markers_and_derived_archive_media",
+      "breakpoints": true
     }
   ]
 }
