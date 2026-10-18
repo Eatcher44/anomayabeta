@@ -1,3 +1,4 @@
 - Account deletion runs only in the delete-account server function: user id from verified JWT, idempotent steps, auth user deleted last; any new user-owned table or storage folder must be added to it. Why: Google Play compliance and no orphan data.
 - Animal transfer claims go only through the claim_transfer_code database function (locks the code row, checks sender ownership, single use); recipients never read transfer_codes directly. Why: RLS correctly hides other users' codes and animals.
 - Keep the public privacy route free of app announcements and bottom navigation. Why: deletion instructions must remain directly accessible without authentication or onboarding.
+- Keep client transfer claims and direct code writes disabled, and account deletion gated before mutations, until coordinated transfer/media authorization passes backend tests. Why: emergency containment must not reopen audited vulnerabilities.

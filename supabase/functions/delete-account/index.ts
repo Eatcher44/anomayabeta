@@ -3,6 +3,7 @@
 // Every step is idempotent and the auth account is removed LAST, so a failed
 // run can simply be retried by the same user.
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { accountDeletionIsEnabled } from "./securityGate.ts";
 
 const ALLOWED_ORIGINS = [
   "https://anomayabeta.lovable.app",
@@ -13,7 +14,7 @@ const ALLOWED_ORIGINS = [
 function cors(origin: string | null) {
   const allowed = origin && (ALLOWED_ORIGINS.includes(origin) || /^https:\/\/[a-z0-9-]+--e2e69dec-0ed1-47cc-b36e-14ea0b61a40f\.lovable\.app$/.test(origin));
   return {
-    "Access-Control-Allow-Origin": allowed ? origin! : ALLOWED_ORIGINS[0],
+    "Access-Control-Allow-Origin": allowed && origin ? origin : ALLOWED_ORIGINS[0],
     "Access-Control-Allow-Headers":
       "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
@@ -68,6 +69,13 @@ Deno.serve(async (req) => {
   let body: any = {};
   try { body = await req.json(); } catch { /* empty */ }
   if (body?.confirm !== CONFIRM_WORD) return reply(400, { error: "Confirmation manquante" });
+
+  if (!accountDeletionIsEnabled()) {
+    return reply(503, {
+      error: "La suppression automatique est temporairement suspendue pour protéger vos données. Contactez support@anomaya.app pour demander la suppression de votre compte.",
+      code: "account_deletion_temporarily_suspended",
+    });
+  }
 
   const admin = createClient(url, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 
