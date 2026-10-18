@@ -91,11 +91,22 @@ describe('deployed account deletion handler', () => {
     expect(mocks.deleteUser).toHaveBeenCalledExactlyOnceWith('verified-owner');
   });
   it('waits for pending uploads without removing records or authentication', async () => {
-    mocks.rpc.mockResolvedValue({ data: { pending: true }, error: null });
+    mocks.rpc.mockImplementation((name: string) => Promise.resolve({ error: null, data:
+      name === 'freeze_secure_uploads' ? { pending: true } : name === 'list_pending_secure_uploads' ? [{ id: 'pending-ticket' }] : { pending: true } }));
     if (!handler) throw new Error('Handler not registered');
     const response = await handler(new Request('https://app.invalid/delete', { method: 'POST', body: JSON.stringify({ confirm: 'SUPPRIMER' }) }));
     expect(response.status).toBe(409);
     expect(mocks.rpc).not.toHaveBeenCalledWith('prepare_account_cleanup', expect.anything());
     expect(mocks.deleteUser).not.toHaveBeenCalled();
+  });
+  it('resumes deletion after recovering a provably unstarted ticket', async () => {
+    mocks.rpc.mockImplementation((name: string) => Promise.resolve({ error: null, data:
+      name === 'freeze_secure_uploads' ? { pending: true } : name === 'list_pending_secure_uploads' ? [{ id: 'unstarted' }] :
+      name === 'settle_secure_upload' ? { removed: true } : { complete: true, files: [] } }));
+    mocks.deleteUser.mockResolvedValue({ error: null });
+    if (!handler) throw new Error('Handler not registered');
+    expect((await handler(new Request('https://app.invalid/delete', { method: 'POST', body: JSON.stringify({ confirm: 'SUPPRIMER' }) }))).status).toBe(200);
+    expect(mocks.deleteUser).toHaveBeenCalledExactlyOnceWith('verified-owner');
+    expect(mocks.from).not.toHaveBeenCalled();
   });
 });

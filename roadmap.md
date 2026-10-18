@@ -1,6 +1,8 @@
 # Release audit
+- [x] Add versioned write-start evidence, owner-only reconciliation, committed-file/shared-media recovery and removal-checkpoint retry; 17 targeted local tests pass, three disposable hosted accounts cleaned up.
+- [ ] Resolve started-but-absent uploads conclusively in an isolated instrumentable Storage environment; never infer completion from a timeout. Coordinated legacy cutover requires approval before deletion can reopen.
 - [x] Implement service-only durable upload tickets, deletion freeze and pending-ticket finalization denial; execute paused late-commit/discard handler test with mocked HTTP boundary and real normal upload/cleanup.
-- [ ] Complete durable upload reconciliation after ambiguous Storage failures and retire direct legacy uploads in a coordinated release; cannot safely reopen deletion while published clients still bypass tickets.
+- [ ] Complete conclusive reconciliation of genuinely uncertain writes and retire direct legacy uploads in an approved coordinated release; recoverable checkpoint/no-start states now handled, but deletion cannot safely reopen with in-flight legacy uploads.
 - [x] Verify real private-note HTTP 400, ten committed creation attempts and twenty failed claims; propose medical review and private-photo compatibility rollout without moving existing files.
 - [ ] Execute full relationship/expiration matrix and real instrumented late-commit scenario after isolated service instrumentation is available; only mocked pause/discard scenario executed this pass.
 - [x] Update and verify the existing public privacy page.
