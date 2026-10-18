@@ -1,6 +1,8 @@
 # Release audit
-- [ ] Implement tracked server uploads and execute a safely paused upload/deletion test; preserve shared media and retryability.
-- [ ] Review medical free text, validate remaining real relationship/expiry/quota checks, and deliver private-photo rollout proposal before any existing-file access change.
+- [x] Implement service-only durable upload tickets, deletion freeze and pending-ticket finalization denial; execute paused late-commit/discard handler test with mocked HTTP boundary and real normal upload/cleanup.
+- [ ] Complete durable upload reconciliation after ambiguous Storage failures and retire direct legacy uploads in a coordinated release; cannot safely reopen deletion while published clients still bypass tickets.
+- [x] Verify real private-note HTTP 400, ten committed creation attempts and twenty failed claims; propose medical review and private-photo compatibility rollout without moving existing files.
+- [ ] Execute full relationship/expiration matrix and real instrumented late-commit scenario after isolated service instrumentation is available; only mocked pause/discard scenario executed this pass.
 - [x] Update and verify the existing public privacy page.
 - [x] Audit current code, database policies, storage, auth, and dependencies; record unverified settings.
 - [x] Execute bounded disposable-data security tests locally and on three disposable live accounts; clean all fixtures and record omissions.
@@ -32,7 +34,7 @@
 - [x] Re-run basic scan, dependency review, RLS/grant inspection and original account/animal/storage fingerprints; deliver seven-point report with omissions.
 - [x] Execute real hosted disposable relationship/media/concurrency/private-signature suite using ordinary authenticated sessions and a scoped allowlist; remove all disposable accounts and allowlists.
 - [x] Verify successive transfers, shared-photo preservation, private signature cleanup, and three simultaneous upload/deletion runs on the real backend; zero remaining test storage objects.
-- [ ] Prove finalization against an upload deliberately paused after authorization and before object commit: requires controllable Storage failure/commit instrumentation unavailable in the supported test interface; keep deletion suspended.
+- [ ] Prove finalization against a real upload deliberately paused after authorization and before object commit: mocked handler pause executed, but real Storage commit instrumentation remains unavailable; keep deletion suspended.
 - [x] Temporarily disable only kitten PDF export, preserve source and files, remove its checklist blocker and defer visual/PDF acceptance requirements.
 - [x] Block transfers containing private notes at issuance and ownership mutation without removing history; verify late-added notes and private signature reads on the real backend.
 - [x] Assess installed tooling versus runtime advisories; apply bounded PostCSS/Rollup patches and verify 25 local tests, report remaining tooling and router risks.
