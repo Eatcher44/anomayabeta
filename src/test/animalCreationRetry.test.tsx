@@ -17,7 +17,7 @@ describe('ambiguous animal insert retry', () => {
     m.maybeSingle.mockResolvedValue({ data: { id: m.id, nom: 'Milo', type: 'Chat', sexe: 'Femelle', created_at: '2026-10-18' }, error: null });
     const { result } = renderHook(() => useAnimals(), { wrapper: ({ children }) => <AnimalsProvider>{children}</AnimalsProvider> });
     await waitFor(() => expect(result.current.loading).toBe(false));
-    await act(async () => { await result.current.addAnimal({ nom: 'Milo', type: 'Chat', sexe: 'Femelle', poids: [], soins: [], consultations: [] }, m.id); });
+    await act(async () => { await result.current.addAnimal({ nom: 'Milo', type: 'Chat', sexe: 'Femelle', poids: [], soins: [], consultations: [], repas: [] }, m.id); });
     expect(m.insert).toHaveBeenCalledTimes(1);
     expect(m.insert.mock.calls[0][0].id).toBe(m.id);
     expect(m.maybeSingle).toHaveBeenCalledTimes(1);
