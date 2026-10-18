@@ -19,6 +19,9 @@ const BREEDER_MODULES: BreederModules = {
   breeder_exports: false,
 };
 
+/** Fonctionnalité temporairement désactivée — à retravailler dans une future version. */
+export const KITTEN_PDF_EXPORT_ENABLED: boolean = false;
+
 export function isModuleEnabled(module: keyof BreederModules): boolean {
   return BREEDER_MODULES[module];
 }

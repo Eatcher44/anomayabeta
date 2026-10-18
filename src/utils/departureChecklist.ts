@@ -1,4 +1,5 @@
 import type { Animal } from '@/types/animal';
+import { KITTEN_PDF_EXPORT_ENABLED } from '@/config/breederFeatures';
 
 export interface ChecklistItem {
   key: string;
@@ -60,7 +61,7 @@ export function computeDepartureChecklist(animal: Animal): ChecklistItem[] {
   });
 
   // 6. Carnet PDF (manual)
-  items.push({
+  if (KITTEN_PDF_EXPORT_ENABLED) items.push({
     key: 'pdf',
     label: 'Carnet PDF généré',
     completed: false,

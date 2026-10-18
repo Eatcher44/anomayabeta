@@ -12,6 +12,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { useAnimals } from '@/context/AnimalsContext';
 import { computeDepartureChecklist, getDepartureUrgency } from '@/utils/departureChecklist';
 import { toast } from '@/hooks/use-toast';
+import { KITTEN_PDF_EXPORT_ENABLED } from '@/config/breederFeatures';
 
 const STATUS_LABELS: Record<string, string> = {
   option: 'Option',
@@ -180,10 +181,10 @@ export default function PreparerDepartPage() {
             </Button>
           )}
 
-          <Button className="w-full gap-2" variant="outline" onClick={() => navigate(`/profil/${animal.id}`)}>
+          {KITTEN_PDF_EXPORT_ENABLED && <Button className="w-full gap-2" variant="outline" onClick={() => navigate(`/profil/${animal.id}`)}>
             <FileText className="w-4 h-4" />
             Générer carnet de départ PDF
-          </Button>
+          </Button>}
 
           {status === 'sold' && allDone && (
             <Button className="w-full gap-2" variant="default" onClick={() => navigate(`/transfer/${animal.id}`)}>
