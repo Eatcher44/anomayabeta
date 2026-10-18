@@ -12,7 +12,7 @@ Deno.serve(async (req) => {
   try {
     // Database preparation freezes writes and produces an immutable authorized manifest.
     // No URL, folder name or requested user ID from the HTTP body authorizes deletion.
-    const { data: manifest, error } = await admin.rpc("prepare_secure_account_deletion", { p_uid: uid });
+    const { data: manifest, error } = await admin.rpc("prepare_account_cleanup", { p_uid: uid });
     if (error) return reply(req, error.code === "40001" ? 409 : 500, { error: "La suppression n'a pas pu se terminer. Réessayez." });
     if (manifest?.error) return reply(req, 503, { error: "La suppression automatique est temporairement indisponible. Contactez support@anomaya.app.", code: manifest.error });
     for (const file of manifest?.files ?? []) {
