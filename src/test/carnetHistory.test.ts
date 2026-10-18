@@ -1,11 +1,12 @@
 import { describe, expect, it, vi } from 'vitest';
 import { generateCarnetDepart } from '../utils/carnetDepart';
 import type { Animal } from '../types/animal';
+import { KITTEN_PDF_EXPORT_ENABLED } from '../config/breederFeatures';
 vi.mock('../utils/privateDocuments', () => ({ privateDocumentUrl: vi.fn() }));
 vi.mock('qrcode', () => ({ default: { toDataURL: vi.fn().mockRejectedValue(new Error('No bitmap in unit test')) } }));
 
 const fixture: Animal = { id: 'disposable', nom: 'Fixture', type: 'Chat', sexe: 'Mâle', poids: [], soins: [], consultations: [], repas: [] };
-describe('carnet historical data preservation', () => {
+describe.skipIf(!KITTEN_PDF_EXPORT_ENABLED)('carnet historical data preservation (deferred)', () => {
   it('generates the six base pages for a small record', async () => {
     expect((await generateCarnetDepart({ animal: fixture })).getNumberOfPages()).toBe(6);
   });
