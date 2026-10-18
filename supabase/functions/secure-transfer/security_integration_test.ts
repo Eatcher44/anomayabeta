@@ -1,4 +1,4 @@
-import { createClient } from 'npm:@supabase/supabase-js@2.118.0';
+import { createClient, type SupabaseClient } from 'npm:@supabase/supabase-js@2.118.0';
 
 function check(value: unknown, label: string): asserts value { if (!value) throw new Error(label); }
 
@@ -11,7 +11,7 @@ Deno.test('disposable relationship, media, quota and deletion integration', asyn
   const original = await admin.from('security_release_state').select('*').single();
   check(!original.error && !original.data.transfers_enabled && !original.data.deletion_enabled && original.data.test_users.length === 0, 'Public containment must be active with empty allowlist');
   const ids: string[] = [];
-  const clients: ReturnType<typeof createClient>[] = [];
+  const clients: SupabaseClient[] = [];
   const tokens: string[] = [];
   const run = crypto.randomUUID();
   try {
