@@ -759,6 +759,7 @@ export type Database = {
         Args: { p_uid: string }
         Returns: undefined
       }
+      prepare_account_cleanup: { Args: { p_uid: string }; Returns: Json }
       prepare_secure_account_deletion: {
         Args: { p_uid: string }
         Returns: Json

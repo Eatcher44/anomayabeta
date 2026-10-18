@@ -64,6 +64,13 @@
       "when": 1792353313445,
       "tag": "0008_harden_transfer_reference_and_media_guards",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1792353392684,
+      "tag": "0009_register_pending_uploads_for_safe_cleanup",
+      "breakpoints": true
     }
   ]
 }
