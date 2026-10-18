@@ -1,4 +1,5 @@
 # Release audit
+- [ ] Finish targeted upload reconciliation with durable write-start evidence, caller-only recovery, late-commit safeguards and disposable tests; leave truly uncertain commits blocked and document legacy transition.
 - [x] Implement service-only durable upload tickets, deletion freeze and pending-ticket finalization denial; execute paused late-commit/discard handler test with mocked HTTP boundary and real normal upload/cleanup.
 - [ ] Complete durable upload reconciliation after ambiguous Storage failures and retire direct legacy uploads in a coordinated release; cannot safely reopen deletion while published clients still bypass tickets.
 - [x] Verify real private-note HTTP 400, ten committed creation attempts and twenty failed claims; propose medical review and private-photo compatibility rollout without moving existing files.
