@@ -119,7 +119,10 @@ function statusLabel(s?: string) {
 function loadImg(url: string): Promise<HTMLImageElement> {
   return new Promise((res, rej) => {
     const i = new Image(); i.crossOrigin = 'anonymous';
-    i.onload = () => res(i); i.onerror = rej; i.src = url;
+    const timer = setTimeout(() => { i.onload = null; i.onerror = null; rej(new Error('Image indisponible')); }, 10000);
+    i.onload = () => { clearTimeout(timer); res(i); };
+    i.onerror = () => { clearTimeout(timer); rej(new Error('Image indisponible')); };
+    i.src = url;
   });
 }
 
@@ -516,9 +519,11 @@ export async function generateCarnetDepart(data: CarnetDepartData): Promise<jsPD
   doc.text("Signature de l'éleveur", MARGIN, y);
   y += 3;
 
-  if (bp.signature_url) {
+  if (bp.signature_url || bp.signature_object_path) {
     try {
-      const sig = await loadImg(bp.signature_object_path ? await privateDocumentUrl(bp.signature_object_path) : bp.signature_url);
+      const signatureUrl = bp.signature_object_path ? await privateDocumentUrl(bp.signature_object_path) : bp.signature_url;
+      if (!signatureUrl) throw new Error('Signature indisponible');
+      const sig = await loadImg(signatureUrl);
       const maxW = 40, maxH = 18;
       const ratio = Math.min(maxW / sig.width, maxH / sig.height);
       doc.addImage(sig, 'PNG', MARGIN, y, sig.width * ratio, sig.height * ratio);

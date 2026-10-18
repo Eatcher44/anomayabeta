@@ -11,14 +11,9 @@ import { useAuth } from './AuthContext';
 import type { Animal, RendezVous, AnimalsContextType, WeightEntry, SoinEntry, ConsultationEntry, RepasEntry } from '@/types/animal';
 import type { Json } from '@/integrations/supabase/types';
 import { normalizeType } from '@/utils/normalize';
+import { parseJsonArray } from '@/utils/jsonArray';
 
 const AnimalsContext = createContext<AnimalsContextType | null>(null);
-
-function parseJsonArray<T>(json: Json | null | undefined, fallback: T[]): T[] {
-  if (!json) return fallback;
-  if (Array.isArray(json)) return json as unknown as T[];
-  return fallback;
-}
 
 export function AnimalsProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
