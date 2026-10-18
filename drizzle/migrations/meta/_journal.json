@@ -120,6 +120,13 @@
       "when": 1792355999048,
       "tag": "0016_private_server_upload_owner_validation",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1792356009471,
+      "tag": "0017_reject_legacy_uploads_after_deletion_freeze",
+      "breakpoints": true
     }
   ]
 }
