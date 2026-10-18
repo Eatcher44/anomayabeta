@@ -28,9 +28,11 @@
 - [x] Verify six-page synthetic PDF with photo/logo/signature and ten-page overflow PDF; preserve large weight/observation history and actual numbering.
 - [x] Deploy safe feedback corrections and persistent five/hour quota; apply targeted Vite/Vitest patch updates without major upgrades.
 - [x] Re-run basic scan, dependency review, RLS/grant inspection and original account/animal/storage fingerprints; deliver seven-point report with omissions.
-- [ ] Execute hosted disposable relationship/media/concurrency/private-signature acceptance suite: blocked because the Deno runner has no service test credentials; no disposable accounts were created this turn.
-- [ ] Resolve upload-in-flight finalization and shared-media custody with hosted race/failure tests: blocked on privileged disposable test execution; gates remain disabled.
+- [x] Execute real hosted disposable relationship/media/concurrency/private-signature suite using ordinary authenticated sessions and a scoped allowlist; remove all disposable accounts and allowlists.
+- [x] Verify successive transfers, shared-photo preservation, private signature cleanup, and three simultaneous upload/deletion runs on the real backend; zero remaining test storage objects.
+- [ ] Prove finalization against an upload deliberately paused after authorization and before object commit: requires controllable Storage failure/commit instrumentation unavailable in the supported test interface; keep deletion suspended.
 - [x] Temporarily disable only kitten PDF export, preserve source and files, remove its checklist blocker and defer visual/PDF acceptance requirements.
-- [ ] Complete medical-note privacy/minimization and private signature/file access acceptance independently of PDF: blocked on hosted disposable fixtures.
-- [ ] Assess remaining tooling advisories and published-version dependency exposure: major upgrades need isolated compatibility validation; current production dependency scan has two moderate router advisories.
+- [x] Block transfers containing private notes at issuance and ownership mutation without removing history; verify late-added notes and private signature reads on the real backend.
+- [x] Assess installed tooling versus runtime advisories; apply bounded PostCSS/Rollup patches and verify 25 local tests, report remaining tooling and router risks.
+- [ ] Validate tooling major-version fixes in an isolated compatibility environment and verify the actual published bundle: no frontend publication allowed, old published artifact not rebuilt.
 - [ ] Publish or reopen public operations only after remaining acceptance tests and explicit release approval; current global gates remain false and test allowlist empty.
