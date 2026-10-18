@@ -2,11 +2,11 @@ import { supabase } from '@/integrations/supabase/client';
 
 export async function uploadAnimalPhoto(userId: string, animalId: string, file: File): Promise<string> {
   const ext = file.name.split('.').pop() || 'jpg';
-  const path = `${userId}/${animalId}-${Date.now()}.${ext}`;
+  const path = `${userId}/${animalId}-${crypto.randomUUID()}.${ext}`;
 
   const { error } = await supabase.storage
     .from('animal-photos')
-    .upload(path, file, { upsert: true });
+    .upload(path, file, { upsert: false });
 
   if (error) throw error;
 

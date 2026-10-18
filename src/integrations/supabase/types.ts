@@ -14,6 +14,24 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_deletion_state: {
+        Row: {
+          phase: string
+          started_at: string | null
+          user_id: string
+        }
+        Insert: {
+          phase?: string
+          started_at?: string | null
+          user_id: string
+        }
+        Update: {
+          phase?: string
+          started_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       animals: {
         Row: {
           breeder_visible: boolean
@@ -26,6 +44,7 @@ export type Database = {
           couleur: string | null
           created_at: string
           deposit_received: boolean | null
+          gallery_photos: Json
           id: string
           litter_id: string | null
           mother_id: string | null
@@ -58,6 +77,7 @@ export type Database = {
           couleur?: string | null
           created_at?: string
           deposit_received?: boolean | null
+          gallery_photos?: Json
           id?: string
           litter_id?: string | null
           mother_id?: string | null
@@ -90,6 +110,7 @@ export type Database = {
           couleur?: string | null
           created_at?: string
           deposit_received?: boolean | null
+          gallery_photos?: Json
           id?: string
           litter_id?: string | null
           mother_id?: string | null
@@ -317,6 +338,38 @@ export type Database = {
           },
         ]
       }
+      media_cleanup_jobs: {
+        Row: {
+          bucket: string
+          completed: boolean
+          media_id: string
+          object_path: string
+          user_id: string
+        }
+        Insert: {
+          bucket: string
+          completed?: boolean
+          media_id: string
+          object_path: string
+          user_id: string
+        }
+        Update: {
+          bucket?: string
+          completed?: boolean
+          media_id?: string
+          object_path?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "media_cleanup_jobs_media_id_fkey"
+            columns: ["media_id"]
+            isOneToOne: true
+            referencedRelation: "trusted_media"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           animal_id: string | null
@@ -496,6 +549,27 @@ export type Database = {
           },
         ]
       }
+      security_release_state: {
+        Row: {
+          deletion_enabled: boolean
+          id: boolean
+          test_users: string[]
+          transfers_enabled: boolean
+        }
+        Insert: {
+          deletion_enabled?: boolean
+          id?: boolean
+          test_users?: string[]
+          transfers_enabled?: boolean
+        }
+        Update: {
+          deletion_enabled?: boolean
+          id?: boolean
+          test_users?: string[]
+          transfers_enabled?: boolean
+        }
+        Relationships: []
+      }
       transfer_archive: {
         Row: {
           animal_data: Json
@@ -537,6 +611,27 @@ export type Database = {
           },
         ]
       }
+      transfer_attempt_windows: {
+        Row: {
+          action: string
+          attempts: number
+          user_id: string
+          window_start: string
+        }
+        Insert: {
+          action: string
+          attempts?: number
+          user_id: string
+          window_start: string
+        }
+        Update: {
+          action?: string
+          attempts?: number
+          user_id?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
       transfer_codes: {
         Row: {
           animal_id: string
@@ -546,6 +641,7 @@ export type Database = {
           expires_at: string
           from_user_id: string
           id: string
+          secret_hash: string | null
           to_user_id: string | null
         }
         Insert: {
@@ -556,6 +652,7 @@ export type Database = {
           expires_at: string
           from_user_id: string
           id?: string
+          secret_hash?: string | null
           to_user_id?: string | null
         }
         Update: {
@@ -566,6 +663,7 @@ export type Database = {
           expires_at?: string
           from_user_id?: string
           id?: string
+          secret_hash?: string | null
           to_user_id?: string | null
         }
         Relationships: [
@@ -578,12 +676,115 @@ export type Database = {
           },
         ]
       }
+      trusted_media: {
+        Row: {
+          bucket: string
+          canonical_url: string
+          custodian_id: string
+          id: string
+          object_path: string
+          status: string
+        }
+        Insert: {
+          bucket: string
+          canonical_url: string
+          custodian_id: string
+          id?: string
+          object_path: string
+          status?: string
+        }
+        Update: {
+          bucket?: string
+          canonical_url?: string
+          custodian_id?: string
+          id?: string
+          object_path?: string
+          status?: string
+        }
+        Relationships: []
+      }
+      trusted_media_bindings: {
+        Row: {
+          entity_id: string
+          entity_kind: string
+          media_id: string
+          owner_id: string
+        }
+        Insert: {
+          entity_id: string
+          entity_kind: string
+          media_id: string
+          owner_id: string
+        }
+        Update: {
+          entity_id?: string
+          entity_kind?: string
+          media_id?: string
+          owner_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trusted_media_bindings_media_id_fkey"
+            columns: ["media_id"]
+            isOneToOne: false
+            referencedRelation: "trusted_media"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      bind_trusted_media: {
+        Args: {
+          p_entity: string
+          p_kind: string
+          p_owner: string
+          p_url: string
+        }
+        Returns: undefined
+      }
       claim_transfer_code: { Args: { p_code: string }; Returns: string }
+      complete_media_cleanup: {
+        Args: { p_media: string; p_uid: string }
+        Returns: undefined
+      }
+      consume_transfer_attempt: {
+        Args: { p_action: string; p_uid: string }
+        Returns: boolean
+      }
+      finalize_secure_account_deletion: {
+        Args: { p_uid: string }
+        Returns: undefined
+      }
+      prepare_secure_account_deletion: {
+        Args: { p_uid: string }
+        Returns: Json
+      }
+      secure_claim_transfer: {
+        Args: { p_code: string; p_uid: string }
+        Returns: Json
+      }
+      secure_create_transfer: {
+        Args: { p_animal: string; p_uid: string }
+        Returns: Json
+      }
+      secure_list_transfers: {
+        Args: { p_animal: string; p_uid: string }
+        Returns: Json
+      }
+      security_account_active: { Args: { p_uid: string }; Returns: boolean }
+      security_feature_allowed: {
+        Args: { p_feature: string; p_uid: string }
+        Returns: boolean
+      }
+      security_mutation_lock: { Args: never; Returns: undefined }
+      security_upload_allowed: {
+        Args: { p_bucket: string; p_path: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
