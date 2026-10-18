@@ -759,6 +759,7 @@ export type Database = {
         Args: { p_uid: string }
         Returns: undefined
       }
+      prepare_account_cleanup: { Args: { p_uid: string }; Returns: Json }
       prepare_secure_account_deletion: {
         Args: { p_uid: string }
         Returns: Json
@@ -778,6 +779,10 @@ export type Database = {
       security_account_active: { Args: { p_uid: string }; Returns: boolean }
       security_feature_allowed: {
         Args: { p_feature: string; p_uid: string }
+        Returns: boolean
+      }
+      security_media_list_allowed: {
+        Args: { p_bucket: string; p_path: string }
         Returns: boolean
       }
       security_mutation_lock: { Args: never; Returns: undefined }

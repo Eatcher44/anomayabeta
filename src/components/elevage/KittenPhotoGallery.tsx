@@ -19,7 +19,7 @@ export default function KittenPhotoGallery({ animal, onUpdate }: Props) {
   const [uploading, setUploading] = useState(false);
   const [fullscreenIdx, setFullscreenIdx] = useState<number | null>(null);
 
-  const gallery: string[] = ((animal as any).gallery_photos || []) as string[];
+  const gallery = animal.gallery_photos || [];
   const allPhotos = [animal.photo, ...gallery].filter(Boolean) as string[];
   const canAdd = allPhotos.length < MAX_PHOTOS;
 
@@ -31,12 +31,14 @@ export default function KittenPhotoGallery({ animal, onUpdate }: Props) {
     try {
       const url = await uploadAnimalPhoto(user.id, animal.id, file);
       if (!animal.photo) {
-        await supabase.from('animals').update({ photo: url }).eq('id', animal.id);
+        const { error } = await supabase.from('animals').update({ photo: url }).eq('id', animal.id);
+        if (error) throw error;
         onUpdate({ photo: url });
       } else {
         const newGallery = [...gallery, url];
-        await supabase.from('animals').update({ gallery_photos: newGallery } as any).eq('id', animal.id);
-        onUpdate({ gallery_photos: newGallery } as any);
+        const { error } = await supabase.from('animals').update({ gallery_photos: newGallery }).eq('id', animal.id);
+        if (error) throw error;
+        onUpdate({ gallery_photos: newGallery });
       }
       toast({ title: 'Photo ajoutée' });
     } catch {
@@ -47,19 +49,25 @@ export default function KittenPhotoGallery({ animal, onUpdate }: Props) {
   };
 
   const handleDeletePhoto = async (idx: number) => {
+    try {
     if (idx === 0 && animal.photo) {
       const newMain = gallery[0] || null;
       const newGallery = gallery.slice(1);
-      await supabase.from('animals').update({ photo: newMain, gallery_photos: newGallery } as any).eq('id', animal.id);
-      onUpdate({ photo: newMain, gallery_photos: newGallery } as any);
+      const { error } = await supabase.from('animals').update({ photo: newMain, gallery_photos: newGallery }).eq('id', animal.id);
+      if (error) throw error;
+      onUpdate({ photo: newMain, gallery_photos: newGallery });
     } else {
       const galleryIdx = idx - 1;
       const newGallery = gallery.filter((_, i) => i !== galleryIdx);
-      await supabase.from('animals').update({ gallery_photos: newGallery } as any).eq('id', animal.id);
-      onUpdate({ gallery_photos: newGallery } as any);
+      const { error } = await supabase.from('animals').update({ gallery_photos: newGallery }).eq('id', animal.id);
+      if (error) throw error;
+      onUpdate({ gallery_photos: newGallery });
     }
     setFullscreenIdx(null);
     toast({ title: 'Photo supprimée' });
+    } catch {
+      toast({ title: 'La photo n’a pas pu être retirée', variant: 'destructive' });
+    }
   };
 
   const handleMakeMain = async (idx: number) => {
@@ -69,8 +77,12 @@ export default function KittenPhotoGallery({ animal, onUpdate }: Props) {
     const newGallery = [...gallery];
     newGallery.splice(galleryIdx, 1);
     if (animal.photo) newGallery.unshift(animal.photo);
-    await supabase.from('animals').update({ photo: newMain, gallery_photos: newGallery } as any).eq('id', animal.id);
-    onUpdate({ photo: newMain, gallery_photos: newGallery } as any);
+    const { error } = await supabase.from('animals').update({ photo: newMain, gallery_photos: newGallery }).eq('id', animal.id);
+    if (error) {
+      toast({ title: 'La photo n’a pas pu être modifiée', variant: 'destructive' });
+      return;
+    }
+    onUpdate({ photo: newMain, gallery_photos: newGallery });
     toast({ title: 'Photo principale mise à jour' });
   };
 

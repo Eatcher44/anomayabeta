@@ -18,7 +18,10 @@ Deno.serve(async (req) => {
   const operation = action === "create" ? "secure_create_transfer" : action === "claim" ? "secure_claim_transfer" : "secure_list_transfers";
   const params = action === "claim" ? { p_uid: uid, p_code: body.code } : { p_uid: uid, p_animal: body.animal_id };
   const { data, error } = await admin.rpc(operation, params);
-  if (error) return reply(req, error.code === "40001" ? 409 : 500, { error: error.code === "40001" ? "operation_busy" : "operation_failed" });
+  if (error) {
+    if (error.message?.includes('linked_records_require_support')) return reply(req, 400, { error: 'linked_records_require_support' });
+    return reply(req, error.code === "40001" ? 409 : 500, { error: error.code === "40001" ? "operation_busy" : "operation_failed" });
+  }
   const failure = data?.error;
   if (failure) return reply(req, failure === "rate_limited" ? 429 : failure === "temporarily_suspended" ? 503 : 400, { error: failure });
   return reply(req, 200, data);
