@@ -2,6 +2,7 @@ import jsPDF from 'jspdf';
 import QRCode from 'qrcode';
 import type { Animal, WeightEntry, SoinEntry } from '@/types/animal';
 import { displayBreed } from '@/utils/breeds';
+import { privateDocumentUrl } from '@/utils/privateDocuments';
 
 const PAGE_W = 210;
 const PAGE_H = 297;
@@ -176,6 +177,7 @@ export interface BreederProfileData {
   siret?: string;
   logo_url?: string | null;
   signature_url?: string | null;
+  signature_object_path?: string | null;
 }
 
 export interface CarnetDepartData {
@@ -516,7 +518,7 @@ export async function generateCarnetDepart(data: CarnetDepartData): Promise<jsPD
 
   if (bp.signature_url) {
     try {
-      const sig = await loadImg(bp.signature_url);
+      const sig = await loadImg(bp.signature_object_path ? await privateDocumentUrl(bp.signature_object_path) : bp.signature_url);
       const maxW = 40, maxH = 18;
       const ratio = Math.min(maxW / sig.width, maxH / sig.height);
       doc.addImage(sig, 'PNG', MARGIN, y, sig.width * ratio, sig.height * ratio);

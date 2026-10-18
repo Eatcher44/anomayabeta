@@ -9,6 +9,7 @@ import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { pickPhotoFile } from '@/utils/photo';
+import { privateDocumentUrl } from '@/utils/privateDocuments';
 
 interface BreederProfile {
   id?: string;
@@ -21,11 +22,12 @@ interface BreederProfile {
   siret: string;
   logo_url: string | null;
   signature_url: string | null;
+  signature_object_path: string | null;
 }
 
 const EMPTY: BreederProfile = {
   nom_elevage: '', prenom: '', nom: '', email: '', telephone: '',
-  adresse: '', siret: '', logo_url: null, signature_url: null,
+  adresse: '', siret: '', logo_url: null, signature_url: null, signature_object_path: null,
 };
 
 export default function BreederProfilePage() {
@@ -57,7 +59,14 @@ export default function BreederProfilePage() {
           siret: data.siret || '',
           logo_url: data.logo_url,
           signature_url: data.signature_url,
+          signature_object_path: data.signature_object_path,
         });
+        if (data.signature_object_path) {
+          try {
+            const url = await privateDocumentUrl(data.signature_object_path);
+            setProfile(p => ({ ...p, signature_url: url }));
+          } catch { toast({ title: 'Signature indisponible', variant: 'destructive' }); }
+        }
       } else {
         setProfile({ ...EMPTY, email: user.email || '' });
       }
@@ -69,10 +78,21 @@ export default function BreederProfilePage() {
     if (!user) return;
     const file = await pickPhotoFile('image/*');
     if (!file) return;
-    const ext = file.name.split('.').pop();
-    const path = `${user.id}/${field}-${Date.now()}.${ext}`;
-    const { error } = await supabase.storage.from('animal-photos').upload(path, file);
+    if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type) || file.size > 10 * 1024 * 1024) {
+      toast({ title: 'Choisissez une image PNG, JPEG ou WebP de moins de 10 Mo', variant: 'destructive' }); return;
+    }
+    const ext = file.type === 'image/png' ? 'png' : file.type === 'image/webp' ? 'webp' : 'jpg';
+    const path = `${user.id}/${field}-${crypto.randomUUID()}.${ext}`;
+    const bucket = field === 'signature_url' ? 'sensitive-documents' : 'animal-photos';
+    const { error } = await supabase.storage.from(bucket).upload(path, file);
     if (error) { toast({ title: 'Erreur upload', variant: 'destructive' }); return; }
+    if (field === 'signature_url') {
+      try {
+        const url = await privateDocumentUrl(path);
+        setProfile(p => ({ ...p, signature_url: url, signature_object_path: path }));
+      } catch { toast({ title: 'Signature indisponible', variant: 'destructive' }); }
+      return;
+    }
     const { data: urlData } = supabase.storage.from('animal-photos').getPublicUrl(path);
     setProfile(p => ({ ...p, [field]: urlData.publicUrl }));
   };
@@ -94,7 +114,8 @@ export default function BreederProfilePage() {
       adresse: profile.adresse.trim() || null,
       siret: profile.siret.trim() || null,
       logo_url: profile.logo_url,
-      signature_url: profile.signature_url,
+      signature_url: profile.signature_object_path ? null : profile.signature_url,
+      signature_object_path: profile.signature_object_path,
     };
 
     let error;
