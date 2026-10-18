@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useAnimals } from '@/context/AnimalsContext';
 import { useAuth } from '@/context/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
+import { secureTransfer, isTransferCode, TRANSFER_CODE_LENGTH } from '@/utils/secureTransfer';
 import { toast } from '@/hooks/use-toast';
 
 interface TransferCode {
@@ -15,13 +15,6 @@ interface TransferCode {
   animal_id: string;
   expires_at: string;
   claimed_at: string | null;
-}
-
-function generateCode(): string {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let code = '';
-  for (let i = 0; i < 8; i++) code += chars[Math.floor(Math.random() * chars.length)];
-  return code;
 }
 
 export default function TransferPage() {
@@ -43,13 +36,11 @@ export default function TransferPage() {
   useEffect(() => {
     if (!user || !id) return;
     (async () => {
-      const { data } = await supabase
-        .from('transfer_codes')
-        .select('*')
-        .eq('animal_id', id)
-        .order('created_at', { ascending: false });
-      if (data) setCodes(data as TransferCode[]);
-      setLoading(false);
+      try {
+        const data = await secureTransfer('list', { animal_id: id });
+        if (data) setCodes(data as TransferCode[]);
+      } catch { /* list remains empty when unavailable */ }
+      finally { setLoading(false); }
     })();
   }, [user, id]);
 
@@ -57,26 +48,11 @@ export default function TransferPage() {
     if (!user || !animal) return;
     setGenerating(true);
     try {
-      const code = generateCode();
-      const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + 7);
-
-      const { data, error } = await supabase
-        .from('transfer_codes')
-        .insert({
-          code,
-          animal_id: animal.id,
-          from_user_id: user.id,
-          expires_at: expiresAt.toISOString(),
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
+      const data = await secureTransfer('create', { animal_id: animal.id });
       if (data) setCodes((prev) => [data as TransferCode, ...prev]);
-      toast({ title: 'Code généré', description: `Code : ${code}` });
-    } catch {
-      toast({ title: 'Erreur', variant: 'destructive' });
+      toast({ title: 'Code généré' });
+    } catch (error) {
+      toast({ title: 'Erreur', description: error instanceof Error ? error.message : undefined, variant: 'destructive' });
     } finally {
       setGenerating(false);
     }
@@ -93,22 +69,13 @@ export default function TransferPage() {
     setClaiming(true);
     try {
       // Validated and applied atomically on the server.
-      const { error } = await supabase.rpc('claim_transfer_code', { p_code: claimCode.trim().toUpperCase() });
-      if (error) {
-        const msg = error.message?.includes('own_code')
-          ? 'Vous ne pouvez pas réclamer votre propre code.'
-          : error.message?.includes('invalid_code')
-            ? 'Code invalide, expiré ou déjà utilisé.'
-            : 'Le transfert a échoué. Réessayez.';
-        toast({ title: 'Erreur de transfert', description: msg, variant: 'destructive' });
-        return;
-      }
+      await secureTransfer('claim', { code: claimCode.trim().toUpperCase() });
       toast({ title: 'Profil transféré !', description: "L'animal a été ajouté à votre famille." });
       setClaimCode('');
       // Full reload so the family list includes the new animal.
       window.location.assign('/');
-    } catch {
-      toast({ title: 'Erreur de transfert', variant: 'destructive' });
+    } catch (error) {
+      toast({ title: 'Erreur de transfert', description: error instanceof Error ? error.message : undefined, variant: 'destructive' });
     } finally {
       setClaiming(false);
     }
@@ -135,11 +102,12 @@ export default function TransferPage() {
               <Input
                 value={claimCode}
                 onChange={(e) => setClaimCode(e.target.value.toUpperCase())}
-                placeholder="CODE1234"
-                maxLength={8}
-                className="font-mono tracking-widest"
+                placeholder="Code de transfert"
+                aria-label="Code de transfert"
+                maxLength={TRANSFER_CODE_LENGTH}
+                className="font-mono min-w-0"
               />
-              <Button onClick={claimAnimal} disabled={claiming || claimCode.length < 8}>
+              <Button onClick={claimAnimal} disabled={claiming || !isTransferCode(claimCode)}>
                 {claiming ? '...' : 'Valider'}
               </Button>
             </div>
@@ -183,13 +151,13 @@ export default function TransferPage() {
               return (
                 <div key={c.id} className="bg-card rounded-xl border border-border p-4 shadow-sm">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="font-mono text-xl tracking-[0.3em] font-bold">{c.code}</span>
+                    <span className="font-mono text-sm break-all min-w-0 font-bold">{c.code}</span>
                     {claimed ? (
                       <Badge variant="default" className="gap-1"><Check className="w-3 h-3" /> Utilisé</Badge>
                     ) : expired ? (
                       <Badge variant="destructive" className="gap-1"><Clock className="w-3 h-3" /> Expiré</Badge>
                     ) : (
-                      <Button variant="ghost" size="sm" onClick={() => copyCode(c.code)}>
+                      <Button variant="ghost" size="sm" aria-label="Copier le code" disabled={!isTransferCode(c.code)} onClick={() => copyCode(c.code)}>
                         {copied === c.code ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                       </Button>
                     )}

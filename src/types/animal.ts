@@ -55,6 +55,7 @@ export interface Animal {
   sexe: string;
   race?: string;
   photo?: string | null;
+  gallery_photos?: string[];
   naissance?: string; // ISO string
   sterilise?: boolean;
   puce?: string;
