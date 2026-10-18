@@ -2,6 +2,7 @@ import jsPDF from 'jspdf';
 import QRCode from 'qrcode';
 import type { Animal, WeightEntry, SoinEntry } from '@/types/animal';
 import { displayBreed } from '@/utils/breeds';
+import { privateDocumentUrl } from '@/utils/privateDocuments';
 
 const PAGE_W = 210;
 const PAGE_H = 297;
@@ -118,7 +119,10 @@ function statusLabel(s?: string) {
 function loadImg(url: string): Promise<HTMLImageElement> {
   return new Promise((res, rej) => {
     const i = new Image(); i.crossOrigin = 'anonymous';
-    i.onload = () => res(i); i.onerror = rej; i.src = url;
+    const timer = setTimeout(() => { i.onload = null; i.onerror = null; rej(new Error('Image indisponible')); }, 10000);
+    i.onload = () => { clearTimeout(timer); res(i); };
+    i.onerror = () => { clearTimeout(timer); rej(new Error('Image indisponible')); };
+    i.src = url;
   });
 }
 
@@ -176,6 +180,7 @@ export interface BreederProfileData {
   siret?: string;
   logo_url?: string | null;
   signature_url?: string | null;
+  signature_object_path?: string | null;
 }
 
 export interface CarnetDepartData {
@@ -192,7 +197,7 @@ export interface CarnetDepartData {
 export async function generateCarnetDepart(data: CarnetDepartData): Promise<jsPDF> {
   const { animal, motherName, fatherName, breederProfile, transferCode } = data;
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-  const totalPages = 6;
+  // Stamp real page numbers once overflow pages are known; never omit history.
   const race = animal.race ? displayBreed(animal.race) : '';
   const genDate = new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
   const bp = breederProfile || {};
@@ -295,7 +300,6 @@ export async function generateCarnetDepart(data: CarnetDepartData): Promise<jsPD
     if (animal.planned_departure_date) y = labelValueInline(doc, 'Départ prévu', fmtLong(animal.planned_departure_date), MARGIN, y);
   }
 
-  footer(doc, 1, totalPages);
 
   // ════════════════════════════════════════════════════════════
   // PAGE 2 – IDENTITÉ TABLE
@@ -361,7 +365,6 @@ export async function generateCarnetDepart(data: CarnetDepartData): Promise<jsPD
     });
   }
 
-  footer(doc, 2, totalPages);
 
   // ════════════════════════════════════════════════════════════
   // PAGE 3 – WEIGHT (table left, chart right)
@@ -391,7 +394,9 @@ export async function generateCarnetDepart(data: CarnetDepartData): Promise<jsPD
 
     doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5);
     weights.forEach((w, i) => {
-      if (y > PAGE_H - 25) return; // safety
+      if (y > PAGE_H - 25) {
+        doc.addPage(); y = sectionTitle(doc, 'Suivi du poids — suite', MARGIN + 4);
+      }
       if (i % 2 === 0) { doc.setFillColor(...C.rowAlt); doc.rect(MARGIN, y - 3, tableW, 5.5, 'F'); }
       setC(doc, C.black);
       doc.text(fmtShort(w.date), MARGIN + 3, y);
@@ -408,7 +413,6 @@ export async function generateCarnetDepart(data: CarnetDepartData): Promise<jsPD
     }
   }
 
-  footer(doc, 3, totalPages);
 
   // ════════════════════════════════════════════════════════════
   // PAGE 4 – VACCINS & SOINS
@@ -471,7 +475,6 @@ export async function generateCarnetDepart(data: CarnetDepartData): Promise<jsPD
     if (traits.length) drawSoinTable(traits, false);
   }
 
-  footer(doc, 4, totalPages);
 
   // ════════════════════════════════════════════════════════════
   // PAGE 5 – OBSERVATIONS & SIGNATURE
@@ -484,8 +487,13 @@ export async function generateCarnetDepart(data: CarnetDepartData): Promise<jsPD
   if (notes) {
     doc.setFontSize(8); doc.setFont('helvetica', 'normal'); setC(doc, C.black);
     const lines = doc.splitTextToSize(notes, CONTENT_W);
-    doc.text(lines, MARGIN, y);
-    y += lines.length * 4 + 4;
+    for (const line of lines) {
+      if (y > PAGE_H - 110) {
+        doc.addPage(); y = sectionTitle(doc, "Observations de l'éleveur — suite", MARGIN + 4);
+      }
+      doc.text(line, MARGIN, y); y += 4;
+    }
+    y += 4;
   } else {
     doc.setFontSize(8); doc.setFont('helvetica', 'italic'); setC(doc, C.light);
     doc.text('Aucune observation saisie.', MARGIN, y);
@@ -514,9 +522,11 @@ export async function generateCarnetDepart(data: CarnetDepartData): Promise<jsPD
   doc.text("Signature de l'éleveur", MARGIN, y);
   y += 3;
 
-  if (bp.signature_url) {
+  if (bp.signature_url || bp.signature_object_path) {
     try {
-      const sig = await loadImg(bp.signature_url);
+      const signatureUrl = bp.signature_object_path ? await privateDocumentUrl(bp.signature_object_path) : bp.signature_url;
+      if (!signatureUrl) throw new Error('Signature indisponible');
+      const sig = await loadImg(signatureUrl);
       const maxW = 40, maxH = 18;
       const ratio = Math.min(maxW / sig.width, maxH / sig.height);
       doc.addImage(sig, 'PNG', MARGIN, y, sig.width * ratio, sig.height * ratio);
@@ -536,7 +546,6 @@ export async function generateCarnetDepart(data: CarnetDepartData): Promise<jsPD
   doc.setFontSize(6.5); setC(doc, C.light); doc.setFont('helvetica', 'italic');
   doc.text("Cachet de l'élevage", boxX + boxW / 2, boxY + boxH / 2, { align: 'center' });
 
-  footer(doc, 5, totalPages);
 
   // ════════════════════════════════════════════════════════════
   // PAGE 6 – QR TRANSFER
@@ -546,8 +555,9 @@ export async function generateCarnetDepart(data: CarnetDepartData): Promise<jsPD
   y = sectionTitle(doc, 'Import du profil numérique', y);
   y += 6;
 
-  const qrText = transferCode || `anomaya://transfer/${animal.id}`;
+  const qrText = transferCode;
   try {
+    if (!qrText) throw new Error('No server-issued code');
     const qr = await qrDataUrl(qrText);
     const sz = 48;
     doc.addImage(qr, 'PNG', (PAGE_W - sz) / 2, y, sz, sz);
@@ -563,12 +573,15 @@ export async function generateCarnetDepart(data: CarnetDepartData): Promise<jsPD
 
   doc.setFontSize(8); doc.setFont('helvetica', 'normal'); setC(doc, C.dark);
   const instr = doc.splitTextToSize(
-    'Scannez ce QR code depuis votre compte Anomaya pour importer automatiquement le profil complet.',
+    transferCode ? 'Scannez ce QR code depuis votre compte Anomaya pour importer le profil avec ce code de transfert.' : 'Aucun code de transfert délivré. Ce carnet ne permet pas de réclamer le profil numérique.',
     CONTENT_W - 20
   );
   doc.text(instr, PAGE_W / 2, y, { align: 'center' });
 
-  footer(doc, 6, totalPages);
+  const actualPages = doc.getNumberOfPages();
+  for (let page = 1; page <= actualPages; page++) {
+    doc.setPage(page); footer(doc, page, actualPages);
+  }
 
   return doc;
 }

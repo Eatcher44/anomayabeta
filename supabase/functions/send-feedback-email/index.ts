@@ -1,148 +1,58 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "npm:resend@2.0.0";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { Resend, z } from "./runtime.ts";
+import { reply, securityHeaders, verifiedRequest } from "../_shared/securityHttp.ts";
+import { escapeHtml, ownedScreenshotPath } from "./validation.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
+const schema = z.object({
+  type: z.enum(["feedback", "bug"]), subject: z.string().max(200).optional(),
+  message: z.string().trim().min(1).max(10000), steps: z.string().max(10000).optional(),
+  route: z.string().max(500).optional(), screenshotPath: z.string().max(500).optional(),
+  screenshotUrl: z.string().max(2000).optional(),
+}); // Legacy identity fields are ignored, never used as attribution.
 
-interface FeedbackRequest {
-  type: "feedback" | "bug";
-  subject: string;
-  message: string;
-  steps?: string;
-  userId?: string;
-  userEmail?: string;
-  route?: string;
-  // Storage path inside the bug-screenshots bucket (preferred).
-  screenshotPath?: string;
-  // Backward-compatible: older clients may still send a public URL.
-  screenshotUrl?: string;
-}
-
-const rateLimitMap = new Map<string, number[]>();
-const RATE_LIMIT = 5;
-const RATE_WINDOW_MS = 60 * 60 * 1000;
-
-function isRateLimited(userId: string): boolean {
-  const now = Date.now();
-  const timestamps = (rateLimitMap.get(userId) || []).filter(t => now - t < RATE_WINDOW_MS);
-  if (timestamps.length >= RATE_LIMIT) return true;
-  timestamps.push(now);
-  rateLimitMap.set(userId, timestamps);
-  return false;
-}
-
-serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
-
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response(null, { headers: securityHeaders(req) });
+  if (req.method !== "POST") return reply(req, 405, { error: "Méthode non autorisée" });
+  const session = await verifiedRequest(req);
+  if (!session) return reply(req, 401, { error: "Session invalide" });
   try {
-    // Require a valid authenticated user (verify_jwt defaults to false on Lovable functions).
-    const authHeader = req.headers.get("Authorization") || "";
-    const token = authHeader.replace(/^Bearer\s+/i, "");
-    if (!token) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      });
+    // Bound the actual streamed body, not just an untrusted Content-Length header.
+    const reader = req.body?.getReader();
+    if (!reader) return reply(req, 400, { error: "Message manquant" });
+    const chunks: Uint8Array[] = []; let size = 0;
+    while (true) {
+      const { value, done } = await reader.read(); if (done) break;
+      size += value.byteLength;
+      if (size > 32768) { await reader.cancel(); return reply(req, 413, { error: "Message trop volumineux" }); }
+      chunks.push(value);
     }
-
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-
-    const authClient = createClient(supabaseUrl, anonKey, {
-      global: { headers: { Authorization: `Bearer ${token}` } },
+    const bytes = new Uint8Array(size); let offset = 0;
+    for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength; }
+    let input: unknown;
+    try { input = JSON.parse(new TextDecoder().decode(bytes)); } catch { return reply(req, 400, { error: "Message invalide" }); }
+    const parsed = schema.safeParse(input);
+    if (!parsed.success) return reply(req, 400, { error: "Message invalide" });
+    const data = parsed.data;
+    const path = ownedScreenshotPath(data.screenshotPath, data.screenshotUrl, session.uid, Deno.env.get("SUPABASE_URL") ?? "");
+    if ((data.screenshotPath || data.screenshotUrl) && !path) return reply(req, 400, { error: "Capture non autorisée" });
+    const { data: allowed, error: quotaError } = await session.admin.rpc("consume_feedback_attempt", { p_uid: session.uid });
+    if (quotaError) return reply(req, 503, { error: "Service temporairement indisponible" });
+    if (!allowed) {
+      const response = reply(req, 429, { error: "Trop de messages envoyés. Réessayez dans une heure." });
+      response.headers.set("Retry-After", "3600"); return response;
+    }
+    let screenshot = "";
+    if (path) {
+      const { data: signed, error } = await session.admin.storage.from("bug-screenshots").createSignedUrl(path, 3600);
+      if (error || !signed?.signedUrl) return reply(req, 400, { error: "Capture indisponible" });
+      screenshot = signed.signedUrl;
+    }
+    const text = `Type: ${data.type}\nUser ID: ${session.uid}\nUser email: ${session.email ?? "N/A"}\nRoute: ${data.route ?? "N/A"}\nTimestamp: ${new Date().toISOString()}\n\nMessage:\n${data.message}\n\n${data.steps ?? ""}`;
+    const html = escapeHtml(text).replace(/\n/g, "<br>") + (screenshot ? `<br><a href="${escapeHtml(screenshot)}">Capture d'écran</a>` : "");
+    const { error } = await new Resend(Deno.env.get("RESEND_API_KEY")).emails.send({
+      from: "support@anomaya.app", to: ["support@anomaya.app"],
+      subject: `[ANOMAYA BETA] ${data.type === "bug" ? "BUG" : "Feedback"} – ${(data.subject || "Sans sujet").replace(/[\r\n]/g, " ")}`,
+      text: text + (screenshot ? `\nCapture: ${screenshot}` : ""), html,
     });
-    const { data: userData, error: userErr } = await authClient.auth.getUser();
-    if (userErr || !userData?.user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      });
-    }
-    const authedUserId = userData.user.id;
-
-    const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
-    const { type, subject, message, steps, userId, userEmail, route, screenshotPath, screenshotUrl }: FeedbackRequest = await req.json();
-
-    if (isRateLimited(authedUserId)) {
-      return new Response(JSON.stringify({ error: "Trop de messages envoyés. Réessayez dans une heure." }), {
-        status: 429,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      });
-    }
-
-    // Generate a short-lived signed URL for the screenshot (private bucket).
-    let signedScreenshotUrl: string | null = null;
-    if (screenshotPath) {
-      // Only allow paths owned by the authenticated user (path prefix is userId/...).
-      const ownerSegment = screenshotPath.split("/")[0];
-      if (ownerSegment === authedUserId) {
-        const admin = createClient(supabaseUrl, serviceKey);
-        const { data: signed } = await admin
-          .storage
-          .from("bug-screenshots")
-          .createSignedUrl(screenshotPath, 60 * 60 * 24 * 7); // 7 days
-        signedScreenshotUrl = signed?.signedUrl ?? null;
-      }
-    } else if (screenshotUrl) {
-      signedScreenshotUrl = screenshotUrl;
-    }
-
-    const prefix = type === "bug" ? "BUG" : "Feedback";
-    const emailSubject = `[ANOMAYA BETA] ${prefix} – ${subject || "Sans sujet"}`;
-    const timestamp = new Date().toISOString();
-
-    const body = `
-Type: ${type}
-User ID: ${userId || authedUserId}
-User email: ${userEmail || "N/A"}
-Route: ${route || "N/A"}
-Timestamp: ${timestamp}
-
-Message:
-${message}
-
-${steps ? `Steps:\n${steps}` : ""}
-
-${signedScreenshotUrl ? `Screenshot:\n${signedScreenshotUrl}` : ""}
-    `.trim();
-
-    const htmlBody = body.replace(/\n/g, "<br>").replace(
-      signedScreenshotUrl || "",
-      signedScreenshotUrl ? `<a href="${signedScreenshotUrl}">${signedScreenshotUrl}</a>` : ""
-    );
-
-    const { error } = await resend.emails.send({
-      from: "support@anomaya.app",
-      to: ["support@anomaya.app"],
-      subject: emailSubject,
-      text: body,
-      html: htmlBody,
-    });
-
-    if (error) {
-      console.error("Resend error:", error);
-      return new Response(JSON.stringify({ error: "Email send failed" }), {
-        status: 500,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      });
-    }
-
-    return new Response(JSON.stringify({ success: true }), {
-      status: 200,
-      headers: { "Content-Type": "application/json", ...corsHeaders },
-    });
-  } catch (error: any) {
-    console.error("Error:", error);
-    return new Response(JSON.stringify({ error: "Internal error" }), {
-      status: 500,
-      headers: { "Content-Type": "application/json", ...corsHeaders },
-    });
-  }
+    return error ? reply(req, 500, { error: "Envoi impossible. Réessayez." }) : reply(req, 200, { success: true });
+  } catch { return reply(req, 500, { error: "Service temporairement indisponible" }); }
 });
