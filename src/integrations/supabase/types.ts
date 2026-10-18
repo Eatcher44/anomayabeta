@@ -820,6 +820,10 @@ export type Database = {
         Args: { p_animal: string }
         Returns: boolean
       }
+      transfer_has_private_notes: {
+        Args: { p_animal: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never

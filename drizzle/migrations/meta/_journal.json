@@ -99,6 +99,13 @@
       "when": 1792355307444,
       "tag": "0013_allow_private_document_cleanup_manifest",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1792355360529,
+      "tag": "0014_block_transfer_of_private_medical_notes",
+      "breakpoints": true
     }
   ]
 }
