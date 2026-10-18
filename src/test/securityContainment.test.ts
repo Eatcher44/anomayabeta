@@ -17,7 +17,9 @@ describe('deployed account deletion handler', () => {
     mocks.session.mockResolvedValue({ uid: 'verified-owner', admin: {
       rpc: mocks.rpc, storage: { from: mocks.from }, auth: { admin: { deleteUser: mocks.deleteUser } },
     } });
-    await import('../../supabase/functions/delete-account/index.ts');
+    // Keep the Deno handler outside the browser's TypeScript dependency graph.
+    const handlerPath = '../../supabase/functions/delete-account/index.ts';
+    await import(/* @vite-ignore */ handlerPath);
   });
   it('uses the verified owner and stops before cleanup when the database gate refuses', async () => {
     mocks.rpc.mockResolvedValue({ data: { error: 'temporarily_suspended' }, error: null });
