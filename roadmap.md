@@ -12,8 +12,9 @@
 - [x] Obtain explicit approval before any production containment or remediation; do not publish.
 
 # Approved security containment and remediation
-- [ ] Immediately revoke client transfer claiming and verify effective permissions/direct API denial.
-- [ ] Implement safe permanent server-controlled transfers with cryptographic codes and durable abuse protection.
-- [ ] Secure photo mutation/deletion and transfer-versus-deletion coordination; stop for approval if migration risks existing data.
-- [ ] Run authorized disposable backend tests, inspect dependency alerts, and rescan.
-- [ ] Restore only validated secure transfers; confirm original accounts/data and report release blockers.
+- [x] Immediately revoke client transfer claiming and verify effective permissions/direct API denial.
+- [ ] Implement permanent transfers and media coordination: blocked pending recent backup evidence and safe migration approval.
+- [x] Apply temporary global photo overwrite/delete denial and gate automatic account deletion before mutations.
+- [x] Run bounded disposable containment tests, remediate critical/high dependency alerts in preview, rescan and verify account/animal/storage fingerprints.
+- [ ] Run full permanent transfer/media security tests and restore secure transfers: blocked on permanent implementation and backup evidence.
+- [x] Report current containment, limitations and release blockers; no frontend publication.
