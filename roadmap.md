@@ -1,6 +1,7 @@
 # Release audit
 - [x] Validate real preview animal creation/replacement, breeder media and bug submission with two cleaned disposable accounts; private denial passes, public animal URLs remain readable and bug drafts reset. Android checklist/legacy and late-commit blockers documented in docs/upload-user-flow-validation.md; no publication or permission removal.
-- [ ] Obtain next-stage approval for targeted picker cancellation/camera lifecycle correction, then execute physical Android and refreshed/interrupted-upload acceptance; current creation silently saves without photo on simulated picker cancellation.
+- [ ] Implement approved picker cancellation/explicit save correction, test failure/retry and duplicate prevention in preview; no publication, permissions or reactivation changes.
+- [ ] Execute physical Android camera/Back/permission acceptance; blocked on a physical device, not browser emulation.
 - [x] Inspect all upload entry points and run 33 targeted client/server regressions; real preview animal photo/logo/screenshot uploads succeed, signature upload succeeds but owner signed read fails. Test account/files cleaned; original fingerprints unchanged.
 - [x] Apply approved narrowly scoped private signature read predicate; real owner save/reload, foreign/anonymous/public denial and photo/logo regressions pass; two disposable accounts/files cleaned, 27 mocked regressions pass. No publication/reactivation; remaining transition blockers documented.
 - [x] Add versioned write-start evidence, owner-only reconciliation, committed-file/shared-media recovery and removal-checkpoint retry; 17 targeted local tests pass, three disposable hosted accounts cleaned up.

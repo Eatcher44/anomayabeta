@@ -173,6 +173,12 @@ export default function HomePage() {
   const [customType, setCustomType] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [draftPhoto, setDraftPhoto] = useState<File | null>(null);
+  const draftPhotoRef = useRef<File | null>(null);
+  const uploadedDraftRef = useRef<string | null>(null);
+  const saveInFlight = useRef(false);
+  const saveCompleted = useRef(false);
+  const replacementInFlight = useRef(false);
 
   // Delete flow
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
@@ -276,6 +282,10 @@ export default function HomePage() {
   };
 
   const startAddNew = () => {
+    draftPhotoRef.current = null;
+    uploadedDraftRef.current = null;
+    saveCompleted.current = false;
+    setDraftPhoto(null);
     setAddChoiceVisible(false);
     setEditingId(null);
     setAnimalTemp('');
@@ -362,10 +372,19 @@ export default function HomePage() {
     setModalPhotoVisible(true);
   };
 
-  const finalSave = async (photoUrl?: string | null) => {
-    if (!animalTemp || !typeTemp || !sexeTemp) return;
+  const finalSave = async () => {
+    if (!user || !animalTemp.trim() || !typeTemp || !sexeTemp || saveInFlight.current || saveCompleted.current) return;
+    saveInFlight.current = true;
     setSaving(true);
     try {
+      if (draftPhotoRef.current && !uploadedDraftRef.current) {
+        try {
+          uploadedDraftRef.current = await uploadAnimalPhoto(user.id, 'new', draftPhotoRef.current);
+        } catch {
+          toast({ title: 'Erreur', description: 'La photo n’a pas été enregistrée. Réessayez ; votre formulaire est conservé.', variant: 'destructive' });
+          return;
+        }
+      }
       // Auto-capitalize first letter of name
       const capitalizedName = animalTemp.trim().charAt(0).toUpperCase() + animalTemp.trim().slice(1);
       const animalData = {
@@ -373,7 +392,7 @@ export default function HomePage() {
         type: normalizeType(typeTemp.trim()),
         sexe: sexeTemp,
         race: raceTemp.trim() || undefined,
-        photo: photoUrl || null,
+        photo: uploadedDraftRef.current || (editingId ? animaux.find(a => a.id === editingId)?.photo : null),
         naissance: naissanceSet ? naissanceTemp.toISOString() : undefined,
         sterilise: sterilTemp,
         poids: [],
@@ -388,39 +407,25 @@ export default function HomePage() {
         await addAnimal(animalData);
       }
 
+      saveCompleted.current = true;
       setModalPhotoVisible(false);
       toast({ title: 'Succès', description: editingId ? 'Animal modifié' : 'Animal ajouté' });
     } catch (error) {
       toast({ title: 'Erreur', description: "Impossible d'enregistrer l'animal", variant: 'destructive' });
     } finally {
+      saveInFlight.current = false;
       setSaving(false);
     }
   };
 
-  const handlePhotoFromGallery = async () => {
-    const file = await pickPhotoFile('image/*');
-    if (!file || !user) { finalSave(null); return; }
-    setSaving(true);
-    try {
-      const url = await uploadAnimalPhoto(user.id, 'new', file);
-      await finalSave(url);
-    } catch {
-      toast({ title: 'Erreur', description: 'Impossible de télécharger la photo', variant: 'destructive' });
-      setSaving(false);
-    }
-  };
-
-  const handlePhotoFromCamera = async () => {
-    const file = await pickPhotoFile('image/*', 'camera');
-    if (!file || !user) { finalSave(null); return; }
-    setSaving(true);
-    try {
-      const url = await uploadAnimalPhoto(user.id, 'new', file);
-      await finalSave(url);
-    } catch {
-      toast({ title: 'Erreur', description: 'Impossible de télécharger la photo', variant: 'destructive' });
-      setSaving(false);
-    }
+  const selectDraftPhoto = async (camera = false) => {
+    if (saveInFlight.current) return;
+    const file = await pickPhotoFile('image/jpeg,image/png,image/webp', camera ? 'camera' : undefined);
+    if (!file || !user || saveInFlight.current || saveCompleted.current) return;
+    // Once uploaded, retain the same object through a failed record save.
+    if (uploadedDraftRef.current) return;
+    draftPhotoRef.current = file;
+    setDraftPhoto(file);
   };
 
   // Delete handlers
@@ -462,14 +467,17 @@ export default function HomePage() {
   };
 
   const handlePickPhoto = useCallback(async (id: string) => {
-    if (!user) return;
+    if (!user || replacementInFlight.current) return;
     const file = await pickPhotoFile('image/*');
-    if (!file) return;
+    if (!file || replacementInFlight.current) return;
+    replacementInFlight.current = true;
     try {
       const url = await uploadAnimalPhoto(user.id, id, file);
       await updateAnimal(id, { photo: url });
     } catch {
       toast({ title: 'Erreur', description: 'Impossible de mettre à jour la photo', variant: 'destructive' });
+    } finally {
+      replacementInFlight.current = false;
     }
   }, [updateAnimal, user]);
 
@@ -881,7 +889,7 @@ export default function HomePage() {
       <SterilModal open={modalSterilVisible} onClose={() => setModalSterilVisible(false)} sexe={sexeTemp} value={sterilTemp} onChange={setSterilTemp} onNext={pickSteril} />
       <RaceModal open={modalRaceVisible} onClose={() => setModalRaceVisible(false)} type={typeTemp} value={raceTemp} onChange={setRaceTemp} onNext={pickRace} />
       <NaissanceModal open={modalNaissanceVisible} onClose={() => setModalNaissanceVisible(false)} value={naissanceTemp} onChange={setNaissanceTemp} onSave={pickNaissance} onSkip={skipNaissance} />
-      <PhotoModal open={modalPhotoVisible} onClose={() => setModalPhotoVisible(false)} onPickGallery={handlePhotoFromGallery} onTakePhoto={handlePhotoFromCamera} onSkip={() => finalSave(null)} saving={saving} />
+      <PhotoModal open={modalPhotoVisible} onClose={() => { if (!saveInFlight.current) setModalPhotoVisible(false); }} onPickGallery={() => selectDraftPhoto()} onTakePhoto={() => selectDraftPhoto(true)} onSave={finalSave} saving={saving} selectedFileName={draftPhoto?.name} selectionLocked={!!uploadedDraftRef.current} />
 
       {/* Delete confirmation modals */}
       <DeleteConfirmModal

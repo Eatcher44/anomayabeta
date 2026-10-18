@@ -355,11 +355,13 @@ interface PhotoModalProps {
   onClose: () => void;
   onPickGallery: () => void;
   onTakePhoto: () => void;
-  onSkip: () => void;
+  onSave: () => void;
   saving?: boolean;
+  selectedFileName?: string;
+  selectionLocked?: boolean;
 }
 
-export function PhotoModal({ open, onClose, onPickGallery, onTakePhoto, onSkip, saving }: PhotoModalProps) {
+export function PhotoModal({ open, onClose, onPickGallery, onTakePhoto, onSave, saving, selectedFileName, selectionLocked }: PhotoModalProps) {
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="sm:max-w-md">
@@ -367,27 +369,26 @@ export function PhotoModal({ open, onClose, onPickGallery, onTakePhoto, onSkip, 
           <DialogTitle>Photo de l'animal</DialogTitle>
         </DialogHeader>
         <div className="py-4 space-y-3">
-          <button
+          <Button variant="outline"
             onClick={onPickGallery}
-            disabled={saving}
-            className="w-full flex items-center gap-3 p-4 rounded-xl border-2 border-border hover:border-primary hover:bg-accent transition-colors"
+            disabled={saving || selectionLocked}
+            className="w-full h-auto justify-start gap-3 p-4"
           >
             <Image className="w-8 h-8 text-primary" />
             <span className="font-semibold">Choisir depuis la galerie</span>
-          </button>
-          <button
+          </Button>
+          <Button variant="outline"
             onClick={onTakePhoto}
-            disabled={saving}
-            className="w-full flex items-center gap-3 p-4 rounded-xl border-2 border-border hover:border-primary hover:bg-accent transition-colors"
+            disabled={saving || selectionLocked}
+            className="w-full h-auto justify-start gap-3 p-4"
           >
             <Camera className="w-8 h-8 text-primary" />
             <span className="font-semibold">Prendre une photo</span>
-          </button>
+          </Button>
+          {selectedFileName && <p className="text-sm text-muted-foreground break-all">{selectedFileName}</p>}
           <div className="flex justify-between pt-2">
-            <Button variant="ghost" onClick={onSkip} disabled={saving} className="text-muted-foreground">
-              Le faire plus tard
-            </Button>
             <Button variant="outline" onClick={onClose} disabled={saving}>Annuler</Button>
+            <Button onClick={onSave} disabled={saving}>{selectedFileName ? 'Créer l’animal' : 'Créer sans photo'}</Button>
           </div>
           {saving && <p className="text-sm text-center text-muted-foreground">Enregistrement...</p>}
         </div>
