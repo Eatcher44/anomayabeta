@@ -30,6 +30,7 @@
 - [x] Re-run basic scan, dependency review, RLS/grant inspection and original account/animal/storage fingerprints; deliver seven-point report with omissions.
 - [ ] Execute hosted disposable relationship/media/concurrency/private-signature acceptance suite: blocked because the Deno runner has no service test credentials; no disposable accounts were created this turn.
 - [ ] Resolve upload-in-flight finalization and shared-media custody with hosted race/failure tests: blocked on privileged disposable test execution; gates remain disabled.
-- [ ] Complete medical-note privacy/minimization and PDF user workflow/private-signature end-to-end acceptance: blocked on hosted disposable fixtures and existing unconnected PDF workflow.
+- [x] Temporarily disable only kitten PDF export, preserve source and files, remove its checklist blocker and defer visual/PDF acceptance requirements.
+- [ ] Complete medical-note privacy/minimization and private signature/file access acceptance independently of PDF: blocked on hosted disposable fixtures.
 - [ ] Assess remaining tooling advisories and published-version dependency exposure: major upgrades need isolated compatibility validation; current production dependency scan has two moderate router advisories.
 - [ ] Publish or reopen public operations only after remaining acceptance tests and explicit release approval; current global gates remain false and test allowlist empty.

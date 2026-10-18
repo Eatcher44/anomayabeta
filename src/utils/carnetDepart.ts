@@ -3,6 +3,7 @@ import QRCode from 'qrcode';
 import type { Animal, WeightEntry, SoinEntry } from '@/types/animal';
 import { displayBreed } from '@/utils/breeds';
 import { privateDocumentUrl } from '@/utils/privateDocuments';
+import { KITTEN_PDF_EXPORT_ENABLED } from '@/config/breederFeatures';
 
 const PAGE_W = 210;
 const PAGE_H = 297;
@@ -195,6 +196,9 @@ export interface CarnetDepartData {
 // MAIN
 // ═════════════════════════════════════════════════════════════
 export async function generateCarnetDepart(data: CarnetDepartData): Promise<jsPDF> {
+  if (!KITTEN_PDF_EXPORT_ENABLED) {
+    throw new Error('Fonctionnalité temporairement désactivée — à retravailler dans une future version.');
+  }
   const { animal, motherName, fatherName, breederProfile, transferCode } = data;
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   // Stamp real page numbers once overflow pages are known; never omit history.
