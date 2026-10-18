@@ -24,7 +24,7 @@ export async function verifiedRequest(req: Request) {
     const { data, error } = await client.auth.getUser(bearer.slice(7));
     if (error || !data.user) return null;
     const admin = createClient(url, adminKey, { auth: { persistSession: false } });
-    return { uid: data.user.id, admin };
+    return { uid: data.user.id, email: data.user.email, admin };
   } catch { return null; }
 }
 

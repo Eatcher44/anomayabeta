@@ -18,7 +18,7 @@ export async function secureTransfer(action: 'create' | 'claim' | 'list', payloa
       rate_limited: 'Trop de tentatives. Réessayez plus tard.',
       temporarily_suspended: 'Les transferts sont temporairement suspendus pour protéger vos données.',
       operation_busy: 'Une autre opération est en cours. Réessayez.',
-      linked_records_require_support: 'Ce dossier contient des liens nécessitant une vérification. Contactez support@anomaya.app.',
+      linked_records_require_support: 'Transfert bloqué : cet animal est lié à des parents, une portée, une reproduction, des chaleurs ou un rendez-vous. Son historique est conservé. Contactez support@anomaya.app.',
     };
     throw new Error(messages[reason] ?? 'Le transfert a échoué. Réessayez.');
   }
