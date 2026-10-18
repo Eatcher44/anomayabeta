@@ -27,7 +27,7 @@ describe('deployed account deletion handler', () => {
     const response = await handler(new Request('https://app.invalid/delete', { method: 'POST',
       body: JSON.stringify({ confirm: 'SUPPRIMER', user_id: 'other-owner' }) }));
     expect(response.status).toBe(503);
-    expect(mocks.rpc).toHaveBeenCalledExactlyOnceWith('prepare_account_cleanup', { p_uid: 'verified-owner' });
+    expect(mocks.rpc).toHaveBeenCalledExactlyOnceWith('freeze_secure_uploads', { p_uid: 'verified-owner' });
     expect(mocks.from).not.toHaveBeenCalled();
     expect(mocks.deleteUser).not.toHaveBeenCalled();
   });
@@ -56,7 +56,8 @@ describe('deployed account deletion handler', () => {
   });
   it('does not delete authentication when a checkpoint fails after storage removal', async () => {
     mocks.from.mockReturnValue({ remove: vi.fn().mockResolvedValue({ error: null }) });
-    mocks.rpc.mockImplementation((name: string) => Promise.resolve(name === 'prepare_account_cleanup'
+    mocks.rpc.mockImplementation((name: string) => Promise.resolve(name === 'freeze_secure_uploads'
+      ? { data: { pending: false }, error: null } : name === 'prepare_account_cleanup'
       ? { data: { files: [{ bucket: 'animal-photos', path: 'verified-owner/file.png', media_id: 'media-1' }] }, error: null }
       : { data: null, error: { message: 'checkpoint unavailable' } }));
     if (!handler) throw new Error('Handler not registered');
@@ -88,5 +89,13 @@ describe('deployed account deletion handler', () => {
     expect(remove).toHaveBeenCalledWith(['verified-owner/signature.png']);
     expect(mocks.rpc).toHaveBeenCalledWith('complete_media_cleanup', { p_uid: 'verified-owner', p_media: 'signature-1' });
     expect(mocks.deleteUser).toHaveBeenCalledExactlyOnceWith('verified-owner');
+  });
+  it('waits for pending uploads without removing records or authentication', async () => {
+    mocks.rpc.mockResolvedValue({ data: { pending: true }, error: null });
+    if (!handler) throw new Error('Handler not registered');
+    const response = await handler(new Request('https://app.invalid/delete', { method: 'POST', body: JSON.stringify({ confirm: 'SUPPRIMER' }) }));
+    expect(response.status).toBe(409);
+    expect(mocks.rpc).not.toHaveBeenCalledWith('prepare_account_cleanup', expect.anything());
+    expect(mocks.deleteUser).not.toHaveBeenCalled();
   });
 });
