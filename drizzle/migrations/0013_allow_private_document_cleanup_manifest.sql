@@ -1,0 +1,3 @@
+ALTER TABLE public.trusted_media DROP CONSTRAINT trusted_media_bucket_check;
+ALTER TABLE public.trusted_media ADD CONSTRAINT trusted_media_bucket_check CHECK (bucket IN ('animal-photos','bug-screenshots','sensitive-documents'));
+COMMENT ON CONSTRAINT trusted_media_bucket_check ON public.trusted_media IS 'Allow the already-private sensitive document bucket in caller-authorized cleanup manifests; preserve existing rows.';
