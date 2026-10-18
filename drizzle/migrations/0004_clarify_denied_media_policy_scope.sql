@@ -1,0 +1,2 @@
+ALTER POLICY "Users can update their own animal photos" ON storage.objects USING ((bucket_id = 'animal-photos' AND auth.uid()::text = (storage.foldername(name))[1]) AND false) WITH CHECK ((bucket_id = 'animal-photos' AND auth.uid()::text = (storage.foldername(name))[1]) AND false);
+ALTER POLICY "Users can delete their own animal photos" ON storage.objects USING ((bucket_id = 'animal-photos' AND auth.uid()::text = (storage.foldername(name))[1]) AND false);
