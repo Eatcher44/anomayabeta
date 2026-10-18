@@ -141,6 +141,13 @@
       "when": 1792356620250,
       "tag": "0019_versioned_upload_start_compatibility",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1792356706517,
+      "tag": "0020_remove_upload_freeze_after_completed_cleanup",
+      "breakpoints": true
     }
   ]
 }
