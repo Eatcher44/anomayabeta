@@ -17,7 +17,7 @@ export async function handleUpload(req: Request) {
   }
   const { admin, uid } = session;
   const ext = file.type === 'image/png' ? 'png' : file.type === 'image/webp' ? 'webp' : 'jpg';
-  const { data: ticket, error: reserveError } = await admin.rpc('reserve_secure_upload', { p_uid: uid, p_bucket: bucket, p_ext: ext });
+  const { data: ticket, error: reserveError } = await admin.rpc('reserve_secure_upload_v2', { p_uid: uid, p_bucket: bucket, p_ext: ext });
   if (reserveError) return reply(req, 409, { error: 'upload_unavailable' });
   if (ticket?.error) return reply(req, 409, { error: ticket.error });
   if (!ticket?.id || !ticket?.path) return reply(req, 500, { error: 'upload_unavailable' });
