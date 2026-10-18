@@ -871,6 +871,10 @@ export type Database = {
         Returns: boolean
       }
       security_mutation_lock: { Args: never; Returns: undefined }
+      security_private_document_read_allowed: {
+        Args: { p_bucket: string; p_path: string }
+        Returns: boolean
+      }
       security_upload_allowed: {
         Args: { p_bucket: string; p_path: string }
         Returns: boolean
