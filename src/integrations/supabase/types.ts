@@ -159,6 +159,7 @@ export type Database = {
           nom: string | null
           nom_elevage: string | null
           prenom: string | null
+          signature_object_path: string | null
           signature_url: string | null
           siret: string | null
           telephone: string | null
@@ -174,6 +175,7 @@ export type Database = {
           nom?: string | null
           nom_elevage?: string | null
           prenom?: string | null
+          signature_object_path?: string | null
           signature_url?: string | null
           siret?: string | null
           telephone?: string | null
@@ -189,6 +191,7 @@ export type Database = {
           nom?: string | null
           nom_elevage?: string | null
           prenom?: string | null
+          signature_object_path?: string | null
           signature_url?: string | null
           siret?: string | null
           telephone?: string | null
@@ -236,6 +239,24 @@ export type Database = {
           subject?: string | null
           type?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      feedback_attempt_windows: {
+        Row: {
+          attempts: number
+          user_id: string
+          window_start: string
+        }
+        Insert: {
+          attempts?: number
+          user_id: string
+          window_start: string
+        }
+        Update: {
+          attempts?: number
+          user_id?: string
+          window_start?: string
         }
         Relationships: []
       }
@@ -751,6 +772,7 @@ export type Database = {
         Args: { p_media: string; p_uid: string }
         Returns: undefined
       }
+      consume_feedback_attempt: { Args: { p_uid: string }; Returns: boolean }
       consume_transfer_attempt: {
         Args: { p_action: string; p_uid: string }
         Returns: boolean
