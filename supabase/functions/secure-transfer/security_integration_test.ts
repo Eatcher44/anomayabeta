@@ -83,13 +83,14 @@ Deno.test('disposable relationship, media, quota and deletion integration', asyn
     console.log('Executed: cross-account denial, late relationships, concurrent/successive claims, shared gallery media, previous-owner mutations, private signatures, five/hour quota, caller-only cleanup.');
   } finally {
     // Only identities created by this test may be touched; never global enablement.
-    for (let i = 0; i < ids.length; i++) {
+    try { for (let i = 0; i < ids.length; i++) {
       const existing = await admin.auth.admin.getUserById(ids[i]);
       if (!existing.data.user) continue;
       const deletion = await fetch(`${url}/functions/v1/delete-account`, { method: 'POST', headers: { Authorization: `Bearer ${tokens[i]}`, apikey: anon, 'Content-Type': 'application/json' }, body: JSON.stringify({ confirm: 'SUPPRIMER' }) });
       check(deletion.status === 200, 'Disposable cleanup failed: keep gates disabled and inspect test fixtures');
-    }
+    } } finally {
     const reset = await admin.from('security_release_state').update({ test_users: [] }).eq('id', true);
     check(!reset.error, 'Test allowlist cleanup failed');
+    }
   }
 });

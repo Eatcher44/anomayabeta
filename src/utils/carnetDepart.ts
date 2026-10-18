@@ -197,9 +197,7 @@ export interface CarnetDepartData {
 export async function generateCarnetDepart(data: CarnetDepartData): Promise<jsPDF> {
   const { animal, motherName, fatherName, breederProfile, transferCode } = data;
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-  const totalPages = 6;
   // Stamp real page numbers once overflow pages are known; never omit history.
-  const stampFooter = () => undefined;
   const race = animal.race ? displayBreed(animal.race) : '';
   const genDate = new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
   const bp = breederProfile || {};
@@ -302,7 +300,6 @@ export async function generateCarnetDepart(data: CarnetDepartData): Promise<jsPD
     if (animal.planned_departure_date) y = labelValueInline(doc, 'Départ prévu', fmtLong(animal.planned_departure_date), MARGIN, y);
   }
 
-  stampFooter();
 
   // ════════════════════════════════════════════════════════════
   // PAGE 2 – IDENTITÉ TABLE
@@ -368,7 +365,6 @@ export async function generateCarnetDepart(data: CarnetDepartData): Promise<jsPD
     });
   }
 
-  stampFooter();
 
   // ════════════════════════════════════════════════════════════
   // PAGE 3 – WEIGHT (table left, chart right)
@@ -417,7 +413,6 @@ export async function generateCarnetDepart(data: CarnetDepartData): Promise<jsPD
     }
   }
 
-  stampFooter();
 
   // ════════════════════════════════════════════════════════════
   // PAGE 4 – VACCINS & SOINS
@@ -480,7 +475,6 @@ export async function generateCarnetDepart(data: CarnetDepartData): Promise<jsPD
     if (traits.length) drawSoinTable(traits, false);
   }
 
-  stampFooter();
 
   // ════════════════════════════════════════════════════════════
   // PAGE 5 – OBSERVATIONS & SIGNATURE
@@ -552,7 +546,6 @@ export async function generateCarnetDepart(data: CarnetDepartData): Promise<jsPD
   doc.setFontSize(6.5); setC(doc, C.light); doc.setFont('helvetica', 'italic');
   doc.text("Cachet de l'élevage", boxX + boxW / 2, boxY + boxH / 2, { align: 'center' });
 
-  stampFooter();
 
   // ════════════════════════════════════════════════════════════
   // PAGE 6 – QR TRANSFER
