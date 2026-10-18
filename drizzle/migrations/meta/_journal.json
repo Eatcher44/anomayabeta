@@ -57,6 +57,13 @@
       "when": 1792353199147,
       "tag": "0007_correct_polymorphic_media_trigger_owner",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1792353313445,
+      "tag": "0008_harden_transfer_reference_and_media_guards",
+      "breakpoints": true
     }
   ]
 }

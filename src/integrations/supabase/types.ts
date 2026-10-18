@@ -780,6 +780,10 @@ export type Database = {
         Args: { p_feature: string; p_uid: string }
         Returns: boolean
       }
+      security_media_list_allowed: {
+        Args: { p_bucket: string; p_path: string }
+        Returns: boolean
+      }
       security_mutation_lock: { Args: never; Returns: undefined }
       security_upload_allowed: {
         Args: { p_bucket: string; p_path: string }
