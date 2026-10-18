@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { formatWeight } from '@/components/AnimalRow';
 import { ArrowLeft, Edit, Syringe, Bug, Pill, Calendar, Baby, Bird, QrCode, Flame, Tag, AlertTriangle } from 'lucide-react';
@@ -167,6 +167,7 @@ export default function ProfilPage() {
   const { animaux, updateAnimal, rendezvous, setAnimaux } = useAnimals();
   const { isBreeder } = useBreeder();
   const [editOpen, setEditOpen] = useState(false);
+  const photoInFlight = useRef(false);
   const [puceInlineEdit, setPuceInlineEdit] = useState(false);
   const [puceDraft, setPuceDraft] = useState('');
   const [particulariteModalOpen, setParticulariteModalOpen] = useState(false);
@@ -323,13 +324,15 @@ export default function ProfilPage() {
   };
 
   const handleChangePhoto = async () => {
-    if (!user) return;
+    if (!user || photoInFlight.current) return;
     const file = await pickPhotoFile('image/*');
-    if (!file) return;
+    if (!file || photoInFlight.current) return;
+    photoInFlight.current = true;
     try {
       const url = await uploadAnimalPhoto(user.id, animal.id, file);
       await updateAnimal(animal.id, { photo: url });
-    } catch { toast({ title: 'Erreur', description: 'Impossible de mettre à jour la photo', variant: 'destructive' }); }
+    } catch { toast({ title: 'Erreur', description: 'La nouvelle photo n’a pas été enregistrée. Réessayez ; l’ancienne photo est conservée.', variant: 'destructive' }); }
+    finally { photoInFlight.current = false; }
   };
 
   const isLitterBaby = !!animal.litter_id;
