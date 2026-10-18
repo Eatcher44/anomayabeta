@@ -22,7 +22,9 @@
 - [x] Replace stale containment helper test with handler authorization/gate tests; five targeted tests passed, preview build OK.
 - [x] Verify original 74 account IDs, 136 animal contents and 68 photo metadata fingerprints unchanged; secondary row counts match baseline.
 - [x] Deliver final nine-item report; fresh basic scan clear, two moderate dependency advisories, no publication.
-- [ ] Complete relationship semantics and acceptance matrix before restoring transfers: blocked on a safe, user-approved policy for parent/father/appointment links and linked medical/litter records.
-- [ ] Complete cleanup failure/retry and shared-media acceptance tests before restoring deletion: blocked on resolving the relationship policy above.
-- [ ] Separate sensitive signatures from public media if required: blocked on approval of a compatible privacy/sharing transition; no existing signatures found.
+- [ ] Implement the approved conservative relationship policy: block complex linked transfers without deleting history; test parent, litter, mating, heat, appointment, medical and archive access.
+- [ ] Test deletion storage failure/retry, concurrent uploads/transfers, shared media and caller-only authorization using disposable accounts.
+- [ ] Add backward-compatible private storage for new signatures/documents; test logos, galleries, successive transfers, archives and six-page PDF images.
+- [ ] Verify legacy care compatibility; remediate confirmed feedback/auth/CORS/rate-limit vulnerabilities and review dependencies.
+- [ ] Run final RLS/security/functional checks and compare original data fingerprints; deliver seven-point release report with explicit omissions.
 - [ ] Publish or reopen public operations only after remaining acceptance tests and explicit release approval; current global gates remain false and test allowlist empty.
