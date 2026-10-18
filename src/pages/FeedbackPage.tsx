@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { APP_VARIANT } from '@/config/appVariant';
 import { pickPhotoFile } from '@/utils/photo';
+import { secureUpload } from '@/utils/secureUpload';
 
 interface FeedbackFormProps {
   type: 'feedback' | 'bug';
@@ -42,10 +43,7 @@ function FeedbackForm({ type }: FeedbackFormProps) {
     }
 
     try {
-      const ext = file.name.split('.').pop() || 'png';
-      const path = `${user.id}/bug_${Date.now()}_${user.id}.${ext}`;
-      const { error } = await supabase.storage.from('bug-screenshots').upload(path, file, { upsert: true });
-      if (error) throw error;
+      const { path } = await secureUpload('bug-screenshots', file);
       setScreenshotPath(path);
       toast({ title: 'Capture ajoutée' });
     } catch {

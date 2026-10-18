@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { pickPhotoFile } from '@/utils/photo';
 import { privateDocumentUrl } from '@/utils/privateDocuments';
+import { secureUpload } from '@/utils/secureUpload';
 
 interface BreederProfile {
   id?: string;
@@ -81,11 +82,11 @@ export default function BreederProfilePage() {
     if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type) || file.size > 10 * 1024 * 1024) {
       toast({ title: 'Choisissez une image PNG, JPEG ou WebP de moins de 10 Mo', variant: 'destructive' }); return;
     }
-    const ext = file.type === 'image/png' ? 'png' : file.type === 'image/webp' ? 'webp' : 'jpg';
-    const path = `${user.id}/${field}-${crypto.randomUUID()}.${ext}`;
     const bucket = field === 'signature_url' ? 'sensitive-documents' : 'animal-photos';
-    const { error } = await supabase.storage.from(bucket).upload(path, file);
-    if (error) { toast({ title: 'Erreur upload', variant: 'destructive' }); return; }
+    let uploaded: { path: string; url: string };
+    try { uploaded = await secureUpload(bucket, file); }
+    catch { toast({ title: 'Dépôt indisponible', variant: 'destructive' }); return; }
+    const { path } = uploaded;
     if (field === 'signature_url') {
       try {
         const url = await privateDocumentUrl(path);
@@ -93,8 +94,7 @@ export default function BreederProfilePage() {
       } catch { toast({ title: 'Signature indisponible', variant: 'destructive' }); }
       return;
     }
-    const { data: urlData } = supabase.storage.from('animal-photos').getPublicUrl(path);
-    setProfile(p => ({ ...p, [field]: urlData.publicUrl }));
+    setProfile(p => ({ ...p, [field]: uploaded.url }));
   };
 
   const handleSave = async () => {

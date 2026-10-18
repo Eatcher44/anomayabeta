@@ -1,20 +1,10 @@
 import { supabase } from '@/integrations/supabase/client';
+import { secureUpload } from './secureUpload';
 
 export async function uploadAnimalPhoto(userId: string, animalId: string, file: File): Promise<string> {
-  const ext = file.name.split('.').pop() || 'jpg';
-  const path = `${userId}/${animalId}-${crypto.randomUUID()}.${ext}`;
-
-  const { error } = await supabase.storage
-    .from('animal-photos')
-    .upload(path, file, { upsert: false });
-
-  if (error) throw error;
-
-  const { data } = supabase.storage
-    .from('animal-photos')
-    .getPublicUrl(path);
-
-  return data.publicUrl;
+  // Identity and unique paths are issued by the verified server session.
+  void userId; void animalId;
+  return (await secureUpload('animal-photos', file)).url;
 }
 
 export function pickPhotoFile(accept = 'image/*', capture?: 'camera'): Promise<File | null> {

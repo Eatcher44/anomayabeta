@@ -10,6 +10,10 @@ Deno.serve(async (req) => {
   if (!body || body.confirm !== "SUPPRIMER") return reply(req, 400, { error: "Confirmation manquante" });
   const { uid, admin } = session;
   try {
+    const { data: uploads, error: freezeError } = await admin.rpc('freeze_secure_uploads', { p_uid: uid });
+    if (freezeError) return reply(req, 409, { error: 'Suppression en attente. Réessayez.' });
+    if (uploads?.error) return reply(req, 503, { error: 'Suppression suspendue', code: uploads.error });
+    if (uploads?.pending) return reply(req, 409, { error: 'Un dépôt est encore en cours. Réessayez après sa terminaison.', code: 'uploads_pending' });
     // Database preparation freezes writes and produces an immutable authorized manifest.
     // No URL, folder name or requested user ID from the HTTP body authorizes deletion.
     const { data: manifest, error } = await admin.rpc("prepare_account_cleanup", { p_uid: uid });
