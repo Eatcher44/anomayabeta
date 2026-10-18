@@ -4,6 +4,8 @@
 
 All active application upload paths invoke secure-upload. No active browser Storage upload/update/remove bypass was found. This is source coverage, not complete device acceptance.
 
+Follow-up real wizard/replacement, bug submission, Android/source analysis and manual checklist: [upload-user-flow-validation.md](./upload-user-flow-validation.md). Creation/replacement now pass in preview; Android remains unverified. Picker cancellation creates an animal without a photo, bug drafts reset, and known public animal URLs remain accessible to other accounts. These limitations must not be hidden by upload HTTP success.
+
 | Entry | Implementation | Evidence |
 | --- | --- | --- |
 | Profile photo | ProfilPage → uploadAnimalPhoto → secureUpload | Passed-on-real-backend through authenticated preview; persisted/rendered after reload |
