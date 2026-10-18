@@ -578,6 +578,7 @@ export type Database = {
           object_path: string
           state: string
           user_id: string
+          write_started: boolean
         }
         Insert: {
           bucket: string
@@ -586,6 +587,7 @@ export type Database = {
           object_path: string
           state?: string
           user_id: string
+          write_started?: boolean
         }
         Update: {
           bucket?: string
@@ -594,6 +596,7 @@ export type Database = {
           object_path?: string
           state?: string
           user_id?: string
+          write_started?: boolean
         }
         Relationships: []
       }
@@ -800,6 +803,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      begin_secure_upload: {
+        Args: { p_ticket: string; p_uid: string }
+        Returns: boolean
+      }
       bind_trusted_media: {
         Args: {
           p_entity: string
@@ -828,6 +835,7 @@ export type Database = {
         Returns: undefined
       }
       freeze_secure_uploads: { Args: { p_uid: string }; Returns: Json }
+      list_pending_secure_uploads: { Args: { p_uid: string }; Returns: Json }
       prepare_account_cleanup: { Args: { p_uid: string }; Returns: Json }
       prepare_secure_account_deletion: {
         Args: { p_uid: string }
