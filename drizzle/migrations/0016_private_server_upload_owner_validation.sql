@@ -1,0 +1,5 @@
+CREATE OR REPLACE FUNCTION public.guard_private_signature() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path=public,pg_temp AS $$ BEGIN
+PERFORM public.security_mutation_lock();
+IF NEW.signature_object_path IS NOT NULL AND (split_part(NEW.signature_object_path,'/',1)<>NEW.user_id::text OR NOT EXISTS(SELECT 1 FROM storage.objects o WHERE o.bucket_id='sensitive-documents' AND o.name=NEW.signature_object_path AND (o.owner_id=NEW.user_id::text OR EXISTS(SELECT 1 FROM public.trusted_media m WHERE m.bucket=o.bucket_id AND m.object_path=o.name AND m.custodian_id=NEW.user_id AND m.status='active')))) THEN RAISE EXCEPTION 'signature_not_owned'; END IF;
+RETURN NEW; END $$;
+CREATE POLICY "Owners read server uploaded private documents" ON storage.objects FOR SELECT TO authenticated USING(bucket_id='sensitive-documents' AND public.security_account_active(auth.uid()) AND EXISTS(SELECT 1 FROM public.trusted_media m WHERE m.bucket='sensitive-documents' AND m.object_path=name AND m.custodian_id=auth.uid() AND m.status='active'));
