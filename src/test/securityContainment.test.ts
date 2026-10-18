@@ -91,7 +91,8 @@ describe('deployed account deletion handler', () => {
     expect(mocks.deleteUser).toHaveBeenCalledExactlyOnceWith('verified-owner');
   });
   it('waits for pending uploads without removing records or authentication', async () => {
-    mocks.rpc.mockResolvedValue({ data: { pending: true }, error: null });
+    mocks.rpc.mockImplementation((name: string) => Promise.resolve({ error: null, data:
+      name === 'freeze_secure_uploads' ? { pending: true } : name === 'list_pending_secure_uploads' ? [{ id: 'pending-ticket' }] : { pending: true } }));
     if (!handler) throw new Error('Handler not registered');
     const response = await handler(new Request('https://app.invalid/delete', { method: 'POST', body: JSON.stringify({ confirm: 'SUPPRIMER' }) }));
     expect(response.status).toBe(409);

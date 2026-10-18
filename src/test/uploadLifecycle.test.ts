@@ -19,6 +19,7 @@ describe('tracked upload interrupted by deletion', () => {
     const remove = vi.fn(async () => { steps.push('remove'); return { error: null }; });
     const rpc = vi.fn(async (name: string, args: { p_removed?: boolean }) => {
       if (name === 'reserve_secure_upload') { steps.push('reserved'); return { data: { id: 'ticket', path: 'owner/photo.png' }, error: null }; }
+      if (name === 'begin_secure_upload') return { data: true, error: null };
       if (args.p_removed) { steps.push('checkpoint'); return { data: { removed: true }, error: null }; }
       expect(frozen).toBe(true);
       return { data: { discard: true }, error: null };

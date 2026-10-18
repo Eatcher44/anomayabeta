@@ -24,10 +24,13 @@ export async function handleUpload(req: Request) {
   // No SQL transaction or advisory mutex spans this network operation.
   // A lost response remains pending: never guess it is safe to finalize deletion.
   try {
+    const { data: started, error: startError } = await admin.rpc('begin_secure_upload', { p_uid: uid, p_ticket: ticket.id });
+    if (startError || !started) return reply(req, 409, { error: 'upload_not_started' });
     const { error } = await admin.storage.from(bucket).upload(ticket.path, file, { upsert: false, contentType: file.type });
     if (error) return reply(req, 503, { error: 'upload_pending_reconciliation' });
     const { data: result, error: settleError } = await admin.rpc('settle_secure_upload', { p_uid: uid, p_ticket: ticket.id, p_removed: false });
     if (settleError) return reply(req, 503, { error: 'upload_pending_reconciliation' });
+    if (result?.pending || result?.removed || result?.preserved) return reply(req, 409, { error: 'upload_pending_reconciliation' });
     if (result?.discard) {
       const { error: removeError } = await admin.storage.from(bucket).remove([ticket.path]);
       if (removeError) return reply(req, 503, { error: 'upload_pending_reconciliation' });
