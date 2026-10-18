@@ -4,9 +4,9 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 import { MemoryRouter } from 'react-router-dom';
 import HomePage from '@/pages/HomePage';
 
-const m = vi.hoisted(() => ({ add: vi.fn(), update: vi.fn(), pick: vi.fn(), upload: vi.fn(), toast: vi.fn() }));
+const m = vi.hoisted(() => ({ animals: [], appointments: [], add: vi.fn(), update: vi.fn(), pick: vi.fn(), upload: vi.fn(), toast: vi.fn() }));
 vi.mock('@/context/AuthContext', () => ({ useAuth: () => ({ user: { id: 'owner' } }) }));
-vi.mock('@/context/AnimalsContext', () => ({ useAnimals: () => ({ animaux: [], rendezvous: [], addAnimal: m.add, updateAnimal: m.update, loading: false }) }));
+vi.mock('@/context/AnimalsContext', () => ({ useAnimals: () => ({ animaux: m.animals, rendezvous: m.appointments, addAnimal: m.add, updateAnimal: m.update, loading: false }) }));
 vi.mock('@/context/BreederContext', () => ({ useBreeder: () => ({ isBreeder: false }) }));
 vi.mock('@/utils/photo', () => ({ pickPhotoFile: m.pick, uploadAnimalPhoto: m.upload }));
 vi.mock('@/hooks/use-toast', () => ({ toast: m.toast }));
