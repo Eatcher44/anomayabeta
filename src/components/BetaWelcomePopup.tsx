@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 
@@ -7,6 +7,7 @@ const BETA_WELCOME_KEY = 'anomaya-beta-welcome-shown';
 
 export default function BetaWelcomePopup() {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -21,6 +22,8 @@ export default function BetaWelcomePopup() {
     try { localStorage.setItem(BETA_WELCOME_KEY, '1'); } catch {}
     setOpen(false);
   };
+
+  if (pathname === '/privacy') return null;
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) dismiss(); }}>
