@@ -1,5 +1,4 @@
-import { Resend } from "npm:resend@2.0.0";
-import { z } from "npm:zod@3.25.76";
+import { Resend, z } from "./runtime.ts";
 import { reply, securityHeaders, verifiedRequest } from "../_shared/securityHttp.ts";
 import { escapeHtml, ownedScreenshotPath } from "./validation.ts";
 

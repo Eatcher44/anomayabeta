@@ -2,8 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 
 const mocks = vi.hoisted(() => ({ session: vi.fn(), rpc: vi.fn(), send: vi.fn(), sign: vi.fn() }));
-vi.mock('npm:zod@3.25.76', () => ({ z }));
-vi.mock('npm:resend@2.0.0', () => ({ Resend: class { emails = { send: mocks.send }; } }));
+vi.mock('../../supabase/functions/send-feedback-email/runtime.ts', () => ({ z, Resend: class { emails = { send: mocks.send }; } }));
 vi.mock('../../supabase/functions/_shared/securityHttp.ts', () => ({
   securityHeaders: () => ({}), reply: (_: Request, status: number, body: unknown) => new Response(JSON.stringify(body), { status }),
   verifiedRequest: mocks.session,
