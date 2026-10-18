@@ -4,7 +4,6 @@ import { act, renderHook, cleanup } from '@testing-library/react';
 import { AnimalsProvider, useAnimals } from '@/context/AnimalsContext';
 const m = vi.hoisted(() => ({ from: vi.fn(), insert: vi.fn(), single: vi.fn(), maybeSingle: vi.fn(), id: '51f3db7b-8056-498d-9447-b0c738753aa0' }));
 vi.mock('@/integrations/supabase/client', () => ({ supabase: { from: m.from } }));
-vi.mock('@/context/AuthContext', () => ({ useAuth: () => ({ user: null }) }));
 // Use a stable owner so provider effects are stable, too.
 const owner = { id: 'owner' };
 vi.mock('@/context/AuthContext', () => ({ useAuth: () => ({ user: owner }) }));
