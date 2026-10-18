@@ -845,6 +845,10 @@ export type Database = {
         Args: { p_bucket: string; p_ext: string; p_uid: string }
         Returns: Json
       }
+      reserve_secure_upload_v2: {
+        Args: { p_bucket: string; p_ext: string; p_uid: string }
+        Returns: Json
+      }
       secure_claim_transfer: {
         Args: { p_code: string; p_uid: string }
         Returns: Json
