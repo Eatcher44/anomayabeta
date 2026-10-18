@@ -747,7 +747,39 @@ export type Database = {
         Returns: undefined
       }
       claim_transfer_code: { Args: { p_code: string }; Returns: string }
+      complete_media_cleanup: {
+        Args: { p_media: string; p_uid: string }
+        Returns: undefined
+      }
+      consume_transfer_attempt: {
+        Args: { p_action: string; p_uid: string }
+        Returns: boolean
+      }
+      finalize_secure_account_deletion: {
+        Args: { p_uid: string }
+        Returns: undefined
+      }
+      prepare_secure_account_deletion: {
+        Args: { p_uid: string }
+        Returns: Json
+      }
+      secure_claim_transfer: {
+        Args: { p_code: string; p_uid: string }
+        Returns: Json
+      }
+      secure_create_transfer: {
+        Args: { p_animal: string; p_uid: string }
+        Returns: Json
+      }
+      secure_list_transfers: {
+        Args: { p_animal: string; p_uid: string }
+        Returns: Json
+      }
       security_account_active: { Args: { p_uid: string }; Returns: boolean }
+      security_feature_allowed: {
+        Args: { p_feature: string; p_uid: string }
+        Returns: boolean
+      }
       security_mutation_lock: { Args: never; Returns: undefined }
       security_upload_allowed: {
         Args: { p_bucket: string; p_path: string }

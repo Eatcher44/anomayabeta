@@ -43,6 +43,13 @@
       "when": 1792353082353,
       "tag": "0005_trusted_media_and_deletion_foundation",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792353117947,
+      "tag": "0006_secure_transfer_and_cleanup_operations",
+      "breakpoints": true
     }
   ]
 }
