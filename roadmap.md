@@ -7,6 +7,6 @@
 - [ ] Await user approval for critical/high remediation; hosted auth settings and retention confirmations remain external blockers.
 
 # Emergency transfer security review
-- [ ] Verify current deployed transfer authorization and photo exposure without production mutations.
-- [ ] Report reversible containment, permanent correction, user impact and required tests.
+- [x] Verify current deployed transfer authorization and photo exposure without production mutations.
+- [x] Report reversible containment, permanent correction, user impact and required tests.
 - [ ] Obtain explicit approval before any production containment or remediation; do not publish.
