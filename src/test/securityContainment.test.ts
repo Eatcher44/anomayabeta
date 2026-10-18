@@ -74,4 +74,19 @@ describe('deployed account deletion handler', () => {
     expect(mocks.deleteUser).toHaveBeenNthCalledWith(1, 'verified-owner');
     expect(mocks.deleteUser).toHaveBeenNthCalledWith(2, 'verified-owner');
   });
+  it('allows authorized private-signature cleanup before authentication removal', async () => {
+    const remove = vi.fn().mockResolvedValue({ error: null });
+    mocks.from.mockReturnValue({ remove });
+    mocks.rpc.mockImplementation((name: string) => Promise.resolve(name === 'prepare_account_cleanup'
+      ? { data: { files: [{ bucket: 'sensitive-documents', path: 'verified-owner/signature.png', media_id: 'signature-1' }] }, error: null }
+      : { data: null, error: null }));
+    mocks.deleteUser.mockResolvedValue({ error: null });
+    if (!handler) throw new Error('Handler not registered');
+    const response = await handler(new Request('https://app.invalid/delete', { method: 'POST', body: JSON.stringify({ confirm: 'SUPPRIMER' }) }));
+    expect(response.status).toBe(200);
+    expect(mocks.from).toHaveBeenCalledWith('sensitive-documents');
+    expect(remove).toHaveBeenCalledWith(['verified-owner/signature.png']);
+    expect(mocks.rpc).toHaveBeenCalledWith('complete_media_cleanup', { p_uid: 'verified-owner', p_media: 'signature-1' });
+    expect(mocks.deleteUser).toHaveBeenCalledExactlyOnceWith('verified-owner');
+  });
 });
