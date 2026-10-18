@@ -15,10 +15,10 @@ describe('tracked upload interrupted by deletion', () => {
     const reserved = new Promise<void>(r => { authorized = r; });
     const pause = new Promise<void>(r => { release = r; });
     const steps: string[] = [];
-    const upload = vi.fn(async () => { steps.push('storage-start'); await pause; steps.push('late-commit'); return { error: null }; });
+    const upload = vi.fn(async () => { steps.push('storage-start'); authorized?.(); await pause; steps.push('late-commit'); return { error: null }; });
     const remove = vi.fn(async () => { steps.push('remove'); return { error: null }; });
     const rpc = vi.fn(async (name: string, args: { p_removed?: boolean }) => {
-      if (name === 'reserve_secure_upload') { steps.push('reserved'); authorized?.(); return { data: { id: 'ticket', path: 'owner/photo.png' }, error: null }; }
+      if (name === 'reserve_secure_upload') { steps.push('reserved'); return { data: { id: 'ticket', path: 'owner/photo.png' }, error: null }; }
       if (args.p_removed) { steps.push('checkpoint'); return { data: { removed: true }, error: null }; }
       expect(frozen).toBe(true);
       return { data: { discard: true }, error: null };
