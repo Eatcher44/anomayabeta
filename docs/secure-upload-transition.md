@@ -1,6 +1,6 @@
 # Secure upload transition — 2026-10-18
 
-## Targeted compatibility result: NO
+## Targeted signature compatibility result: YES; full transition readiness: NO
 
 All active application upload paths invoke secure-upload. No active browser Storage upload/update/remove bypass was found. This is source coverage, not complete device acceptance.
 
@@ -10,14 +10,24 @@ All active application upload paths invoke secure-upload. No active browser Stor
 | Animal creation, edit and camera/library picker | HomePage → uploadAnimalPhoto | Source inspected; shared multipart helper tested with mocks; individual wizard and Android camera not executed |
 | Kitten gallery | KittenPhotoGallery → uploadAnimalPhoto | Source inspected; component currently has no imports/rendering entry in src, so no active gallery UI to exercise |
 | Breeder logo | BreederProfilePage → secureUpload(animal-photos) | Passed-on-real-backend upload; profile save succeeds, logo present in stored profile |
-| Private signature | BreederProfilePage → secureUpload(sensitive-documents) → privateDocumentUrl | Failed end-to-end: upload HTTP 200, owner signed read HTTP 400 Object not found; path consequently not set/saved by UI |
+| Private signature | BreederProfilePage → secureUpload(sensitive-documents) → privateDocumentUrl | Passed-on-real-backend after approved migration 0022: upload, save, reload and rendered image; owner signing/fetch HTTP 200; other-account/anonymous signing and direct private reads HTTP 400; public URL HTTP 400 |
 | Bug screenshot | FeedbackPage → secureUpload(bug-screenshots) | Passed-on-real-backend through preview; form receives path and shows Capture ajoutée; no support email sent |
 
 33 tests passed with mocks: secureUploadClient, uploadLifecycle, uploadRecovery, securityContainment, feedbackHandler, feedbackSecurity. New client contract tests remain in src/test/secureUploadClient.test.ts. These do not prove production concurrency safety.
 
 ## Concrete signature blocker
 
-Service-uploaded objects have null Storage owner_id, while trusted_media correctly records the verified custodian and active status. The server-uploaded private-document SELECT policy queries trusted_media inline, but authenticated clients cannot read that service-only table. Consequently the owner cannot obtain a signed URL. A narrowly scoped security-definer authorization predicate checking auth.uid(), active account and exact active media custody is needed; do not grant clients trusted_media access or make the bucket public. Production policy correction requires approval and real owner/foreign/anonymous regression tests. No authorization change applied this pass.
+Service-uploaded objects have null Storage owner_id, while trusted_media correctly records the verified custodian and active status. The server-uploaded private-document SELECT policy queried trusted_media inline, but RLS hides registry rows from authenticated clients (live SELECT privilege exists, but no applicable read policy). Consequently the owner could not obtain a signed URL.
+
+Approved migration 0022 replaces only that inline policy condition with security_private_document_read_allowed(bucket,path), a fixed-search-path STABLE SECURITY DEFINER predicate. It verifies auth.uid(), account activity, exact sensitive-documents bucket/path and active trusted custody. No caller UID, prefix fallback, registry grant, bucket publicity or write permission is introduced. PUBLIC/anon execution is revoked. Existing owner_id-based legacy SELECT remains unchanged for backward compatibility; it does not authorize these null-owner server uploads. Its eventual registry-only transition needs separate legacy compatibility review.
+
+### Targeted authorization evidence — 21:09 UTC
+
+Two disposable signup accounts only. Passed-on-real-backend: service-uploaded null-owner signature, owner signing/fetch, breeder profile saved with object path and null signature_url, displayed signature after reload (browser screenshot checked), saved/rendered logo, saved/read animal photo; other account and anonymous signed/direct access denied; direct public URL denied; forged foreign path predicate denied; wrong-bucket predicate false; registry contents remain invisible. Both accounts removed through delete-account using the scoped test allowlist, with zero remaining test files/profile rows. Test allowlist removed; global transfer/deletion flags remain false.
+
+27 Passed-with-mocks-only regressions across privateDocuments, secureUploadClient, uploadLifecycle, uploadRecovery and securityContainment. New privateDocuments tests assert 300-second signing and no public fallback on denial or incomplete response. These do not prove concurrency. Short-lived signed URLs are bearer capabilities: anyone given a valid URL can read it until expiry; denial tests target unauthorized issuance and public/direct endpoints, not possession of an owner-issued token.
+
+No additional full audit or concurrency/crash test attempted. Remaining transition blockers: wizard/Android camera acceptance, actual published/TWA and cached-client adoption after separately approved publication, approved legacy INSERT retirement, conclusive resolution of already authorized writes, real isolated authorization-to-commit late-write test, mandatory release gate and separate reactivation approval.
 
 ## Legacy paths still supported
 
@@ -41,6 +51,6 @@ No controllable isolated Storage service is available in this session. A real te
 
 ## Preservation
 
-One disposable account was created and removed, with zero remaining files; allowlist restored empty. Before/after: 74 accounts (identity hash unchanged), 136 animals (content hash unchanged). Public transfer/deletion flags stayed false. No publication, legacy permission removal, bucket-visibility change, real-record mutation or crash injection.
+Latest pass: two disposable accounts created and removed, zero remaining files/profile rows. Before/after: 74 accounts (identity hash 6a1ac6c914abeb85793e020ebb14aad0), 136 animals (content hash 7723640525d49a14df6aa9453e1f0293), 69 original Storage objects (metadata hash 88b5d6dd640d197ed35cb07c65d942b2). Public transfer/deletion flags stayed false. No publication, legacy permission removal, bucket-visibility change, original-record mutation or crash injection.
 
 Before release rerun change-specific upload contracts, real owner/foreign/private reads, legacy cutover/late-commit recovery and the mandatory security release checklist. Remaining critical/high release evidence from prior tasks remains outside this focused pass.
