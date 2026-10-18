@@ -148,6 +148,13 @@
       "when": 1792356706517,
       "tag": "0020_remove_upload_freeze_after_completed_cleanup",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1792356783471,
+      "tag": "0021_idempotent_upload_freeze_after_deletion_completion",
+      "breakpoints": true
     }
   ]
 }
