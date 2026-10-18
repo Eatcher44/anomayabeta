@@ -4,7 +4,7 @@ import { isTransferCode, TRANSFER_CODE_LENGTH } from '../utils/secureTransfer';
 describe('secure transfer code validation', () => {
   it('accepts the 32 hexadecimal characters used by 128-bit server codes', () => {
     expect(TRANSFER_CODE_LENGTH).toBe(32);
-    expect(isTransferCode('A0123456789ABCDEF0123456789ABCDEF')).toBe(true);
+    expect(isTransferCode('0123456789ABCDEF0123456789ABCDEF')).toBe(true);
   });
   it('rejects the legacy eight-character code', () => {
     expect(isTransferCode('ABC12345')).toBe(false);
