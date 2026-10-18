@@ -1,5 +1,6 @@
 # Release audit
-- [ ] Validate every active upload entry point in preview, run targeted client regressions and document approved publication/legacy-permission transition without publishing or changing permissions.
+- [x] Inspect all upload entry points and run 33 targeted client/server regressions; real preview animal photo/logo/screenshot uploads succeed, signature upload succeeds but owner signed read fails. Test account/files cleaned; original fingerprints unchanged.
+- [ ] Correct private signature owner-read policy through an approved server-side authorization fix, then retest save/reload and foreign/anonymous denial; publication compatibility remains blocked by this real failure.
 - [x] Add versioned write-start evidence, owner-only reconciliation, committed-file/shared-media recovery and removal-checkpoint retry; 17 targeted local tests pass, three disposable hosted accounts cleaned up.
 - [ ] Resolve started-but-absent uploads conclusively in an isolated instrumentable Storage environment; never infer completion from a timeout. Coordinated legacy cutover requires approval before deletion can reopen.
 - [x] Implement service-only durable upload tickets, deletion freeze and pending-ticket finalization denial; execute paused late-commit/discard handler test with mocked HTTP boundary and real normal upload/cleanup.
