@@ -78,6 +78,13 @@
       "when": 1792353490933,
       "tag": "0010_unique_transfer_markers_and_derived_archive_media",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1792354262807,
+      "tag": "0011_conservative_transfer_relationship_guards",
+      "breakpoints": true
     }
   ]
 }

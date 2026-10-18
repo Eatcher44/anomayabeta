@@ -755,6 +755,10 @@ export type Database = {
         Args: { p_action: string; p_uid: string }
         Returns: boolean
       }
+      deletion_has_foreign_relationships: {
+        Args: { p_uid: string }
+        Returns: boolean
+      }
       finalize_secure_account_deletion: {
         Args: { p_uid: string }
         Returns: undefined
@@ -788,6 +792,10 @@ export type Database = {
       security_mutation_lock: { Args: never; Returns: undefined }
       security_upload_allowed: {
         Args: { p_bucket: string; p_path: string }
+        Returns: boolean
+      }
+      transfer_has_complex_relationships: {
+        Args: { p_animal: string }
         Returns: boolean
       }
     }
