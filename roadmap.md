@@ -1,4 +1,6 @@
 # Release audit
+- [ ] Implement tracked server uploads and execute a safely paused upload/deletion test; preserve shared media and retryability.
+- [ ] Review medical free text, validate remaining real relationship/expiry/quota checks, and deliver private-photo rollout proposal before any existing-file access change.
 - [x] Update and verify the existing public privacy page.
 - [x] Audit current code, database policies, storage, auth, and dependencies; record unverified settings.
 - [x] Execute bounded disposable-data security tests locally and on three disposable live accounts; clean all fixtures and record omissions.
