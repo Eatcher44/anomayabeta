@@ -116,11 +116,12 @@ export function AnimalsProvider({ children }: { children: React.ReactNode }) {
     fetchRendezvous();
   }, [fetchAnimals, fetchRendezvous]);
 
-  const addAnimal = useCallback(async (animal: Omit<Animal, 'id' | 'createdAt'>) => {
-    if (!user) return;
+  const addAnimal = useCallback(async (animal: Omit<Animal, 'id' | 'createdAt'>, creationId?: string) => {
+    if (!user) throw new Error('Session requise');
 
     try {
       const insertPayload: any = {
+        ...(creationId ? { id: creationId } : {}),
         user_id: user.id,
         nom: animal.nom,
         type: normalizeType(animal.type),
@@ -139,13 +140,20 @@ export function AnimalsProvider({ children }: { children: React.ReactNode }) {
       if ('breeder_visible' in animal && animal.breeder_visible === false) {
         insertPayload.breeder_visible = false;
       }
-      const { data, error } = await supabase
+      let { data, error } = await supabase
         .from('animals')
         .insert(insertPayload)
         .select()
         .single();
 
+      // An insert may commit while its response is lost. Reusing a draft ID
+      // prevents duplicate records; a verified owner read confirms that save.
+      if (error && creationId) {
+        const existing = await supabase.from('animals').select().eq('id', creationId).eq('user_id', user.id).maybeSingle();
+        if (existing.data && !existing.error) { data = existing.data; error = null; }
+      }
       if (error) throw error;
+      if (!data) throw new Error('Enregistrement non confirmé');
 
       if (data) {
         const newAnimal: Animal = {
@@ -167,7 +175,7 @@ export function AnimalsProvider({ children }: { children: React.ReactNode }) {
           repas: parseJsonArray<RepasEntry>((data as any).repas, []),
           createdAt: data.created_at,
         };
-        setAnimaux((prev) => [newAnimal, ...prev]);
+        setAnimaux((prev) => [newAnimal, ...prev.filter(a => a.id !== newAnimal.id)]);
       }
     } catch (error) {
       console.error('Error adding animal:', error);
@@ -177,7 +185,7 @@ export function AnimalsProvider({ children }: { children: React.ReactNode }) {
 
   const updateAnimal = useCallback(async (id: string, patchOrFn: Partial<Animal> | ((a: Animal) => Animal)) => {
     const currentAnimal = animaux.find((a) => a.id === id);
-    if (!currentAnimal) return;
+    if (!currentAnimal) throw new Error('Animal introuvable');
 
     const patch = typeof patchOrFn === 'function' ? patchOrFn(currentAnimal) : { ...currentAnimal, ...patchOrFn };
 
@@ -221,7 +229,9 @@ export function AnimalsProvider({ children }: { children: React.ReactNode }) {
       const { error } = await supabase
         .from('animals')
         .update(updatePayload)
-        .eq('id', id);
+        .eq('id', id)
+        .select('id')
+        .single();
 
       if (error) throw error;
 

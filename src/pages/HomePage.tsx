@@ -178,6 +178,7 @@ export default function HomePage() {
   const uploadedDraftRef = useRef<string | null>(null);
   const saveInFlight = useRef(false);
   const saveCompleted = useRef(false);
+  const creationIdRef = useRef<string | null>(null);
   const replacementInFlight = useRef(false);
 
   // Delete flow
@@ -285,6 +286,7 @@ export default function HomePage() {
     draftPhotoRef.current = null;
     uploadedDraftRef.current = null;
     saveCompleted.current = false;
+    creationIdRef.current = crypto.randomUUID();
     setDraftPhoto(null);
     setAddChoiceVisible(false);
     setEditingId(null);
@@ -404,7 +406,7 @@ export default function HomePage() {
       if (editingId) {
         await updateAnimal(editingId, animalData);
       } else {
-        await addAnimal(animalData);
+        await addAnimal(animalData, creationIdRef.current ?? undefined);
       }
 
       saveCompleted.current = true;

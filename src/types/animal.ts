@@ -102,7 +102,7 @@ export interface AnimalsContextType {
   loading: boolean;
   animaux: Animal[];
   setAnimaux: React.Dispatch<React.SetStateAction<Animal[]>>;
-  addAnimal: (animal: Omit<Animal, 'id' | 'createdAt'>) => Promise<void>;
+  addAnimal: (animal: Omit<Animal, 'id' | 'createdAt'>, creationId?: string) => Promise<void>;
   updateAnimal: (id: string, patchOrFn: Partial<Animal> | ((a: Animal) => Animal)) => void | Promise<void>;
   deleteAnimal: (id: string) => void | Promise<void>;
   rendezvous: RendezVous[];
