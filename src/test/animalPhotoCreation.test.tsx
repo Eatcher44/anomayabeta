@@ -73,5 +73,7 @@ describe('explicit animal creation rules', () => {
     fireEvent.click(screen.getByText('save')); await waitFor(() => expect(m.toast).toHaveBeenCalled());
     fireEvent.click(screen.getByText('save')); await waitFor(() => expect(m.add).toHaveBeenCalledTimes(2));
     expect(m.upload).toHaveBeenCalledTimes(1); expect(m.add.mock.calls[0][0].photo).toBe(m.add.mock.calls[1][0].photo);
+    expect(m.add.mock.calls[0][1]).toEqual(expect.any(String));
+    expect(m.add.mock.calls[1][1]).toBe(m.add.mock.calls[0][1]);
   });
 });
