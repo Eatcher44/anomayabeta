@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, QrCode, Copy, Check, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -30,6 +30,7 @@ export default function TransferPage() {
   const [generating, setGenerating] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
   const [review, setReview] = useState<TransferReview | null>(null);
+  const createInFlight = useRef(false);
 
   // Claim flow
   const [claimCode, setClaimCode] = useState('');
@@ -59,7 +60,8 @@ export default function TransferPage() {
   };
 
   const generateTransferCode = async (selection: CareSelection[]) => {
-    if (!user || !animal || !review) return;
+    if (!user || !animal || !review || createInFlight.current) return;
+    createInFlight.current = true;
     setGenerating(true);
     try {
       const data = await secureTransfer('create', { animal_id: animal.id, approval: review.approval, selection });
@@ -70,6 +72,7 @@ export default function TransferPage() {
       setReview(null);
       toast({ title: 'Erreur', description: error instanceof Error ? error.message : undefined, variant: 'destructive' });
     } finally {
+      createInFlight.current = false;
       setGenerating(false);
     }
   };
