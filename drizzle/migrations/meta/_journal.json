@@ -176,6 +176,20 @@
       "when": 1792401673517,
       "tag": "0024_reviewed_transfer_medical_minimization",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1792402008188,
+      "tag": "0025_optional_care_name_sharing",
+      "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1792402477258,
+      "tag": "0026_fix_selection_alias_conflict",
+      "breakpoints": true
     }
   ]
 }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, QrCode, Copy, Check, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useAnimals } from '@/context/AnimalsContext';
 import { useAuth } from '@/context/AuthContext';
-import { secureTransfer, isTransferCode, TRANSFER_CODE_LENGTH, type TransferReview } from '@/utils/secureTransfer';
+import { secureTransfer, isTransferCode, TRANSFER_CODE_LENGTH, type TransferReview, type CareSelection } from '@/utils/secureTransfer';
 import TransferReviewDialog from '@/components/TransferReviewDialog';
 import { toast } from '@/hooks/use-toast';
 
@@ -30,6 +30,7 @@ export default function TransferPage() {
   const [generating, setGenerating] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
   const [review, setReview] = useState<TransferReview | null>(null);
+  const createInFlight = useRef(false);
 
   // Claim flow
   const [claimCode, setClaimCode] = useState('');
@@ -58,11 +59,12 @@ export default function TransferPage() {
     }
   };
 
-  const generateTransferCode = async () => {
-    if (!user || !animal || !review) return;
+  const generateTransferCode = async (selection: CareSelection[]) => {
+    if (!user || !animal || !review || createInFlight.current) return;
+    createInFlight.current = true;
     setGenerating(true);
     try {
-      const data = await secureTransfer('create', { animal_id: animal.id, approval: review.approval });
+      const data = await secureTransfer('create', { animal_id: animal.id, approval: review.approval, selection });
       if (data) setCodes((prev) => [data as TransferCode, ...prev]);
       setReview(null);
       toast({ title: 'Code généré' });
@@ -70,6 +72,7 @@ export default function TransferPage() {
       setReview(null);
       toast({ title: 'Erreur', description: error instanceof Error ? error.message : undefined, variant: 'destructive' });
     } finally {
+      createInFlight.current = false;
       setGenerating(false);
     }
   };
@@ -152,7 +155,7 @@ export default function TransferPage() {
         <p className="text-xs text-muted-foreground text-center">
           Le code est valable 7 jours et utilisable une seule fois. Vous vérifierez d'abord les informations transmises.
         </p>
-        <TransferReviewDialog review={review} animalName={animal.nom} busy={generating} onCancel={() => setReview(null)} onConfirm={generateTransferCode} />
+        <TransferReviewDialog key={review?.approval ?? "closed"} review={review} animalName={animal.nom} busy={generating} onCancel={() => setReview(null)} onConfirm={generateTransferCode} />
 
         {loading ? (
           <div className="flex justify-center py-8">
