@@ -1,4 +1,5 @@
 # Release audit
+- [x] Separate private-photo test permission; only the user's Android disposable account enabled. Real private upload/read, foreign/anonymous denial, create/claim/deletion suspension and original-data fingerprints pass; extra disposable account cleaned. Retain Android account and test photo until user confirms completion.
 - [x] Validate real preview animal creation/replacement, breeder media and bug submission with two cleaned disposable accounts; private denial passes, public animal URLs remain readable and bug drafts reset. Android checklist/legacy and late-commit blockers documented in docs/upload-user-flow-validation.md; no publication or permission removal.
 - [x] Implement approved picker cancellation/explicit save correction; 30 targeted tests and real preview creation/replacement/cancel/retry/repeated-click/readback pass, including real committed insert with deliberately lost response. Two disposable accounts cleaned; no publication, permissions or reactivation changes.
 - [ ] Execute physical Android camera/Back/permission acceptance; blocked on a physical device, not browser emulation.
@@ -49,6 +50,6 @@
 - [ ] Publish or reopen public operations only after remaining acceptance tests and explicit release approval; current global gates remain false and test allowlist empty.- [x] Prepare secure-upload cutover: guard test for direct writes, legacy detection query, cutover sequence and private-photo design (docs/secure-upload-cutover-and-private-photos.md).
 - [ ] Cutover steps A-D (publish, revoke legacy INSERT, reconcile sweep, private-photo schema): each awaits explicit approval.
 - [x] Phase D: private photo bucket, access rules, revocable sharing behind disabled flag; 30/30 real tests.
-- [ ] Test private photo display on a physical Android phone — awaiting approval.
+- [ ] Test private photo display on a physical Android phone — awaiting user's Android results; their single disposable account has photo-only permission.
 - [ ] Migrate existing public photos per docs/private-photo-infrastructure-and-migration.md — awaiting approval.
 - [x] Photo screens display public and private photo references (temporary links, refresh, placeholder); real browser tests desktop + mobile size.

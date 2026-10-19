@@ -22,18 +22,22 @@ export async function handleUpload(req: Request) {
   if (reserveError) return reply(req, 409, { error: 'upload_unavailable' });
   if (ticket?.error) return reply(req, 409, { error: ticket.error });
   if (!ticket?.id || !ticket?.path) return reply(req, 500, { error: 'upload_unavailable' });
+  const storageBucket = ticket.bucket ?? bucket;
+  if (!allowed.includes(storageBucket) || (storageBucket !== bucket && !(bucket === 'animal-photos' && storageBucket === 'animal-media'))) {
+    return reply(req, 500, { error: 'upload_unavailable' });
+  }
   // No SQL transaction or advisory mutex spans this network operation.
   // A lost response remains pending: never guess it is safe to finalize deletion.
   try {
     const { data: started, error: startError } = await admin.rpc('begin_secure_upload', { p_uid: uid, p_ticket: ticket.id });
     if (startError || !started) return reply(req, 409, { error: 'upload_not_started' });
-    const { error } = await admin.storage.from(bucket).upload(ticket.path, file, { upsert: false, contentType: file.type });
+    const { error } = await admin.storage.from(storageBucket).upload(ticket.path, file, { upsert: false, contentType: file.type });
     if (error) return reply(req, 503, { error: 'upload_pending_reconciliation' });
     const { data: result, error: settleError } = await admin.rpc('settle_secure_upload', { p_uid: uid, p_ticket: ticket.id, p_removed: false });
     if (settleError) return reply(req, 503, { error: 'upload_pending_reconciliation' });
     if (result?.pending || result?.removed || result?.preserved) return reply(req, 409, { error: 'upload_pending_reconciliation' });
     if (result?.discard) {
-      const { error: removeError } = await admin.storage.from(bucket).remove([ticket.path]);
+      const { error: removeError } = await admin.storage.from(storageBucket).remove([ticket.path]);
       if (removeError) return reply(req, 503, { error: 'upload_pending_reconciliation' });
       const { error: checkpointError } = await admin.rpc('settle_secure_upload', { p_uid: uid, p_ticket: ticket.id, p_removed: true });
       if (checkpointError) return reply(req, 503, { error: 'upload_pending_reconciliation' });
