@@ -15,7 +15,13 @@ Deno.serve(async (req) => {
   if (action !== "claim" && (typeof body.animal_id !== "string" || !uuidPattern.test(body.animal_id))) return reply(req, 400, { error: "invalid_input" });
   if (action === "claim" && (typeof body.code !== "string" || body.code.length > 64)) return reply(req, 400, { error: "invalid_input" });
   const { admin, uid } = session;
-  const operation = action === "create" ? "secure_create_transfer" : action === "claim" ? "secure_claim_transfer" : "secure_list_transfers";
+  if (action !== "list") {
+    // Quota is committed in its own transaction so a later business rollback cannot refund it.
+    const quota = await admin.rpc("consume_transfer_attempt", { p_uid: uid, p_action: action });
+    if (quota.error || typeof quota.data !== "boolean") return reply(req, 503, { error: "temporarily_suspended" });
+    if (!quota.data) return reply(req, 429, { error: "rate_limited" });
+  }
+  const operation = action === "create" ? "secure_create_transfer_checked" : action === "claim" ? "secure_claim_transfer_checked" : "secure_list_transfers";
   const params = action === "claim" ? { p_uid: uid, p_code: body.code } : { p_uid: uid, p_animal: body.animal_id };
   const { data, error } = await admin.rpc(operation, params);
   if (error) {
