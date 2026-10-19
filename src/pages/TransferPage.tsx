@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useAnimals } from '@/context/AnimalsContext';
 import { useAuth } from '@/context/AuthContext';
-import { secureTransfer, isTransferCode, TRANSFER_CODE_LENGTH, type TransferReview } from '@/utils/secureTransfer';
+import { secureTransfer, isTransferCode, TRANSFER_CODE_LENGTH, type TransferReview, type CareSelection } from '@/utils/secureTransfer';
 import TransferReviewDialog from '@/components/TransferReviewDialog';
 import { toast } from '@/hooks/use-toast';
 
@@ -58,11 +58,11 @@ export default function TransferPage() {
     }
   };
 
-  const generateTransferCode = async () => {
+  const generateTransferCode = async (selection: CareSelection[]) => {
     if (!user || !animal || !review) return;
     setGenerating(true);
     try {
-      const data = await secureTransfer('create', { animal_id: animal.id, approval: review.approval });
+      const data = await secureTransfer('create', { animal_id: animal.id, approval: review.approval, selection });
       if (data) setCodes((prev) => [data as TransferCode, ...prev]);
       setReview(null);
       toast({ title: 'Code généré' });
