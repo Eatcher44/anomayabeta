@@ -1,4 +1,5 @@
 # Release audit
+- [ ] Separate private-photo test permission, enable only the user-supplied Android disposable account, verify real private upload/read and suspension gates; retain that account until Android completion.
 - [x] Validate real preview animal creation/replacement, breeder media and bug submission with two cleaned disposable accounts; private denial passes, public animal URLs remain readable and bug drafts reset. Android checklist/legacy and late-commit blockers documented in docs/upload-user-flow-validation.md; no publication or permission removal.
 - [x] Implement approved picker cancellation/explicit save correction; 30 targeted tests and real preview creation/replacement/cancel/retry/repeated-click/readback pass, including real committed insert with deliberately lost response. Two disposable accounts cleaned; no publication, permissions or reactivation changes.
 - [ ] Execute physical Android camera/Back/permission acceptance; blocked on a physical device, not browser emulation.
