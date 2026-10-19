@@ -629,6 +629,7 @@ export type Database = {
           animal_photo: string | null
           id: string
           original_owner_id: string
+          private_snapshot: Json | null
           transfer_code_id: string | null
           transferred_at: string
         }
@@ -639,6 +640,7 @@ export type Database = {
           animal_photo?: string | null
           id?: string
           original_owner_id: string
+          private_snapshot?: Json | null
           transfer_code_id?: string | null
           transferred_at?: string
         }
@@ -649,6 +651,7 @@ export type Database = {
           animal_photo?: string | null
           id?: string
           original_owner_id?: string
+          private_snapshot?: Json | null
           transfer_code_id?: string | null
           transferred_at?: string
         }
@@ -686,6 +689,7 @@ export type Database = {
       transfer_codes: {
         Row: {
           animal_id: string
+          approved_hash: string | null
           claimed_at: string | null
           code: string
           created_at: string
@@ -697,6 +701,7 @@ export type Database = {
         }
         Insert: {
           animal_id: string
+          approved_hash?: string | null
           claimed_at?: string | null
           code: string
           created_at?: string
@@ -708,6 +713,7 @@ export type Database = {
         }
         Update: {
           animal_id?: string
+          approved_hash?: string | null
           claimed_at?: string | null
           code?: string
           created_at?: string
@@ -857,6 +863,10 @@ export type Database = {
         Args: { p_code: string; p_uid: string }
         Returns: Json
       }
+      secure_claim_transfer_reviewed: {
+        Args: { p_code: string; p_uid: string }
+        Returns: Json
+      }
       secure_create_transfer: {
         Args: { p_animal: string; p_uid: string }
         Returns: Json
@@ -865,7 +875,15 @@ export type Database = {
         Args: { p_animal: string; p_uid: string }
         Returns: Json
       }
+      secure_create_transfer_reviewed: {
+        Args: { p_animal: string; p_approval: string; p_uid: string }
+        Returns: Json
+      }
       secure_list_transfers: {
+        Args: { p_animal: string; p_uid: string }
+        Returns: Json
+      }
+      secure_preview_transfer: {
         Args: { p_animal: string; p_uid: string }
         Returns: Json
       }
@@ -898,6 +916,22 @@ export type Database = {
       transfer_has_private_notes: {
         Args: { p_animal: string }
         Returns: boolean
+      }
+      transfer_review_hash: {
+        Args: { a: Database["public"]["Tables"]["animals"]["Row"] }
+        Returns: string
+      }
+      transfer_review_summary: {
+        Args: { a: Database["public"]["Tables"]["animals"]["Row"] }
+        Returns: Json
+      }
+      transfer_safe_array: { Args: { v: Json }; Returns: Json }
+      transfer_safe_date: { Args: { v: Json }; Returns: Json }
+      transfer_safe_id: { Args: { v: Json }; Returns: Json }
+      transfer_safe_num: { Args: { v: Json }; Returns: Json }
+      transfer_shared_projection: {
+        Args: { a: Database["public"]["Tables"]["animals"]["Row"] }
+        Returns: Json
       }
     }
     Enums: {

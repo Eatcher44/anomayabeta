@@ -169,6 +169,13 @@
       "when": 1792401272904,
       "tag": "0023_transfer_quota_independent_commit",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1792401673517,
+      "tag": "0024_reviewed_transfer_medical_minimization",
+      "breakpoints": true
     }
   ]
 }
