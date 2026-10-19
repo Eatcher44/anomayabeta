@@ -1,3 +1,4 @@
+import SecurePhoto from "@/components/SecurePhoto";
 import React from 'react';
 import { ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -41,7 +42,7 @@ export default function ElevageReproducteurs({ eligible, litters, reproductions 
             className="w-full flex items-center gap-3 bg-card rounded-xl border border-border p-3 shadow-sm hover:shadow-md transition-shadow text-left"
           >
             {a.photo ? (
-              <img src={a.photo} alt="" className="w-10 h-10 rounded-full object-cover" />
+              <SecurePhoto src={a.photo} alt="" className="w-10 h-10 rounded-full object-cover" />
             ) : (
               <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-lg">
                 {isFemale ? '♀' : '♂'}

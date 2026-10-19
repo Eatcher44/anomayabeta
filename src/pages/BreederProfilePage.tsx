@@ -1,3 +1,4 @@
+import SecurePhoto from "@/components/SecurePhoto";
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save, Upload } from 'lucide-react';
@@ -162,7 +163,7 @@ export default function BreederProfilePage() {
             <Label className="text-xs text-muted-foreground">Logo de l'élevage (optionnel)</Label>
             <div className="flex items-center gap-3 mt-2">
               {profile.logo_url ? (
-                <img src={profile.logo_url} alt="Logo" className="w-16 h-16 rounded-lg object-cover border border-border" />
+                <SecurePhoto src={profile.logo_url} alt="Logo" className="w-16 h-16 rounded-lg object-cover border border-border" />
               ) : (
                 <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center text-xs text-muted-foreground">Logo</div>
               )}

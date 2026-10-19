@@ -1,3 +1,4 @@
+import SecurePhoto from "@/components/SecurePhoto";
 import React, { useState, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, CalendarDays, FileText, Send, ShoppingCart, Check, X } from 'lucide-react';
@@ -80,7 +81,7 @@ export default function PreparerDepartPage() {
         <Card className="p-4">
           <div className="flex items-center gap-3 mb-3">
             {animal.photo ? (
-              <img src={animal.photo} alt="" className="w-14 h-14 rounded-xl object-cover" />
+              <SecurePhoto src={animal.photo} alt="" className="w-14 h-14 rounded-xl object-cover" />
             ) : (
               <div className="w-14 h-14 rounded-xl bg-muted flex items-center justify-center text-2xl">🐾</div>
             )}

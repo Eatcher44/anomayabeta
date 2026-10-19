@@ -1,3 +1,4 @@
+import SecurePhoto from "@/components/SecurePhoto";
 import React, { useState } from 'react';
 import { Camera, X, ChevronLeft, ChevronRight, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -115,7 +116,7 @@ export default function KittenPhotoGallery({ animal, onUpdate }: Props) {
                 className="relative aspect-square rounded-lg overflow-hidden cursor-pointer group"
                 onClick={() => setFullscreenIdx(i)}
               >
-                <img src={url} alt="" className="w-full h-full object-cover" />
+                <SecurePhoto src={url} alt="" className="w-full h-full object-cover" />
                 {i === 0 && (
                   <div className="absolute top-1 left-1 bg-[hsl(45,80%,50%)]/90 text-[hsl(45,80%,10%)] text-[8px] font-bold px-1.5 py-0.5 rounded-md flex items-center gap-0.5">
                     <Star className="w-2.5 h-2.5" />
@@ -144,7 +145,7 @@ export default function KittenPhotoGallery({ animal, onUpdate }: Props) {
               <X className="w-6 h-6" />
             </button>
           </div>
-          <img src={allPhotos[fullscreenIdx]} alt="" className="max-w-full max-h-[80vh] object-contain" onClick={e => e.stopPropagation()} />
+          <SecurePhoto src={allPhotos[fullscreenIdx]} alt="" className="max-w-full max-h-[80vh] object-contain" onClick={e => e.stopPropagation()} />
           {allPhotos.length > 1 && (
             <>
               <button

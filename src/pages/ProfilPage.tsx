@@ -1,3 +1,4 @@
+import SecurePhoto from "@/components/SecurePhoto";
 import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { formatWeight } from '@/components/AnimalRow';
@@ -375,7 +376,7 @@ export default function ProfilPage() {
             <div className="flex items-center">
               <div onClick={isParadis ? undefined : handleChangePhoto} className={`w-[60px] h-[60px] rounded-full bg-muted flex items-center justify-center overflow-hidden mr-3 transition-opacity ${isParadis ? 'cursor-default' : 'hover:opacity-80 cursor-pointer'}`}>
                 {animal.photo ? (
-                  <img src={animal.photo} alt={animal.nom} className="w-full h-full object-cover" />
+                  <SecurePhoto src={animal.photo} alt={animal.nom} className="w-full h-full object-cover" />
                 ) : (
                   <span className="text-xs text-muted-foreground text-center px-1">{isParadis ? '' : 'Ajouter photo'}</span>
                 )}

@@ -1,3 +1,4 @@
+import SecurePhoto from "@/components/SecurePhoto";
 import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Baby, ChevronRight, Plus, MoreVertical, Trash2, Bird, RefreshCw, Clock, Tag, Edit, Scale, UtensilsCrossed, AlertTriangle } from 'lucide-react';
@@ -580,7 +581,7 @@ export default function LitterDetailPage() {
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center overflow-hidden">
                           {nb.photo ? (
-                            <img src={nb.photo} alt={nb.nom} className="w-full h-full object-cover" />
+                            <SecurePhoto src={nb.photo} alt={nb.nom} className="w-full h-full object-cover" />
                           ) : (
                             <Baby className="w-4 h-4 text-muted-foreground" />
                           )}
