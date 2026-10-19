@@ -697,6 +697,7 @@ export type Database = {
           from_user_id: string
           id: string
           secret_hash: string | null
+          shared_selection: Json
           to_user_id: string | null
         }
         Insert: {
@@ -709,6 +710,7 @@ export type Database = {
           from_user_id: string
           id?: string
           secret_hash?: string | null
+          shared_selection?: Json
           to_user_id?: string | null
         }
         Update: {
@@ -721,6 +723,7 @@ export type Database = {
           from_user_id?: string
           id?: string
           secret_hash?: string | null
+          shared_selection?: Json
           to_user_id?: string | null
         }
         Relationships: [
@@ -879,6 +882,15 @@ export type Database = {
         Args: { p_animal: string; p_approval: string; p_uid: string }
         Returns: Json
       }
+      secure_create_transfer_selected: {
+        Args: {
+          p_animal: string
+          p_approval: string
+          p_selection: Json
+          p_uid: string
+        }
+        Returns: Json
+      }
       secure_list_transfers: {
         Args: { p_animal: string; p_uid: string }
         Returns: Json
@@ -909,6 +921,14 @@ export type Database = {
         Args: { p_removed: boolean; p_ticket: string; p_uid: string }
         Returns: Json
       }
+      transfer_apply_selection: {
+        Args: {
+          a: Database["public"]["Tables"]["animals"]["Row"]
+          p_sel: Json
+          p_soins: Json
+        }
+        Returns: Json
+      }
       transfer_has_complex_relationships: {
         Args: { p_animal: string }
         Returns: boolean
@@ -916,6 +936,10 @@ export type Database = {
       transfer_has_private_notes: {
         Args: { p_animal: string }
         Returns: boolean
+      }
+      transfer_named_items: {
+        Args: { a: Database["public"]["Tables"]["animals"]["Row"] }
+        Returns: Json
       }
       transfer_review_hash: {
         Args: { a: Database["public"]["Tables"]["animals"]["Row"] }
@@ -931,6 +955,10 @@ export type Database = {
       transfer_safe_num: { Args: { v: Json }; Returns: Json }
       transfer_shared_projection: {
         Args: { a: Database["public"]["Tables"]["animals"]["Row"] }
+        Returns: Json
+      }
+      transfer_validate_selection: {
+        Args: { a: Database["public"]["Tables"]["animals"]["Row"]; p_sel: Json }
         Returns: Json
       }
     }
