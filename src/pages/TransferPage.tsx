@@ -155,7 +155,7 @@ export default function TransferPage() {
         <p className="text-xs text-muted-foreground text-center">
           Le code est valable 7 jours et utilisable une seule fois. Vous vérifierez d'abord les informations transmises.
         </p>
-        <TransferReviewDialog review={review} animalName={animal.nom} busy={generating} onCancel={() => setReview(null)} onConfirm={generateTransferCode} />
+        <TransferReviewDialog key={review?.approval ?? "closed"} review={review} animalName={animal.nom} busy={generating} onCancel={() => setReview(null)} onConfirm={generateTransferCode} />
 
         {loading ? (
           <div className="flex justify-center py-8">
