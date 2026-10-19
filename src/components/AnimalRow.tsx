@@ -1,3 +1,4 @@
+import SecurePhoto from "@/components/SecurePhoto";
 import React from 'react';
 import { ChevronRight, Camera, MoreVertical, Trash2, Bird } from 'lucide-react';
 import type { Animal } from '@/types/animal';
@@ -51,7 +52,7 @@ export default function AnimalRow({ item, onPickPhoto, onOpenProfile, onDelete, 
           className="w-[72px] h-[72px] rounded-xl bg-card border border-border flex items-center justify-center overflow-hidden mr-3 hover:opacity-80 transition-opacity"
         >
           {item.photo ? (
-            <img src={item.photo} alt={item.nom} className="w-full h-full object-cover" />
+            <SecurePhoto src={item.photo} alt={item.nom} className="w-full h-full object-cover" />
           ) : (
             <div className="flex flex-col items-center text-muted-foreground">
               <Camera className="w-5 h-5 mb-1" />

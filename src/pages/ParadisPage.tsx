@@ -1,3 +1,4 @@
+import SecurePhoto from "@/components/SecurePhoto";
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Bird, Home, MoreVertical, Trash2 } from 'lucide-react';
@@ -102,7 +103,7 @@ export default function ParadisPage() {
                       className="w-16 h-16 rounded-xl bg-muted border border-border flex items-center justify-center overflow-hidden flex-shrink-0"
                     >
                       {animal.photo ? (
-                        <img src={animal.photo} alt={animal.nom} className="w-full h-full object-cover" />
+                        <SecurePhoto src={animal.photo} alt={animal.nom} className="w-full h-full object-cover" />
                       ) : (
                         <Bird className="w-6 h-6 text-muted-foreground/40" />
                       )}

@@ -1,3 +1,4 @@
+import SecurePhoto from "@/components/SecurePhoto";
 import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
@@ -121,7 +122,7 @@ export default function HealthDashboardPage() {
                 <div className="flex items-center gap-3 mb-2">
                   <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center overflow-hidden">
                     {animal.photo ? (
-                      <img src={animal.photo} alt={animal.nom} className="w-full h-full object-cover" />
+                      <SecurePhoto src={animal.photo} alt={animal.nom} className="w-full h-full object-cover" />
                     ) : (
                       <span className="text-lg">🐾</span>
                     )}

@@ -1,3 +1,4 @@
+import SecurePhoto from "@/components/SecurePhoto";
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Cat, Dog, CalendarDays, ChevronRight, AlertCircle, List, LayoutGrid } from 'lucide-react';
@@ -99,7 +100,7 @@ export default function DepartsReservationsPage() {
         className={`w-full flex items-center gap-3 bg-card rounded-xl border border-border p-3 shadow-sm hover:shadow-md transition-shadow text-left ${rowBg}`}
       >
         {a.photo ? (
-          <img src={a.photo} alt="" className="w-10 h-10 rounded-full object-cover shrink-0" />
+          <SecurePhoto src={a.photo} alt="" className="w-10 h-10 rounded-full object-cover shrink-0" />
         ) : (
           <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-sm shrink-0">🐾</div>
         )}

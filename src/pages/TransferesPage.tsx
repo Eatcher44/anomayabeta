@@ -1,3 +1,4 @@
+import SecurePhoto from "@/components/SecurePhoto";
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRightLeft } from 'lucide-react';
@@ -67,7 +68,7 @@ export default function TransferesPage() {
                   <div className="flex items-center gap-4">
                     <div className="w-14 h-14 rounded-xl bg-muted border border-border flex items-center justify-center overflow-hidden flex-shrink-0">
                       {entry.animal_photo ? (
-                        <img src={entry.animal_photo} alt={entry.animal_name} className="w-full h-full object-cover" />
+                        <SecurePhoto src={entry.animal_photo} alt={entry.animal_name} className="w-full h-full object-cover" />
                       ) : (
                         <ArrowRightLeft className="w-5 h-5 text-muted-foreground/40" />
                       )}

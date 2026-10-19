@@ -1,3 +1,4 @@
+import SecurePhoto from "@/components/SecurePhoto";
 import React, { useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -221,7 +222,7 @@ export default function KanbanBoard({ species }: KanbanBoardProps) {
                       {/* Top row: photo + name + menu */}
                       <div className="flex items-start gap-2">
                         {animal.photo ? (
-                          <img src={animal.photo} alt="" className="w-8 h-8 rounded-lg object-cover shrink-0" />
+                          <SecurePhoto src={animal.photo} alt="" className="w-8 h-8 rounded-lg object-cover shrink-0" />
                         ) : (
                           <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-xs shrink-0">🐾</div>
                         )}
