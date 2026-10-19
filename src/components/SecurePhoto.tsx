@@ -1,26 +1,31 @@
-import { useEffect, useRef, useState, type ImgHTMLAttributes } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore, type ImgHTMLAttributes } from 'react';
 import { ImageOff } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { privateMediaPath, resolvePhotoUrl } from '@/utils/photoRef';
+import { privatePhotoGeneration, resolvePhotoUrl, subscribePrivatePhotoSession } from '@/utils/photoRef';
 
 type Props = Omit<ImgHTMLAttributes<HTMLImageElement>, 'src'> & { src?: string | null };
 
 /** Drop-in <img> that supports both public photo URLs and private animal-media references. */
 export default function SecurePhoto({ src, className, alt = '', onError, ...rest }: Props) {
-  const isPrivate = !!privateMediaPath(src);
-  const [url, setUrl] = useState<string | null>(isPrivate ? null : src ?? null);
-  const [failed, setFailed] = useState(false);
+  const isPrivate = !!src?.includes('/animal-media/');
+  const generation = useSyncExternalStore(subscribePrivatePhotoSession, privatePhotoGeneration, privatePhotoGeneration);
+  const [result, setResult] = useState<{ src: typeof src; generation: number; url: string | null; failed: boolean } | null>(null);
+  const current = result?.src === src && result.generation === generation ? result : null;
+  const url = isPrivate ? current?.url ?? null : src ?? null;
+  const failed = current?.failed ?? false;
   const retried = useRef(false);
+  const request = useRef(0);
 
   useEffect(() => {
-    let live = true;
+    const requestId = ++request.current;
     retried.current = false;
-    setFailed(false);
-    if (!isPrivate) { setUrl(src ?? null); return; }
-    setUrl(null);
-    resolvePhotoUrl(src).then((u) => { if (!live) return; if (u) setUrl(u); else setFailed(true); });
-    return () => { live = false; };
-  }, [src, isPrivate]);
+    setResult(null);
+    if (isPrivate) resolvePhotoUrl(src).then((u) => {
+      if (request.current !== requestId || privatePhotoGeneration() !== generation) return;
+      setResult({ src, generation, url: u, failed: !u });
+    });
+    return () => { request.current += 1; };
+  }, [src, isPrivate, generation]);
 
   if (failed || (!url && !isPrivate)) {
     return (
@@ -40,10 +45,14 @@ export default function SecurePhoto({ src, className, alt = '', onError, ...rest
         // An expired signed URL is refreshed once through the same authorization path.
         if (isPrivate && !retried.current) {
           retried.current = true;
-          resolvePhotoUrl(src, true).then((u) => (u ? setUrl(u === url ? `${u}&retry=1` : u) : setFailed(true)));
+          const requestId = request.current;
+          resolvePhotoUrl(src, true).then((u) => {
+            if (request.current !== requestId || privatePhotoGeneration() !== generation) return;
+            setResult({ src, generation, url: u === url && u ? `${u}&retry=1` : u, failed: !u });
+          });
           return;
         }
-        setFailed(true);
+        setResult({ src, generation, url: null, failed: true });
         onError?.(e);
       }}
     />
