@@ -483,6 +483,63 @@ export type Database = {
         }
         Relationships: []
       }
+      photo_share_items: {
+        Row: {
+          media_id: string
+          share_id: string
+        }
+        Insert: {
+          media_id: string
+          share_id: string
+        }
+        Update: {
+          media_id?: string
+          share_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "photo_share_items_media_id_fkey"
+            columns: ["media_id"]
+            isOneToOne: false
+            referencedRelation: "trusted_media"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "photo_share_items_share_id_fkey"
+            columns: ["share_id"]
+            isOneToOne: false
+            referencedRelation: "photo_shares"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      photo_shares: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          owner_id: string
+          revoked_at: string | null
+          token_hash: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          id?: string
+          owner_id: string
+          revoked_at?: string | null
+          token_hash: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          owner_id?: string
+          revoked_at?: string | null
+          token_hash?: string
+        }
+        Relationships: []
+      }
       rendezvous: {
         Row: {
           animal_ids: string[] | null
@@ -604,18 +661,21 @@ export type Database = {
         Row: {
           deletion_enabled: boolean
           id: boolean
+          private_photos_enabled: boolean
           test_users: string[]
           transfers_enabled: boolean
         }
         Insert: {
           deletion_enabled?: boolean
           id?: boolean
+          private_photos_enabled?: boolean
           test_users?: string[]
           transfers_enabled?: boolean
         }
         Update: {
           deletion_enabled?: boolean
           id?: boolean
+          private_photos_enabled?: boolean
           test_users?: string[]
           transfers_enabled?: boolean
         }
@@ -835,6 +895,10 @@ export type Database = {
         Args: { p_action: string; p_uid: string }
         Returns: boolean
       }
+      create_photo_share: {
+        Args: { p_hours: number; p_paths: string[]; p_uid: string }
+        Returns: Json
+      }
       deletion_has_foreign_relationships: {
         Args: { p_uid: string }
         Returns: boolean
@@ -857,6 +921,11 @@ export type Database = {
       reserve_secure_upload_v2: {
         Args: { p_bucket: string; p_ext: string; p_uid: string }
         Returns: Json
+      }
+      resolve_photo_share: { Args: { p_token: string }; Returns: Json }
+      revoke_photo_share: {
+        Args: { p_share: string; p_uid: string }
+        Returns: boolean
       }
       secure_claim_transfer: {
         Args: { p_code: string; p_uid: string }
@@ -910,6 +979,10 @@ export type Database = {
       }
       security_mutation_lock: { Args: never; Returns: undefined }
       security_private_document_read_allowed: {
+        Args: { p_bucket: string; p_path: string }
+        Returns: boolean
+      }
+      security_private_media_read_allowed: {
         Args: { p_bucket: string; p_path: string }
         Returns: boolean
       }
