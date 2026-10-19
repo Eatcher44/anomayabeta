@@ -37,4 +37,4 @@ export async function resolvePhotoUrl(ref: string | null | undefined, force = fa
   return pending;
 }
 
-supabase.auth.onAuthStateChange((event) => { if (event === 'SIGNED_OUT' || event === 'SIGNED_IN') clearPrivatePhotoCache(); });
+supabase.auth?.onAuthStateChange?.((event) => { if (event === 'SIGNED_OUT' || event === 'SIGNED_IN') clearPrivatePhotoCache(); });
