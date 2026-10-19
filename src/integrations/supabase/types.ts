@@ -661,6 +661,7 @@ export type Database = {
         Row: {
           deletion_enabled: boolean
           id: boolean
+          private_photo_test_users: string[]
           private_photos_enabled: boolean
           test_users: string[]
           transfers_enabled: boolean
@@ -668,6 +669,7 @@ export type Database = {
         Insert: {
           deletion_enabled?: boolean
           id?: boolean
+          private_photo_test_users?: string[]
           private_photos_enabled?: boolean
           test_users?: string[]
           transfers_enabled?: boolean
@@ -675,6 +677,7 @@ export type Database = {
         Update: {
           deletion_enabled?: boolean
           id?: boolean
+          private_photo_test_users?: string[]
           private_photos_enabled?: boolean
           test_users?: string[]
           transfers_enabled?: boolean

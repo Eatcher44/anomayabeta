@@ -204,6 +204,13 @@
       "when": 1792403270461,
       "tag": "0028_allow_private_media_bucket",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1792406327167,
+      "tag": "0029_independent_private_photo_test_permission",
+      "breakpoints": true
     }
   ]
 }
