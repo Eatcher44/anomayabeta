@@ -40,7 +40,7 @@ export default function SecurePhoto({ src, className, alt = '', onError, ...rest
         // An expired signed URL is refreshed once through the same authorization path.
         if (isPrivate && !retried.current) {
           retried.current = true;
-          resolvePhotoUrl(src, true).then((u) => (u ? setUrl(u) : setFailed(true)));
+          resolvePhotoUrl(src, true).then((u) => (u ? setUrl(u === url ? `${u}&retry=1` : u) : setFailed(true)));
           return;
         }
         setFailed(true);
