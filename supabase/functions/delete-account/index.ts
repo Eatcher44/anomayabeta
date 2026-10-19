@@ -23,6 +23,9 @@ Deno.serve(async (req) => {
     const { data: manifest, error } = await admin.rpc("prepare_account_cleanup", { p_uid: uid });
     if (error) return reply(req, error.code === "40001" ? 409 : 500, { error: "La suppression n'a pas pu se terminer. Réessayez." });
     if (manifest?.error) return reply(req, 503, { error: "La suppression automatique est temporairement indisponible. Contactez support@anomaya.app.", code: manifest.error });
+    // Idempotent: the owner's photo share links (items cascade) never outlive the account.
+    const { error: shareError } = await admin.from("photo_shares").delete().eq("owner_id", uid);
+    if (shareError) throw new Error("share_cleanup_failed");
     for (const file of manifest?.files ?? []) {
       const { error: removeError } = await admin.storage.from(file.bucket).remove([file.path]);
       if (removeError) throw new Error("storage_cleanup_failed");

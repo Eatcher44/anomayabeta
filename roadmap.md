@@ -48,3 +48,6 @@
 - [ ] Validate tooling major-version fixes in an isolated compatibility environment and verify the actual published bundle: no frontend publication allowed, old published artifact not rebuilt.
 - [ ] Publish or reopen public operations only after remaining acceptance tests and explicit release approval; current global gates remain false and test allowlist empty.- [x] Prepare secure-upload cutover: guard test for direct writes, legacy detection query, cutover sequence and private-photo design (docs/secure-upload-cutover-and-private-photos.md).
 - [ ] Cutover steps A-D (publish, revoke legacy INSERT, reconcile sweep, private-photo schema): each awaits explicit approval.
+- [x] Phase D: private photo bucket, access rules, revocable sharing behind disabled flag; 30/30 real tests.
+- [ ] Wire photo screens to private references (signed URLs) and test on Android — awaiting approval.
+- [ ] Migrate existing public photos per docs/private-photo-infrastructure-and-migration.md — awaiting approval.

@@ -9,7 +9,8 @@ export async function handleUpload(req: Request) {
   try { form = await req.formData(); } catch { return reply(req, 400, { error: 'invalid_file' }); }
   const file = form.get('file');
   const bucket = form.get('bucket');
-  const allowed = ['animal-photos', 'bug-screenshots', 'sensitive-documents'];
+  // animal-media (private photos) is additionally gated server-side by the private_photos flag.
+  const allowed = ['animal-photos', 'bug-screenshots', 'sensitive-documents', 'animal-media'];
   if (!(file instanceof File) || typeof bucket !== 'string' || !allowed.includes(bucket)
     || !['image/png', 'image/jpeg', 'image/webp'].includes(file.type)
     || file.size === 0 || file.size > (bucket === 'bug-screenshots' ? 5 : 10) * 1024 * 1024) {

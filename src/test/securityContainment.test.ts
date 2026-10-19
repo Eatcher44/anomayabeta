@@ -16,6 +16,7 @@ describe('deployed account deletion handler', () => {
     vi.stubGlobal('Deno', { serve: (fn: typeof handler) => { handler = fn; } });
     mocks.session.mockResolvedValue({ uid: 'verified-owner', admin: {
       rpc: mocks.rpc, storage: { from: mocks.from }, auth: { admin: { deleteUser: mocks.deleteUser } },
+      from: () => ({ delete: () => ({ eq: async () => ({ error: null }) }) }),
     } });
     // Keep the Deno handler outside the browser's TypeScript dependency graph.
     const handlerPath = '../../supabase/functions/delete-account/index.ts';
