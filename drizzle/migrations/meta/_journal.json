@@ -162,6 +162,13 @@
       "when": 1792357703517,
       "tag": "0022_authorize_private_signature_reads_via_trusted_custody",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1792401272904,
+      "tag": "0023_transfer_quota_independent_commit",
+      "breakpoints": true
     }
   ]
 }

@@ -853,7 +853,15 @@ export type Database = {
         Args: { p_code: string; p_uid: string }
         Returns: Json
       }
+      secure_claim_transfer_checked: {
+        Args: { p_code: string; p_uid: string }
+        Returns: Json
+      }
       secure_create_transfer: {
+        Args: { p_animal: string; p_uid: string }
+        Returns: Json
+      }
+      secure_create_transfer_checked: {
         Args: { p_animal: string; p_uid: string }
         Returns: Json
       }
