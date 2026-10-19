@@ -44,14 +44,28 @@ export default function TransferPage() {
     })();
   }, [user, id]);
 
-  const generateTransferCode = async () => {
+  const openReview = async () => {
     if (!user || !animal) return;
     setGenerating(true);
     try {
-      const data = await secureTransfer('create', { animal_id: animal.id });
+      setReview(await secureTransfer('preview', { animal_id: animal.id }) as TransferReview);
+    } catch (error) {
+      toast({ title: 'Erreur', description: error instanceof Error ? error.message : undefined, variant: 'destructive' });
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const generateTransferCode = async () => {
+    if (!user || !animal || !review) return;
+    setGenerating(true);
+    try {
+      const data = await secureTransfer('create', { animal_id: animal.id, approval: review.approval });
       if (data) setCodes((prev) => [data as TransferCode, ...prev]);
+      setReview(null);
       toast({ title: 'Code généré' });
     } catch (error) {
+      setReview(null);
       toast({ title: 'Erreur', description: error instanceof Error ? error.message : undefined, variant: 'destructive' });
     } finally {
       setGenerating(false);
