@@ -6,7 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useAnimals } from '@/context/AnimalsContext';
 import { useAuth } from '@/context/AuthContext';
-import { secureTransfer, isTransferCode, TRANSFER_CODE_LENGTH } from '@/utils/secureTransfer';
+import { secureTransfer, isTransferCode, TRANSFER_CODE_LENGTH, type TransferReview } from '@/utils/secureTransfer';
+import TransferReviewDialog from '@/components/TransferReviewDialog';
 import { toast } from '@/hooks/use-toast';
 
 interface TransferCode {
@@ -28,6 +29,7 @@ export default function TransferPage() {
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
+  const [review, setReview] = useState<TransferReview | null>(null);
 
   // Claim flow
   const [claimCode, setClaimCode] = useState('');
@@ -142,14 +144,15 @@ export default function TransferPage() {
       </div>
 
       <div className="p-4 space-y-4">
-        <Button onClick={generateTransferCode} disabled={generating} className="w-full">
+        <Button onClick={openReview} disabled={generating} className="w-full">
           <QrCode className="w-4 h-4 mr-2" />
           {generating ? 'Génération...' : 'Générer un code de transfert'}
         </Button>
 
         <p className="text-xs text-muted-foreground text-center">
-          Le code est valable 7 jours et utilisable une seule fois.
+          Le code est valable 7 jours et utilisable une seule fois. Vous vérifierez d'abord les informations transmises.
         </p>
+        <TransferReviewDialog review={review} animalName={animal.nom} busy={generating} onCancel={() => setReview(null)} onConfirm={generateTransferCode} />
 
         {loading ? (
           <div className="flex justify-center py-8">
