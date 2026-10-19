@@ -46,4 +46,5 @@
 - [x] Block transfers containing private notes at issuance and ownership mutation without removing history; verify late-added notes and private signature reads on the real backend.
 - [x] Assess installed tooling versus runtime advisories; apply bounded PostCSS/Rollup patches and verify 25 local tests, report remaining tooling and router risks.
 - [ ] Validate tooling major-version fixes in an isolated compatibility environment and verify the actual published bundle: no frontend publication allowed, old published artifact not rebuilt.
-- [ ] Publish or reopen public operations only after remaining acceptance tests and explicit release approval; current global gates remain false and test allowlist empty.
+- [ ] Publish or reopen public operations only after remaining acceptance tests and explicit release approval; current global gates remain false and test allowlist empty.- [x] Prepare secure-upload cutover: guard test for direct writes, legacy detection query, cutover sequence and private-photo design (docs/secure-upload-cutover-and-private-photos.md).
+- [ ] Cutover steps A-D (publish, revoke legacy INSERT, reconcile sweep, private-photo schema): each awaits explicit approval.
